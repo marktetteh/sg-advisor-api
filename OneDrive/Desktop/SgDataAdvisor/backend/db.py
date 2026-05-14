@@ -30,13 +30,17 @@ _cache_timestamp: float = 0.0
 
 # ── DB connection URLs (from .env) ────────────────────────────────────────────
 
+def _clean_url(url: str) -> str:
+    """Strip parameters unsupported by psycopg2 (e.g. channel_binding)."""
+    return url.replace("&channel_binding=require", "").replace("?channel_binding=require", "")
+
 DB_URLS = {
-    "market_prices": os.getenv("NEON_MARKET_PRICES", ""),
-    "accommodation": os.getenv("NEON_ACCOMMODATION", ""),
-    "property":      os.getenv("NEON_PROPERTY", ""),
-    "economic":      os.getenv("NEON_ECONOMIC", ""),
-    "commodities":   os.getenv("NEON_COMMODITIES", ""),
-    "financials":    os.getenv("NEON_FINANCIALS", ""),
+    "market_prices": _clean_url(os.getenv("NEON_MARKET_PRICES", "")),
+    "accommodation": _clean_url(os.getenv("NEON_ACCOMMODATION", "")),
+    "property":      _clean_url(os.getenv("NEON_PROPERTY", "")),
+    "economic":      _clean_url(os.getenv("NEON_ECONOMIC", "")),
+    "commodities":   _clean_url(os.getenv("NEON_COMMODITIES", "")),
+    "financials":    _clean_url(os.getenv("NEON_FINANCIALS", "")),
 }
 
 
