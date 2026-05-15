@@ -54,12 +54,12 @@ Return this exact structure:
 }}
 
 Examples:
-- "iphone prices" → {{"keywords":["iphone"],"exclude":["case","cover","cable","charger","screen","protector","holder","pouch","bag","tempered","glass","strap"],"min_price_ghs":500,"category":"Mobile Phones"}}
-- "toyota camry" → {{"keywords":["toyota","camry"],"exclude":["parts","mat","seat cover","oil filter","sticker","rim","tyre"],"min_price_ghs":5000,"category":"Vehicles"}}
-- "samsung galaxy" → {{"keywords":["samsung","galaxy"],"exclude":["case","cover","cable","charger","screen","tempered","glass","holder"],"min_price_ghs":300,"category":"Mobile Phones"}}
+- "iphone prices" → {{"keywords":["iphone"],"exclude":["case","cover","cable","charger","screen","protector","holder","pouch","bag","tempered","glass","strap","replacement","motherboard","repair","spare","parts","battery","lcd","screen replacement","housing","back glass","lens","camera replacement"],"min_price_ghs":2000,"category":"Mobile Phones"}}
+- "samsung galaxy" → {{"keywords":["samsung","galaxy"],"exclude":["case","cover","cable","charger","screen","tempered","glass","holder","replacement","motherboard","repair","spare","parts","battery","lcd"],"min_price_ghs":1000,"category":"Mobile Phones"}}
+- "toyota camry" → {{"keywords":["toyota","camry"],"exclude":["parts","mat","seat cover","oil filter","sticker","rim","tyre","engine","gearbox","spare","repair","body kit","bumper","mirror"],"min_price_ghs":5000,"category":"Vehicles"}}
+- "macbook pro" → {{"keywords":["macbook","pro"],"exclude":["case","bag","sleeve","charger","adapter","stand","replacement","screen","repair","keyboard","battery","parts"],"min_price_ghs":2000,"category":"Electronics"}}
 - "rice 50kg" → {{"keywords":["rice"],"exclude":["cooker","pot","bag","sack"],"min_price_ghs":0,"category":"Food & Agriculture"}}
-- "sofa 3 seater" → {{"keywords":["sofa"],"exclude":["cover","pillow","cushion"],"min_price_ghs":0,"category":"Furniture"}}
-- "macbook pro" → {{"keywords":["macbook","pro"],"exclude":["case","bag","sleeve","charger","adapter","stand"],"min_price_ghs":1000,"category":"Electronics"}}"""
+- "sofa 3 seater" → {{"keywords":["sofa"],"exclude":["cover","pillow","cushion"],"min_price_ghs":0,"category":"Furniture"}}"""
 
     try:
         resp = requests.post(
