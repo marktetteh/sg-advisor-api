@@ -37,8 +37,8 @@ def _generate_reply(query: str, findings: dict) -> str:
             f"but didn't find exact matches.\n\n"
             "Our database covers: **electronics, mobile phones, vehicles, real estate, "
             "food & agriculture, home furniture, fashion,** and **commercial equipment** — "
-            "all sourced live from Ghana's major marketplaces (Jiji, Tonaton).\n\n"
-            "Try a broader search term, or visit our marketplace at "
+            "all sourced from Ghana's major online marketplaces.\n\n"
+            "Try a shorter search term (e.g. just *\"iPhone\"* or *\"Toyota\"*), or visit our marketplace at "
             "[sgdatalytics.org/marketplace.html](https://sgdatalytics.org/marketplace.html) "
             "where our team can build a custom data package for your needs."
         )
@@ -46,7 +46,7 @@ def _generate_reply(query: str, findings: dict) -> str:
     total_records = sum(v.get("total", 0) for v in findings.values())
     lines = [
         f'Found **{total_records:,} records** matching **"{query}"** '
-        f"in our live Ghana market database.\n"
+        f"in our live Ghana market database.\n",
     ]
 
     for info in findings.values():

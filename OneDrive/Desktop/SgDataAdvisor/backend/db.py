@@ -400,29 +400,66 @@ def search_live_datasets(query: str, sector: str = None) -> list:
 
 # ── Live data search — returns actual records from the databases ──────────────
 
+# Words stripped from queries before searching so "iphone prices" → "iphone"
+_FILLER_WORDS = {
+    "price", "prices", "cost", "costs", "rate", "rates", "value",
+    "buy", "sell", "sale", "for", "in", "at", "on", "of", "the",
+    "a", "an", "and", "or", "with", "get", "find", "show", "me",
+    "want", "need", "looking", "search", "how", "much", "what",
+    "is", "are", "was", "data", "dataset", "information", "info",
+    "market", "today", "current", "recent", "latest", "available",
+    "cheap", "best", "new", "used", "second", "hand", "ghana",
+    "accra", "kumasi", "tamale", "tema",
+}
+
+
+def _extract_keywords(query: str) -> list:
+    """Strip filler words and return up to 3 meaningful search terms."""
+    words = query.lower().replace("?", "").replace("!", "").replace(",", "").split()
+    keywords = [w for w in words if w not in _FILLER_WORDS and len(w) >= 2]
+    return keywords[:3] if keywords else [query.lower().split()[0]]
+
+
+def _build_where(columns: list, keywords: list) -> tuple:
+    """
+    Build a SQL WHERE clause and params list that matches ANY keyword in ANY column.
+    Example: columns=["title","search_label"], keywords=["iphone","pro"]
+    → WHERE (LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s)
+         OR (LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s)
+    """
+    col_clause = " OR ".join(f"LOWER({c}) LIKE %s" for c in columns)
+    parts = [f"({col_clause})"] * len(keywords)
+    where = " OR ".join(parts)
+    params = []
+    for kw in keywords:
+        params.extend([f"%{kw}%"] * len(columns))
+    return where, params
+
+
 def search_market_data(query: str) -> dict:
     """
-    Search across all 6 Neon databases for records matching the query.
-    Returns up to 5 sample rows per database found, plus a total count.
-    Used by the advisor to show live preview cards before directing to marketplace.
+    Search the market prices database for records matching the query.
+    Strips filler words first so 'iphone prices' searches for 'iphone'.
+    Returns up to 5 sample rows plus a total count.
     """
-    kw = f"%{query.lower()}%"
+    keywords = _extract_keywords(query)
     findings = {}
 
     # Market prices (electronics, vehicles, appliances, etc.)
     url = DB_URLS.get("market_prices", "")
     if url:
         try:
+            where, params = _build_where(["title", "search_label"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM market_prices WHERE LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s",
-                [kw, kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM market_prices WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT title, price_ghs, location, condition, product_category, collected_date
                 FROM market_prices
-                WHERE LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s
+                WHERE {where}
                 ORDER BY collected_date DESC, price_ghs
                 LIMIT 5
-            """, [kw, kw])
+            """, params)
             if rows:
                 findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
         except Exception as e:
@@ -432,15 +469,16 @@ def search_market_data(query: str) -> dict:
     url = DB_URLS.get("property", "")
     if url:
         try:
+            where, params = _build_where(["title", "location"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM property_prices WHERE LOWER(title) LIKE %s OR LOWER(location) LIKE %s",
-                [kw, kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM property_prices WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT title, price_ghs, location, property_type, listing_type, bedrooms, collected_date
                 FROM property_prices
-                WHERE LOWER(title) LIKE %s OR LOWER(location) LIKE %s
+                WHERE {where}
                 ORDER BY collected_date DESC LIMIT 5
-            """, [kw, kw])
+            """, params)
             if rows:
                 findings["property"] = {"label": "Property Prices", "total": total, "rows": rows}
         except Exception as e:
@@ -450,15 +488,16 @@ def search_market_data(query: str) -> dict:
     url = DB_URLS.get("commodities", "")
     if url:
         try:
+            where, params = _build_where(["commodity_name"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM commodity_prices WHERE LOWER(commodity_name) LIKE %s",
-                [kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM commodity_prices WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT commodity_name, price_ghs, unit, market, region, collected_date
                 FROM commodity_prices
-                WHERE LOWER(commodity_name) LIKE %s
+                WHERE {where}
                 ORDER BY collected_date DESC LIMIT 5
-            """, [kw])
+            """, params)
             if rows:
                 findings["commodities"] = {"label": "Commodity Prices", "total": total, "rows": rows}
         except Exception as e:
@@ -468,15 +507,16 @@ def search_market_data(query: str) -> dict:
     url = DB_URLS.get("financials", "")
     if url:
         try:
+            where, params = _build_where(["company_name", "symbol"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM stock_prices WHERE LOWER(company_name) LIKE %s OR LOWER(symbol) LIKE %s",
-                [kw, kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM stock_prices WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT symbol, company_name, closing_price_ghs, change_pct, volume, collected_date
                 FROM stock_prices
-                WHERE LOWER(company_name) LIKE %s OR LOWER(symbol) LIKE %s
+                WHERE {where}
                 ORDER BY collected_date DESC LIMIT 5
-            """, [kw, kw])
+            """, params)
             if rows:
                 findings["financials"] = {"label": "Stock Prices (GSE)", "total": total, "rows": rows}
         except Exception as e:
@@ -486,15 +526,16 @@ def search_market_data(query: str) -> dict:
     url = DB_URLS.get("accommodation", "")
     if url:
         try:
+            where, params = _build_where(["city", "hotel_name"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM hotel_prices WHERE LOWER(city) LIKE %s OR LOWER(hotel_name) LIKE %s",
-                [kw, kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM hotel_prices WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT hotel_name, city, stars, price_per_night_usd, review_score, collected_date
                 FROM hotel_prices
-                WHERE LOWER(city) LIKE %s OR LOWER(hotel_name) LIKE %s
+                WHERE {where}
                 ORDER BY collected_date DESC LIMIT 5
-            """, [kw, kw])
+            """, params)
             if rows:
                 findings["accommodation"] = {"label": "Accommodation Prices", "total": total, "rows": rows}
         except Exception as e:
@@ -504,15 +545,16 @@ def search_market_data(query: str) -> dict:
     url = DB_URLS.get("economic", "")
     if url:
         try:
+            where, params = _build_where(["indicator_name"], keywords)
             total = _scalar(url,
-                "SELECT COUNT(*) FROM economic_indicators WHERE LOWER(indicator_name) LIKE %s",
-                [kw]) or 0
-            rows = _query(url, """
+                f"SELECT COUNT(*) FROM economic_indicators WHERE {where}",
+                params) or 0
+            rows = _query(url, f"""
                 SELECT indicator_name, value, unit, year, month, sector
                 FROM economic_indicators
-                WHERE LOWER(indicator_name) LIKE %s
+                WHERE {where}
                 ORDER BY year DESC, month DESC NULLS LAST LIMIT 5
-            """, [kw])
+            """, params)
             if rows:
                 findings["economic"] = {"label": "Economic Indicators", "total": total, "rows": rows}
         except Exception as e:
