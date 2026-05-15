@@ -4,6 +4,8 @@ All responses are generated from live Neon PostgreSQL data.
 No external API calls — instant, reliable, no timeouts.
 """
 
+import datetime
+
 # Try live DB first, fall back to static catalog
 try:
     from db import load_live_catalog, search_market_data
@@ -89,6 +91,23 @@ def _get_relevant_datasets(findings: dict) -> list:
     return result
 
 
+# ── JSON serialisation helper ─────────────────────────────────────────────────
+
+def _serialize_row(row: dict) -> dict:
+    """Convert any non-JSON-serialisable values (dates, decimals) to strings."""
+    result = {}
+    for k, v in row.items():
+        if isinstance(v, (datetime.date, datetime.datetime)):
+            result[k] = v.isoformat()
+        elif hasattr(v, "__float__"):          # Decimal
+            result[k] = float(v)
+        elif v is None:
+            result[k] = None
+        else:
+            result[k] = str(v) if not isinstance(v, (int, float, bool, str)) else v
+    return result
+
+
 # ── Main agent function ───────────────────────────────────────────────────────
 
 def run_agent(messages: list, api_key: str = "") -> dict:
@@ -109,12 +128,12 @@ def run_agent(messages: list, api_key: str = "") -> dict:
     reply = _generate_reply(user_query, findings)
     datasets_found = _get_relevant_datasets(findings)
 
-    # Include rows in live_data so the frontend can render the preview table
+    # Include rows in live_data — serialize dates/decimals so JSON doesn't choke
     live_data = {
         k: {
             "label": v["label"],
             "total": v["total"],
-            "rows":  v.get("rows", []),
+            "rows":  [_serialize_row(r) for r in v.get("rows", [])],
         }
         for k, v in findings.items()
     }
