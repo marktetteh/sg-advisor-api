@@ -142,7 +142,7 @@ def _build_property(url: str) -> dict:
     total = _scalar(url, "SELECT COUNT(*) FROM property_prices") or 0
     types = _query(url,
         "SELECT property_type, listing_type, COUNT(*) AS n FROM property_prices "
-        "GROUP BY property_type, listing_type ORDER BY n DESC LIMIT 8")
+        "GROUP BY property_type, listing_type ORDER BY n DESC LIMIT 5")
     type_summary = [f"{r['property_type']} ({r['listing_type']})" for r in types]
     locations = _query(url,
         "SELECT DISTINCT location FROM property_prices WHERE location IS NOT NULL LIMIT 10")
@@ -403,8 +403,8 @@ def search_live_datasets(query: str, sector: str = None) -> list:
 def search_market_data(query: str) -> dict:
     """
     Search across all 6 Neon databases for records matching the query.
-    Returns up to 8 sample rows per database found, plus a total count.
-    Used by the AI agent to show preview data before directing to marketplace.
+    Returns up to 5 sample rows per database found, plus a total count.
+    Used by the advisor to show live preview cards before directing to marketplace.
     """
     kw = f"%{query.lower()}%"
     findings = {}
@@ -421,7 +421,7 @@ def search_market_data(query: str) -> dict:
                 FROM market_prices
                 WHERE LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s
                 ORDER BY collected_date DESC, price_ghs
-                LIMIT 8
+                LIMIT 5
             """, [kw, kw])
             if rows:
                 findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
@@ -439,7 +439,7 @@ def search_market_data(query: str) -> dict:
                 SELECT title, price_ghs, location, property_type, listing_type, bedrooms, collected_date
                 FROM property_prices
                 WHERE LOWER(title) LIKE %s OR LOWER(location) LIKE %s
-                ORDER BY collected_date DESC LIMIT 8
+                ORDER BY collected_date DESC LIMIT 5
             """, [kw, kw])
             if rows:
                 findings["property"] = {"label": "Property Prices", "total": total, "rows": rows}
@@ -457,7 +457,7 @@ def search_market_data(query: str) -> dict:
                 SELECT commodity_name, price_ghs, unit, market, region, collected_date
                 FROM commodity_prices
                 WHERE LOWER(commodity_name) LIKE %s
-                ORDER BY collected_date DESC LIMIT 8
+                ORDER BY collected_date DESC LIMIT 5
             """, [kw])
             if rows:
                 findings["commodities"] = {"label": "Commodity Prices", "total": total, "rows": rows}
@@ -475,7 +475,7 @@ def search_market_data(query: str) -> dict:
                 SELECT symbol, company_name, closing_price_ghs, change_pct, volume, collected_date
                 FROM stock_prices
                 WHERE LOWER(company_name) LIKE %s OR LOWER(symbol) LIKE %s
-                ORDER BY collected_date DESC LIMIT 8
+                ORDER BY collected_date DESC LIMIT 5
             """, [kw, kw])
             if rows:
                 findings["financials"] = {"label": "Stock Prices (GSE)", "total": total, "rows": rows}
@@ -493,7 +493,7 @@ def search_market_data(query: str) -> dict:
                 SELECT hotel_name, city, stars, price_per_night_usd, review_score, collected_date
                 FROM hotel_prices
                 WHERE LOWER(city) LIKE %s OR LOWER(hotel_name) LIKE %s
-                ORDER BY collected_date DESC LIMIT 8
+                ORDER BY collected_date DESC LIMIT 5
             """, [kw, kw])
             if rows:
                 findings["accommodation"] = {"label": "Accommodation Prices", "total": total, "rows": rows}
@@ -511,7 +511,7 @@ def search_market_data(query: str) -> dict:
                 SELECT indicator_name, value, unit, year, month, sector
                 FROM economic_indicators
                 WHERE LOWER(indicator_name) LIKE %s
-                ORDER BY year DESC, month DESC NULLS LAST LIMIT 8
+                ORDER BY year DESC, month DESC NULLS LAST LIMIT 5
             """, [kw])
             if rows:
                 findings["economic"] = {"label": "Economic Indicators", "total": total, "rows": rows}

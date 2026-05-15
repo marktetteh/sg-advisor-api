@@ -83,17 +83,10 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
-    api_key = request.api_key or os.getenv("GOOGLE_API_KEY", "")
-    if not api_key:
-        raise HTTPException(
-            status_code=401,
-            detail="No Google API key provided. Set GOOGLE_API_KEY in your environment or pass it in the request.",
-        )
-
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
 
     try:
-        result = run_agent(messages, api_key)
+        result = run_agent(messages)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
