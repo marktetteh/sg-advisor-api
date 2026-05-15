@@ -588,10 +588,38 @@ _CATEGORY_MAP = {
 }
 
 
+# Categories where item_type = 'product' filter makes sense
+# (eliminates accessories and spare parts from results)
+_PRODUCT_ONLY_CATEGORIES = {"Mobile Phones", "Electronics", "Vehicles", "Furniture"}
+
+# Column exists in DB once migration has run — if column missing, we skip the filter gracefully
+_ITEM_TYPE_COL_EXISTS: bool | None = None  # None = unchecked
+
+def _check_item_type_col(url: str) -> bool:
+    """Return True if item_type column exists in market_prices (migration has run)."""
+    global _ITEM_TYPE_COL_EXISTS
+    if _ITEM_TYPE_COL_EXISTS is not None:
+        return _ITEM_TYPE_COL_EXISTS
+    try:
+        result = _query(url,
+            "SELECT column_name FROM information_schema.columns "
+            "WHERE table_name='market_prices' AND column_name='item_type'")
+        _ITEM_TYPE_COL_EXISTS = bool(result)
+    except Exception:
+        _ITEM_TYPE_COL_EXISTS = False
+    return _ITEM_TYPE_COL_EXISTS
+
+
 def search_market_data_smart(parsed: dict) -> dict:
     """
     Search using AI-parsed query params for accurate, relevant results.
     parsed = {keywords, exclude, min_price_ghs, category}
+
+    When item_type column exists (migration ran) AND category is product-heavy
+    (Mobile Phones, Electronics, Vehicles, Furniture), adds
+      AND item_type = 'product'
+    to eliminate accessories and spare parts at SQL level.
+    Falls back gracefully to text-exclusion-only if column doesn't exist yet.
     """
     keywords    = [k.lower() for k in parsed.get("keywords", []) if k]
     exclude     = [e.lower() for e in parsed.get("exclude", []) if e]
@@ -607,10 +635,21 @@ def search_market_data_smart(parsed: dict) -> dict:
     url = DB_URLS.get("market_prices", "")
     if url:
         try:
+            # Check if classification columns exist (migration ran)
+            has_item_type = _check_item_type_col(url)
+            use_item_type_filter = (
+                has_item_type and category in _PRODUCT_ONLY_CATEGORIES
+            )
+
             # Include: keyword match on title or search_label
             where, params = _build_where(["title", "search_label"], keywords)
 
-            # Exclude: accessory/unrelated terms
+            # item_type = 'product' — clean DB-level filter (when available)
+            if use_item_type_filter:
+                where  += " AND item_type = %s"
+                params.append("product")
+
+            # Exclude: accessory/unrelated terms (text-based, always applied)
             for ex in exclude[:12]:
                 where  += " AND LOWER(title) NOT LIKE %s"
                 params.append(f"%{ex}%")
@@ -646,8 +685,8 @@ def search_market_data_smart(parsed: dict) -> dict:
 
             if rows:
                 findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
-            elif min_price > 0 or db_cats:
-                # Retry without price/category filters if strict search returns nothing
+            elif min_price > 0 or db_cats or use_item_type_filter:
+                # Retry without strict filters if nothing returned
                 where2, params2 = _build_where(["title", "search_label"], keywords)
                 for ex in exclude[:12]:
                     where2  += " AND LOWER(title) NOT LIKE %s"
