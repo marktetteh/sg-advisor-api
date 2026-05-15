@@ -396,3 +396,166 @@ def search_live_datasets(query: str, sector: str = None) -> list:
             results.append({"score": score, "dataset": d})
     results.sort(key=lambda x: x["score"], reverse=True)
     return [r["dataset"] for r in results[:5]]
+
+
+# ── Live data search — returns actual records from the databases ──────────────
+
+def search_market_data(query: str) -> dict:
+    """
+    Search across all 6 Neon databases for records matching the query.
+    Returns up to 8 sample rows per database found, plus a total count.
+    Used by the AI agent to show preview data before directing to marketplace.
+    """
+    kw = f"%{query.lower()}%"
+    findings = {}
+
+    # Market prices (electronics, vehicles, appliances, etc.)
+    url = DB_URLS.get("market_prices", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM market_prices WHERE LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s",
+                [kw, kw]) or 0
+            rows = _query(url, """
+                SELECT title, price_ghs, location, condition, product_category, collected_date
+                FROM market_prices
+                WHERE LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s
+                ORDER BY collected_date DESC, price_ghs
+                LIMIT 8
+            """, [kw, kw])
+            if rows:
+                findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search market_prices error: {e}")
+
+    # Property prices
+    url = DB_URLS.get("property", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM property_prices WHERE LOWER(title) LIKE %s OR LOWER(location) LIKE %s",
+                [kw, kw]) or 0
+            rows = _query(url, """
+                SELECT title, price_ghs, location, property_type, listing_type, bedrooms, collected_date
+                FROM property_prices
+                WHERE LOWER(title) LIKE %s OR LOWER(location) LIKE %s
+                ORDER BY collected_date DESC LIMIT 8
+            """, [kw, kw])
+            if rows:
+                findings["property"] = {"label": "Property Prices", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search property error: {e}")
+
+    # Commodity prices
+    url = DB_URLS.get("commodities", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM commodity_prices WHERE LOWER(commodity_name) LIKE %s",
+                [kw]) or 0
+            rows = _query(url, """
+                SELECT commodity_name, price_ghs, unit, market, region, collected_date
+                FROM commodity_prices
+                WHERE LOWER(commodity_name) LIKE %s
+                ORDER BY collected_date DESC LIMIT 8
+            """, [kw])
+            if rows:
+                findings["commodities"] = {"label": "Commodity Prices", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search commodities error: {e}")
+
+    # Stock prices
+    url = DB_URLS.get("financials", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM stock_prices WHERE LOWER(company_name) LIKE %s OR LOWER(symbol) LIKE %s",
+                [kw, kw]) or 0
+            rows = _query(url, """
+                SELECT symbol, company_name, closing_price_ghs, change_pct, volume, collected_date
+                FROM stock_prices
+                WHERE LOWER(company_name) LIKE %s OR LOWER(symbol) LIKE %s
+                ORDER BY collected_date DESC LIMIT 8
+            """, [kw, kw])
+            if rows:
+                findings["financials"] = {"label": "Stock Prices (GSE)", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search financials error: {e}")
+
+    # Accommodation
+    url = DB_URLS.get("accommodation", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM hotel_prices WHERE LOWER(city) LIKE %s OR LOWER(hotel_name) LIKE %s",
+                [kw, kw]) or 0
+            rows = _query(url, """
+                SELECT hotel_name, city, stars, price_per_night_usd, review_score, collected_date
+                FROM hotel_prices
+                WHERE LOWER(city) LIKE %s OR LOWER(hotel_name) LIKE %s
+                ORDER BY collected_date DESC LIMIT 8
+            """, [kw, kw])
+            if rows:
+                findings["accommodation"] = {"label": "Accommodation Prices", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search accommodation error: {e}")
+
+    # Economic indicators
+    url = DB_URLS.get("economic", "")
+    if url:
+        try:
+            total = _scalar(url,
+                "SELECT COUNT(*) FROM economic_indicators WHERE LOWER(indicator_name) LIKE %s",
+                [kw]) or 0
+            rows = _query(url, """
+                SELECT indicator_name, value, unit, year, month, sector
+                FROM economic_indicators
+                WHERE LOWER(indicator_name) LIKE %s
+                ORDER BY year DESC, month DESC NULLS LAST LIMIT 8
+            """, [kw])
+            if rows:
+                findings["economic"] = {"label": "Economic Indicators", "total": total, "rows": rows}
+        except Exception as e:
+            print(f"[db.py] search economic error: {e}")
+
+    return findings
+
+
+def format_search_results(query: str, findings: dict) -> str:
+    """Format DB search results into a text block the AI agent can include in its response."""
+    if not findings:
+        return ""
+
+    lines = [f'📊 LIVE DATA PREVIEW — Results for "{query}" from SG Datalytics databases:\n']
+
+    for db_key, info in findings.items():
+        lines.append(f"── {info['label']} ({info['total']:,} total records) ──")
+        rows = info["rows"]
+
+        for r in rows:
+            if db_key == "market_prices":
+                price = f"GHS {r['price_ghs']:,.2f}" if r.get('price_ghs') else "N/A"
+                lines.append(f"  • {r.get('title','')[:60]} | {price} | {r.get('location','')} | {r.get('condition','')}")
+            elif db_key == "property":
+                price = f"GHS {r['price_ghs']:,.2f}" if r.get('price_ghs') else "N/A"
+                beds = f"{r.get('bedrooms','')} bed" if r.get('bedrooms') else ""
+                lines.append(f"  • {r.get('title','')[:50]} | {price} | {r.get('listing_type','')} | {beds} | {r.get('location','')}")
+            elif db_key == "commodities":
+                price = f"GHS {r['price_ghs']:,.2f}/{r.get('unit','unit')}" if r.get('price_ghs') else "N/A"
+                lines.append(f"  • {r.get('commodity_name','')} | {price} | {r.get('market','')} | {r.get('region','')}")
+            elif db_key == "financials":
+                price = f"GHS {r['closing_price_ghs']}" if r.get('closing_price_ghs') else "N/A"
+                chg = f"{r['change_pct']:+.2f}%" if r.get('change_pct') is not None else ""
+                lines.append(f"  • {r.get('symbol','')} — {r.get('company_name','')} | {price} {chg}")
+            elif db_key == "accommodation":
+                price = f"USD {r['price_per_night_usd']}/night" if r.get('price_per_night_usd') else "N/A"
+                stars = "⭐" * (r.get('stars') or 0)
+                lines.append(f"  • {r.get('hotel_name','')[:50]} | {r.get('city','')} | {stars} | {price}")
+            elif db_key == "economic":
+                val = f"{r['value']:,.2f} {r.get('unit','')}" if r.get('value') is not None else "N/A"
+                period = f"{r.get('year','')} M{r.get('month','')}" if r.get('month') else str(r.get('year',''))
+                lines.append(f"  • {r.get('indicator_name','')} | {val} | {period}")
+        lines.append("")
+
+    lines.append("🛒 Get the full dataset at: https://sgdatalytics.org/marketplace.html")
+    return "\n".join(lines)

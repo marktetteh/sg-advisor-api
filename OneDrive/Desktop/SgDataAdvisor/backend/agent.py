@@ -10,7 +10,7 @@ import requests
 
 # Try live DB first, fall back to static catalog
 try:
-    from db import load_live_catalog, search_live_datasets
+    from db import load_live_catalog, search_live_datasets, search_market_data, format_search_results
     _USE_LIVE_DB = True
 except ImportError:
     _USE_LIVE_DB = False
@@ -173,13 +173,44 @@ def extract_datasets_from_reply(reply: str) -> list:
 def run_agent(messages: list, api_key: str) -> dict:
     """
     Call Gemma with the conversation history and return structured result.
-    Returns: {"reply": str, "datasets_found": list, "tool_calls": list}
+    1. Searches the live DBs for matching records (sample preview data)
+    2. Injects those results into the conversation context
+    3. Calls the AI to generate a response that includes the live data
+    Returns: {"reply": str, "datasets_found": list, "tool_calls": list, "live_data": dict}
     """
-    reply = call_google_api(messages, api_key)
+    user_query = messages[-1]["content"]
+    live_data = {}
+    augmented_messages = list(messages)  # copy
+
+    # Step 1: Search live databases for actual matching records
+    if _USE_LIVE_DB:
+        try:
+            findings = search_market_data(user_query)
+            if findings:
+                live_data = findings
+                data_context = format_search_results(user_query, findings)
+                # Inject live data as a system-level context message before the user's message
+                augmented_messages = list(messages[:-1]) + [
+                    {
+                        "role": "user",
+                        "content": (
+                            f"[LIVE DATABASE RESULTS — use these in your response]\n\n"
+                            f"{data_context}\n\n"
+                            f"---\n"
+                            f"User question: {user_query}"
+                        )
+                    }
+                ]
+        except Exception as e:
+            print(f"[agent.py] Live data search failed: {e}")
+
+    # Step 2: Call the AI with the augmented context
+    reply = call_google_api(augmented_messages, api_key)
     datasets_found = extract_datasets_from_reply(reply)
 
     return {
         "reply": reply,
         "datasets_found": datasets_found,
-        "tool_calls": [{"tool": "search_live_datasets", "input": {"query": messages[-1]["content"]}}],
+        "tool_calls": [{"tool": "search_market_data", "input": {"query": user_query}}],
+        "live_data": {k: {"label": v["label"], "total": v["total"]} for k, v in live_data.items()},
     }

@@ -61,6 +61,7 @@ class ChatResponse(BaseModel):
     reply: str
     datasets_found: list[dict]
     tool_calls: list[dict]
+    live_data: dict = {}
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -100,4 +101,5 @@ def chat(request: ChatRequest):
         reply=result["reply"],
         datasets_found=result["datasets_found"],
         tool_calls=result["tool_calls"],
+        live_data=result.get("live_data", {}),
     )
