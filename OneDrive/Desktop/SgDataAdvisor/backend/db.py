@@ -453,13 +453,24 @@ def search_market_data(query: str) -> dict:
             total = _scalar(url,
                 f"SELECT COUNT(*) FROM market_prices WHERE {where}",
                 params) or 0
+
+            # Build relevance ORDER: titles that START WITH the keyword rank highest,
+            # then order by price DESC so actual products (expensive) beat accessories (cheap).
+            kw_starts = " OR ".join(
+                f"LOWER(title) LIKE %s" for _ in keywords
+            )
+            start_params = [f"{kw}%" for kw in keywords]
+
             rows = _query(url, f"""
                 SELECT title, price_ghs, location, condition, product_category, collected_date
                 FROM market_prices
                 WHERE {where}
-                ORDER BY collected_date DESC, price_ghs
+                ORDER BY
+                  CASE WHEN {kw_starts} THEN 0 ELSE 1 END,
+                  price_ghs DESC,
+                  collected_date DESC
                 LIMIT 5
-            """, params)
+            """, params + start_params)
             if rows:
                 findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
         except Exception as e:
