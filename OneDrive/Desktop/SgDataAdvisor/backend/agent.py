@@ -21,7 +21,39 @@ from datasets import DATASETS as FALLBACK_DATASETS
 MAX_FREE_DATASETS = 5
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 
-# Maps DB finding keys → dataset catalog IDs
+# ── Keyword-based category detector (fallback when no Gemini API key) ─────────
+_CATEGORY_KEYWORDS = {
+    "Mobile Phones": {
+        "iphone", "samsung", "galaxy", "tecno", "infinix", "itel", "xiaomi",
+        "oppo", "realme", "vivo", "nokia", "huawei", "phone", "smartphone",
+        "android", "ios", "mobile",
+    },
+    "Electronics": {
+        "laptop", "macbook", "pc", "desktop", "computer", "tv", "television",
+        "monitor", "tablet", "ipad", "printer", "projector", "speaker",
+        "headphone", "earphone", "camera", "playstation", "xbox",
+    },
+    "Vehicles": {
+        "toyota", "honda", "hyundai", "ford", "nissan", "kia", "mercedes",
+        "bmw", "audi", "volkswagen", "vw", "mitsubishi", "mazda", "suzuki",
+        "car", "truck", "suv", "bus", "vehicle", "tractor", "motorbike",
+        "motorcycle", "tricycle",
+    },
+    "Furniture": {
+        "sofa", "bed", "chair", "table", "wardrobe", "desk", "couch",
+        "mattress", "cupboard", "shelf", "furniture", "cabinet",
+    },
+}
+
+def _detect_category(keywords: list) -> str:
+    """Detect product category from keywords — used when Gemini is unavailable."""
+    kw_set = {k.lower() for k in keywords}
+    for category, terms in _CATEGORY_KEYWORDS.items():
+        if kw_set & terms:  # intersection — any keyword matches
+            return category
+    return "General"
+
+# Maps DB finding keys -> dataset catalog IDs
 _KEY_TO_DATASET_ID = {
     "market_prices": "neon_market_prices",
     "property":      "neon_property",
@@ -40,26 +72,25 @@ def parse_query(query: str, api_key: str) -> dict:
     Returns: {keywords, exclude, min_price_ghs, category}
     Falls back to basic keyword extraction if AI call fails.
     """
-    prompt = f"""You are a search query parser for a Ghana online marketplace database.
-Given the user's query, return search parameters as JSON only — no explanation, no markdown.
-
-Query: "{query}"
-
-Return this exact structure:
-{{
-  "keywords": ["core product terms, max 3"],
-  "exclude": ["words that indicate accessories or unrelated items"],
-  "min_price_ghs": 0,
-  "category": "Mobile Phones|Vehicles|Real Estate|Electronics|Food & Agriculture|Fashion|Furniture|General"
-}}
-
-Examples:
-- "iphone prices" → {{"keywords":["iphone"],"exclude":["case","cover","cable","charger","screen","protector","holder","pouch","bag","tempered","glass","strap","replacement","motherboard","repair","spare","parts","battery","lcd","screen replacement","housing","back glass","lens","camera replacement"],"min_price_ghs":2000,"category":"Mobile Phones"}}
-- "samsung galaxy" → {{"keywords":["samsung","galaxy"],"exclude":["case","cover","cable","charger","screen","tempered","glass","holder","replacement","motherboard","repair","spare","parts","battery","lcd"],"min_price_ghs":1000,"category":"Mobile Phones"}}
-- "toyota camry" → {{"keywords":["toyota","camry"],"exclude":["parts","mat","seat cover","oil filter","sticker","rim","tyre","engine","gearbox","spare","repair","body kit","bumper","mirror"],"min_price_ghs":5000,"category":"Vehicles"}}
-- "macbook pro" → {{"keywords":["macbook","pro"],"exclude":["case","bag","sleeve","charger","adapter","stand","replacement","screen","repair","keyboard","battery","parts"],"min_price_ghs":2000,"category":"Electronics"}}
-- "rice 50kg" → {{"keywords":["rice"],"exclude":["cooker","pot","bag","sack"],"min_price_ghs":0,"category":"Food & Agriculture"}}
-- "sofa 3 seater" → {{"keywords":["sofa"],"exclude":["cover","pillow","cushion"],"min_price_ghs":0,"category":"Furniture"}}"""
+    prompt = (
+        'You are a search query parser for a Ghana online marketplace database.\n'
+        'Given the user\'s query, return search parameters as JSON only -- no explanation, no markdown.\n\n'
+        f'Query: "{query}"\n\n'
+        'Return this exact structure:\n'
+        '{\n'
+        '  "keywords": ["core product terms, max 3"],\n'
+        '  "exclude": ["words that indicate accessories or unrelated items"],\n'
+        '  "min_price_ghs": 0,\n'
+        '  "category": "Mobile Phones|Vehicles|Real Estate|Electronics|Food & Agriculture|Fashion|Furniture|General"\n'
+        '}\n\n'
+        'Examples:\n'
+        '- "iphone prices" -> {"keywords":["iphone"],"exclude":["case","cover","cable","charger","screen","protector","holder","pouch","bag","tempered","glass","strap","replacement","motherboard","repair","spare","parts","battery","lcd","screen replacement","housing","back glass","lens","camera replacement"],"min_price_ghs":2000,"category":"Mobile Phones"}\n'
+        '- "samsung galaxy" -> {"keywords":["samsung","galaxy"],"exclude":["case","cover","cable","charger","screen","tempered","glass","holder","replacement","motherboard","repair","spare","parts","battery","lcd"],"min_price_ghs":1000,"category":"Mobile Phones"}\n'
+        '- "toyota camry" -> {"keywords":["toyota","camry"],"exclude":["parts","mat","seat cover","oil filter","sticker","rim","tyre","engine","gearbox","spare","repair","body kit","bumper","mirror"],"min_price_ghs":5000,"category":"Vehicles"}\n'
+        '- "macbook pro" -> {"keywords":["macbook","pro"],"exclude":["case","bag","sleeve","charger","adapter","stand","replacement","screen","repair","keyboard","battery","parts"],"min_price_ghs":2000,"category":"Electronics"}\n'
+        '- "rice 50kg" -> {"keywords":["rice"],"exclude":["cooker","pot","bag","sack"],"min_price_ghs":0,"category":"Food & Agriculture"}\n'
+        '- "sofa 3 seater" -> {"keywords":["sofa"],"exclude":["cover","pillow","cushion"],"min_price_ghs":0,"category":"Furniture"}'
+    )
 
     try:
         resp = requests.post(
@@ -83,9 +114,9 @@ Examples:
     except Exception as e:
         print(f"[agent.py] Gemini query parse failed: {e}")
 
-    # Fallback: basic keyword extraction, no exclusions
+    # Fallback: keyword extraction + keyword-based category detection
     keywords = _extract_keywords(query) if _USE_LIVE_DB else [query.lower().split()[0]]
-    return {"keywords": keywords, "exclude": [], "min_price_ghs": 0, "category": "General"}
+    return {"keywords": keywords, "exclude": [], "min_price_ghs": 0, "category": _detect_category(keywords)}
 
 
 # ── Template reply generator ──────────────────────────────────────────────────
@@ -96,7 +127,7 @@ def _generate_reply(query: str, findings: dict) -> str:
             f'We searched our live Ghana market database for **"{query}"** '
             f"but didn't find exact matches.\n\n"
             "Our database covers: **electronics, mobile phones, vehicles, real estate, "
-            "food & agriculture, home furniture, fashion,** and **commercial equipment** — "
+            "food & agriculture, home furniture, fashion,** and **commercial equipment** -- "
             "all sourced from Ghana's major online marketplaces.\n\n"
             "Try a shorter or different search term, or visit our marketplace at "
             "[sgdatalytics.org/marketplace.html](https://sgdatalytics.org/marketplace.html) "
@@ -115,7 +146,7 @@ def _generate_reply(query: str, findings: dict) -> str:
         "\nA preview of 5 records is shown below. For the complete dataset "
         "or a custom export, visit "
         "[sgdatalytics.org/marketplace.html](https://sgdatalytics.org/marketplace.html) "
-        "— our team can package exactly what you need."
+        "-- our team can package exactly what you need."
     )
     return "\n".join(lines)
 
@@ -167,7 +198,7 @@ def _serialize_row(row: dict) -> dict:
 def run_agent(messages: list, api_key: str = "") -> dict:
     """
     1. Gemini Flash parses the query into structured params (keywords, exclude, min_price, category)
-    2. DB searches using those params — accurate, fast, no hallucination
+    2. DB searches using those params -- accurate, fast, no hallucination
     3. Returns structured result with live rows for the frontend table
     """
     user_query = messages[-1]["content"]
@@ -175,13 +206,19 @@ def run_agent(messages: list, api_key: str = "") -> dict:
     findings = {}
 
     if _USE_LIVE_DB:
-        # Step 1: AI parses query intent
-        parsed = parse_query(user_query, actual_key) if actual_key else {
-            "keywords": _extract_keywords(user_query),
-            "exclude": [],
-            "min_price_ghs": 0,
-            "category": "General",
-        }
+        # Step 1: Parse query intent (Gemini if key available, else keyword-based fallback)
+        if actual_key:
+            parsed = parse_query(user_query, actual_key)
+        else:
+            # No Gemini key -- still detect category from keywords so item_type
+            # filter fires correctly even without AI-parsed params
+            kws = _extract_keywords(user_query)
+            parsed = {
+                "keywords": kws,
+                "exclude": [],
+                "min_price_ghs": 0,
+                "category": _detect_category(kws),
+            }
         print(f"[agent.py] Parsed query: {parsed}")
 
         # Step 2: Smart DB search using parsed params
