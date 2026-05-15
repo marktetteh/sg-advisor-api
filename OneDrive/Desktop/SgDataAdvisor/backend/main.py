@@ -83,10 +83,11 @@ def health():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
+    api_key  = request.api_key or os.getenv("GOOGLE_API_KEY", "")
     messages = [{"role": m.role, "content": m.content} for m in request.messages]
 
     try:
-        result = run_agent(messages)
+        result = run_agent(messages, api_key)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 

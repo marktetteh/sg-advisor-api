@@ -574,6 +574,101 @@ def search_market_data(query: str) -> dict:
     return findings
 
 
+# ── Smart search using AI-parsed params ───────────────────────────────────────
+
+# Maps AI category names → product_category values in the DB
+_CATEGORY_MAP = {
+    "Mobile Phones":      ["Mobile Phones", "Electronics", "Phones", "Smartphones", "Phone & Tablets"],
+    "Electronics":        ["Electronics", "Mobile Phones", "Computers", "Laptops", "TVs"],
+    "Vehicles":           ["Vehicles", "Cars", "Trucks", "Motorcycles", "Vehicle Parts", "Buses"],
+    "Real Estate":        ["Real Estate", "Property", "Houses", "Land", "Apartments"],
+    "Food & Agriculture": ["Food & Agriculture", "Food", "Agriculture", "Foodstuffs"],
+    "Fashion":            ["Fashion", "Clothing", "Shoes", "Bags", "Accessories"],
+    "Furniture":          ["Furniture", "Home Furniture", "Home & Garden", "Home Appliances"],
+}
+
+
+def search_market_data_smart(parsed: dict) -> dict:
+    """
+    Search using AI-parsed query params for accurate, relevant results.
+    parsed = {keywords, exclude, min_price_ghs, category}
+    """
+    keywords    = [k.lower() for k in parsed.get("keywords", []) if k]
+    exclude     = [e.lower() for e in parsed.get("exclude", []) if e]
+    min_price   = parsed.get("min_price_ghs", 0) or 0
+    category    = parsed.get("category", "General")
+
+    if not keywords:
+        return {}
+
+    findings = {}
+
+    # ── Market prices ──────────────────────────────────────────────────────────
+    url = DB_URLS.get("market_prices", "")
+    if url:
+        try:
+            # Include: keyword match on title or search_label
+            where, params = _build_where(["title", "search_label"], keywords)
+
+            # Exclude: accessory/unrelated terms
+            for ex in exclude[:12]:
+                where  += " AND LOWER(title) NOT LIKE %s"
+                params.append(f"%{ex}%")
+
+            # Price floor
+            if min_price > 0:
+                where  += " AND price_ghs >= %s"
+                params.append(min_price)
+
+            # Category filter
+            db_cats = _CATEGORY_MAP.get(category, [])
+            if db_cats:
+                ph = ",".join(["%s"] * len(db_cats))
+                where  += f" AND product_category IN ({ph})"
+                params.extend(db_cats)
+
+            # Relevance ORDER: title starts with keyword → rank 0; else rank 1
+            kw_starts  = " OR ".join(f"LOWER(title) LIKE %s" for _ in keywords)
+            ord_params = [f"{kw}%" for kw in keywords]
+
+            total = _scalar(url,
+                f"SELECT COUNT(*) FROM market_prices WHERE {where}", params) or 0
+            rows  = _query(url, f"""
+                SELECT title, price_ghs, location, condition, product_category, collected_date
+                FROM market_prices
+                WHERE {where}
+                ORDER BY
+                  CASE WHEN {kw_starts} THEN 0 ELSE 1 END,
+                  price_ghs DESC,
+                  collected_date DESC
+                LIMIT 5
+            """, params + ord_params)
+
+            if rows:
+                findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
+            elif min_price > 0 or db_cats:
+                # Retry without price/category filters if strict search returns nothing
+                where2, params2 = _build_where(["title", "search_label"], keywords)
+                for ex in exclude[:12]:
+                    where2  += " AND LOWER(title) NOT LIKE %s"
+                    params2.append(f"%{ex}%")
+                total2 = _scalar(url,
+                    f"SELECT COUNT(*) FROM market_prices WHERE {where2}", params2) or 0
+                rows2  = _query(url, f"""
+                    SELECT title, price_ghs, location, condition, product_category, collected_date
+                    FROM market_prices WHERE {where2}
+                    ORDER BY CASE WHEN {kw_starts} THEN 0 ELSE 1 END, price_ghs DESC, collected_date DESC
+                    LIMIT 5
+                """, params2 + ord_params)
+                if rows2:
+                    findings["market_prices"] = {"label": "Market Prices", "total": total2, "rows": rows2}
+
+        except Exception as e:
+            print(f"[db.py] smart search market_prices error: {e}")
+
+    return findings
+
+
 def format_search_results(query: str, findings: dict) -> str:
     """Format DB search results into a text block the AI agent can include in its response."""
     if not findings:
