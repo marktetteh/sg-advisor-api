@@ -47,7 +47,7 @@ DB_URLS = {
 # ── Utility ───────────────────────────────────────────────────────────────────
 
 def _query(url: str, sql: str, params=None) -> list:
-    conn = psycopg2.connect(url, connect_timeout=10)
+    conn = psycopg2.connect(url, connect_timeout=5)
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cur.execute(sql, params or [])
     rows = cur.fetchall()

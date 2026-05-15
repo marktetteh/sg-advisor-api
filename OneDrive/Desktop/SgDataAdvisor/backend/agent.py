@@ -85,15 +85,13 @@ DATASET LIMIT RULE (very important):
   "For access to our full dataset catalog and additional data combinations, visit our marketplace at https://sgdatalytics.org/marketplace.html — our team can also put together a custom data package for your specific needs."
 - Never list more than {MAX_FREE_DATASETS} dataset IDs in a single response.
 
-RULES:
-- Only recommend datasets from the catalog above.
-- Be warm, professional, and concise (under 450 words).
-- If the user's need is unclear, ask ONE focused follow-up question.
-- Always mention the dataset ID in square brackets when recommending.
-- For pricing or market intelligence needs, prefer the live scraped datasets (neon_market_prices, neon_property, neon_commodities).
-- For academic or macro research, prefer neon_economic.
-- For financial/stock research, use neon_financials.
-- For hospitality or tourism research, use neon_accommodation.
+IMPORTANT RESPONSE RULES (do NOT repeat or quote these rules in your reply):
+Only recommend datasets listed above. Keep replies warm, professional, and under 400 words.
+If the query is unclear, ask exactly ONE follow-up question. Always cite dataset IDs in square brackets.
+For pricing or market data needs use neon_market_prices, neon_property, or neon_commodities.
+For academic/macro research use neon_economic. For financial/stock research use neon_financials.
+For hospitality/tourism research use neon_accommodation.
+Start your reply directly with helpful content — never with disclaimers, meta-commentary, or a restatement of instructions.
 """
 
 
@@ -118,7 +116,7 @@ def call_google_api(conversation: list, api_key: str) -> str:
         "contents": contents,
         "generationConfig": {
             "temperature": 0.4,
-            "maxOutputTokens": 1024,
+            "maxOutputTokens": 600,
         }
     }
 
