@@ -420,19 +420,25 @@ def _extract_keywords(query: str) -> list:
     return keywords[:3] if keywords else [query.lower().split()[0]]
 
 
-def _build_where(columns: list, keywords: list) -> tuple:
+def _build_where(columns: list, keywords: list, require_all: bool = True) -> tuple:
     """
     Build a SQL WHERE clause using word-boundary regex matching (~*).
-    Using \y word boundaries prevents 'a24' matching 'AR2A24',
-    'screen' matching 'screensaver', etc.
-    Example: columns=["title","search_label"], keywords=["samsung","a24"]
-    → WHERE (title ~* %s OR search_label ~* %s)
-         OR (title ~* %s OR search_label ~* %s)
-    params = ['\\ysamsung\\y', '\\ysamsung\\y', '\\ya24\\y', '\\ya24\\y']
+    \y word boundaries prevent 'a24' matching 'AR2A24', etc.
+
+    require_all=True  (default): ALL keywords must match (AND) — precise
+    require_all=False           : ANY keyword can match (OR)  — broad fallback
+
+    Example: columns=["title","search_label"], keywords=["samsung","galaxy","a24"]
+    require_all=True →
+      (title ~* '\\ysamsung\\y' OR search_label ~* '\\ysamsung\\y')
+      AND (title ~* '\\ygalaxy\\y' OR search_label ~* '\\ygalaxy\\y')
+      AND (title ~* '\\ya24\\y'    OR search_label ~* '\\ya24\\y')
+    → only rows containing ALL three terms; Samsung TVs excluded.
     """
     col_clause = " OR ".join(f"{c} ~* %s" for c in columns)
-    parts = [f"({col_clause})"] * len(keywords)
-    where = " OR ".join(parts)
+    keyword_clauses = [f"({col_clause})" for _ in keywords]
+    joiner = " AND " if require_all else " OR "
+    where = joiner.join(keyword_clauses)
     params = []
     for kw in keywords:
         params.extend([f"\\y{kw}\\y"] * len(columns))
@@ -644,8 +650,9 @@ def search_market_data_smart(parsed: dict) -> dict:
                 has_item_type and category in _PRODUCT_ONLY_CATEGORIES
             )
 
-            # Include: keyword match on title or search_label
-            where, params = _build_where(["title", "search_label"], keywords)
+            # Include: ALL keywords must match (AND logic) — prevents
+            # "samsung galaxy a24" from returning Samsung TVs
+            where, params = _build_where(["title", "search_label"], keywords, require_all=True)
 
             # item_type = 'product' — clean DB-level filter (when available)
             if use_item_type_filter:
@@ -688,9 +695,9 @@ def search_market_data_smart(parsed: dict) -> dict:
 
             if rows:
                 findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
-            elif min_price > 0 or db_cats or use_item_type_filter:
-                # Retry without strict filters if nothing returned
-                where2, params2 = _build_where(["title", "search_label"], keywords)
+            elif min_price > 0 or db_cats or use_item_type_filter or len(keywords) > 1:
+                # Retry with OR logic (any keyword) if AND returned nothing
+                where2, params2 = _build_where(["title", "search_label"], keywords, require_all=False)
                 for ex in exclude[:12]:
                     where2  += " AND LOWER(title) NOT LIKE %s"
                     params2.append(f"%{ex}%")
