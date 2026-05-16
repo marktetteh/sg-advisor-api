@@ -1,14 +1,5 @@
 """
 db.py — Live Neon PostgreSQL catalog builder for SG Data Advisor
-Connects to all 6 Neon databases and builds a unified dataset catalog
-that the AI agent uses instead of the hardcoded datasets.py list.
-
-Priority order for catalog data:
-  1. catalog_cache.json  — pre-built weekly snapshot (fastest, preferred)
-  2. Live Neon DB query  — fallback if JSON file is missing or stale
-  3. datasets.py         — hardcoded fallback (agent.py handles this)
-
-Run refresh_catalog.py weekly (or via scheduler) to keep the JSON fresh.
 """
 
 import os
@@ -22,16 +13,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CACHE_FILE = Path(__file__).parent / "catalog_cache.json"
-CACHE_TTL  = 3600 * 24 * 7  # 7 days — expect weekly refresh via scheduler
+CACHE_TTL  = 3600 * 24 * 7  # 7 days
 
 _catalog_cache: list = []
 _cache_timestamp: float = 0.0
 
 
-# ── DB connection URLs (from .env) ────────────────────────────────────────────
-
 def _clean_url(url: str) -> str:
-    """Strip parameters unsupported by psycopg2 (e.g. channel_binding)."""
     return url.replace("&channel_binding=require", "").replace("?channel_binding=require", "")
 
 DB_URLS = {
@@ -43,8 +31,6 @@ DB_URLS = {
     "financials":    _clean_url(os.getenv("NEON_FINANCIALS", "")),
 }
 
-
-# ── Utility ───────────────────────────────────────────────────────────────────
 
 def _query(url: str, sql: str, params=None) -> list:
     conn = psycopg2.connect(url, connect_timeout=5)
@@ -61,8 +47,6 @@ def _scalar(url: str, sql: str, params=None):
     return list(rows[0].values())[0] if rows else None
 
 
-# ── Per-database catalog builders ─────────────────────────────────────────────
-
 def _build_market_prices(url: str) -> dict:
     categories = _query(url,
         "SELECT product_category, COUNT(*) AS n FROM market_prices "
@@ -74,7 +58,7 @@ def _build_market_prices(url: str) -> dict:
     d = date_range[0] if date_range else {}
     return {
         "id": "neon_market_prices",
-        "name": "SG Market Prices — Ghana Classifieds",
+        "name": "SG Market Prices -- Ghana Classifieds",
         "source": "SG Datalytics (scraped from online classifieds)",
         "sector": "Pricing / Market Intelligence",
         "description": (
@@ -124,14 +108,12 @@ def _build_accommodation(url: str) -> dict:
         "best_for": [
             "tourism pricing research", "hospitality market analysis", "travel cost studies",
             "Airbnb vs hotel comparison", "city-level accommodation benchmarking",
-            "tourism investment research",
         ],
         "suggested_methods": ["Descriptive analytics", "Regression", "Price comparison",
                                "Benchmarking", "Sentiment analysis on reviews"],
         "sample_objectives": [
             "To compare Airbnb and hotel pricing across major Ghanaian cities",
             "To analyse the relationship between hotel star rating and nightly price in Ghana",
-            "To assess accommodation cost as a factor in Ghana's tourism competitiveness",
         ],
         "row_count": airbnb_count + hotel_count,
         "marketplace_link": "https://sgdatalytics.org/marketplace.html",
@@ -163,14 +145,12 @@ def _build_property(url: str) -> dict:
         "best_for": [
             "real estate market research", "property price analysis", "rental yield studies",
             "housing affordability research", "investment property analysis",
-            "land pricing studies", "office space benchmarking",
         ],
         "suggested_methods": ["Regression", "Hedonic pricing model", "Descriptive analytics",
                                "GIS mapping", "Price index construction"],
         "sample_objectives": [
             "To analyse determinants of residential property prices in Accra",
             "To compare rental vs sale prices for apartments across Ghanaian cities",
-            "To develop a property price index for the Ghanaian real estate market",
         ],
         "row_count": total,
         "marketplace_link": "https://sgdatalytics.org/marketplace.html",
@@ -201,15 +181,13 @@ def _build_economic(url: str) -> dict:
                           "unit", "year", "month", "source", "currency_pair", "rate_ghs"],
         "best_for": [
             "macroeconomic research", "GDP analysis", "inflation studies",
-            "trade research", "agriculture economics", "social development research",
-            "exchange rate analysis", "fiscal policy research", "environmental economics",
+            "trade research", "exchange rate analysis", "fiscal policy research",
         ],
         "suggested_methods": ["Time series analysis", "Regression", "VAR models",
                                "Cointegration", "Panel data analysis", "ARIMA forecasting"],
         "sample_objectives": [
             "To analyse Ghana's GDP growth trends and their macroeconomic determinants",
             "To examine the relationship between exchange rate and inflation in Ghana",
-            "To assess the impact of trade openness on economic growth in Ghana",
         ],
         "row_count": ind_count + fx_count,
         "marketplace_link": "https://sgdatalytics.org/marketplace.html",
@@ -242,15 +220,13 @@ def _build_commodities(url: str) -> dict:
                           "unit", "fuel_type", "price_ghs_per_litre", "collected_date"],
         "best_for": [
             "food price research", "agricultural market analysis", "commodity price forecasting",
-            "food security studies", "fuel price impact analysis", "inflation cross-validation",
-            "supply chain research", "farm-gate price studies",
+            "food security studies", "fuel price impact analysis",
         ],
         "suggested_methods": ["Time series analysis", "Price elasticity analysis",
                                "Regression", "ARIMA", "Spatial price analysis"],
         "sample_objectives": [
             "To analyse seasonal price fluctuations of staple food commodities in Ghana",
             "To examine the impact of fuel price changes on food commodity prices in Ghana",
-            "To compare commodity prices across market locations in Ghana",
         ],
         "row_count": comm_count + fuel_count,
         "marketplace_link": "https://sgdatalytics.org/marketplace.html",
@@ -266,7 +242,7 @@ def _build_financials(url: str) -> dict:
     stock_list = [f"{r['symbol']} ({r['company_name']})" for r in stocks]
     return {
         "id": "neon_financials",
-        "name": "Ghana Stock Exchange (GSE) — Stock Prices & Indices",
+        "name": "Ghana Stock Exchange (GSE) -- Stock Prices & Indices",
         "source": "SG Datalytics (scraped from GSE)",
         "sector": "Finance / Capital Markets",
         "description": (
@@ -279,22 +255,18 @@ def _build_financials(url: str) -> dict:
                           "year_high", "year_low", "index_name", "collected_date"],
         "best_for": [
             "capital market research", "stock price analysis", "GSE performance studies",
-            "portfolio analysis", "financial market development research",
-            "listed company performance", "equity investment research",
+            "portfolio analysis", "equity investment research",
         ],
         "suggested_methods": ["Time series analysis", "GARCH models", "Event study",
                                "Portfolio analysis", "Descriptive analytics", "Regression"],
         "sample_objectives": [
             "To analyse stock price volatility on the Ghana Stock Exchange",
             "To examine the performance of banking sector stocks listed on the GSE",
-            "To assess the relationship between GSE index and macroeconomic indicators in Ghana",
         ],
         "row_count": stock_count + idx_count,
         "marketplace_link": "https://sgdatalytics.org/marketplace.html",
     }
 
-
-# ── Master catalog builder ────────────────────────────────────────────────────
 
 BUILDERS = {
     "market_prices": _build_market_prices,
@@ -307,7 +279,6 @@ BUILDERS = {
 
 
 def _load_from_json() -> list:
-    """Load catalog from the pre-built JSON snapshot if it exists and is fresh."""
     if not CACHE_FILE.exists():
         return []
     try:
@@ -315,11 +286,9 @@ def _load_from_json() -> list:
             data = json.load(f)
         age_seconds = time.time() - CACHE_FILE.stat().st_mtime
         if age_seconds > CACHE_TTL:
-            print(f"[db.py] catalog_cache.json is {age_seconds/86400:.1f} days old — will re-query DB")
             return []
         datasets = data.get("datasets", [])
-        print(f"[db.py] ✓ Loaded {len(datasets)} entries from catalog_cache.json "
-              f"(refreshed: {data.get('refreshed_at', 'unknown')})")
+        print(f"[db.py] Loaded {len(datasets)} entries from catalog_cache.json")
         return datasets
     except Exception as e:
         print(f"[db.py] Could not read catalog_cache.json: {e}")
@@ -327,7 +296,6 @@ def _load_from_json() -> list:
 
 
 def _load_from_db() -> list:
-    """Query all 6 Neon databases live and return the catalog."""
     catalog = []
     for db_key, builder in BUILDERS.items():
         url = DB_URLS.get(db_key, "")
@@ -337,46 +305,31 @@ def _load_from_db() -> list:
         try:
             entry = builder(url)
             catalog.append(entry)
-            print(f"[db.py] ✓ Loaded catalog entry for {db_key} ({entry['row_count']:,} rows)")
+            print(f"[db.py] Loaded catalog entry for {db_key} ({entry['row_count']:,} rows)")
         except Exception as e:
-            print(f"[db.py] ✗ Failed to load {db_key}: {e}")
+            print(f"[db.py] Failed to load {db_key}: {e}")
     return catalog
 
 
 def load_live_catalog(force_refresh: bool = False) -> list:
-    """
-    Return the unified dataset catalog.
-    Priority:
-      1. In-memory cache (fastest)
-      2. catalog_cache.json snapshot (built weekly by refresh_catalog.py)
-      3. Live Neon DB query (fallback if file is missing or stale)
-    """
     global _catalog_cache, _cache_timestamp
-
-    # 1. In-memory cache
     if not force_refresh and _catalog_cache and (time.time() - _cache_timestamp) < CACHE_TTL:
         return _catalog_cache
-
-    # 2. JSON snapshot file
     if not force_refresh:
         catalog = _load_from_json()
         if catalog:
             _catalog_cache = catalog
             _cache_timestamp = time.time()
             return catalog
-
-    # 3. Live DB query
     print("[db.py] Falling back to live Neon DB query...")
     catalog = _load_from_db()
     if catalog:
         _catalog_cache = catalog
         _cache_timestamp = time.time()
-
     return catalog
 
 
 def search_live_datasets(query: str, sector: str = None) -> list:
-    """Search the live catalog by keyword and optional sector filter."""
     catalog = load_live_catalog()
     query_lower = query.lower()
     results = []
@@ -398,9 +351,8 @@ def search_live_datasets(query: str, sector: str = None) -> list:
     return [r["dataset"] for r in results[:5]]
 
 
-# ── Live data search — returns actual records from the databases ──────────────
+# ── Keyword extraction ────────────────────────────────────────────────────────
 
-# Words stripped from queries before searching so "iphone prices" → "iphone"
 _FILLER_WORDS = {
     "price", "prices", "cost", "costs", "rate", "rates", "value",
     "buy", "sell", "sale", "for", "in", "at", "on", "of", "the",
@@ -414,7 +366,6 @@ _FILLER_WORDS = {
 
 
 def _extract_keywords(query: str) -> list:
-    """Strip filler words and return up to 3 meaningful search terms."""
     words = query.lower().replace("?", "").replace("!", "").replace(",", "").split()
     keywords = [w for w in words if w not in _FILLER_WORDS and len(w) >= 2]
     return keywords[:3] if keywords else [query.lower().split()[0]]
@@ -422,18 +373,15 @@ def _extract_keywords(query: str) -> list:
 
 def _build_where(columns: list, keywords: list, require_all: bool = True) -> tuple:
     """
-    Build a SQL WHERE clause using word-boundary regex matching (~*).
-    \y word boundaries prevent 'a24' matching 'AR2A24', etc.
+    Build SQL WHERE using word-boundary regex (~*) and AND/OR logic.
 
-    require_all=True  (default): ALL keywords must match (AND) — precise
-    require_all=False           : ANY keyword can match (OR)  — broad fallback
+    require_all=True  (default): ALL keywords must match — precise
+      e.g. 'samsung galaxy a24' requires title to contain all three words.
+      Samsung TVs (no 'galaxy'/'a24') are excluded automatically.
 
-    Example: columns=["title","search_label"], keywords=["samsung","galaxy","a24"]
-    require_all=True →
-      (title ~* '\\ysamsung\\y' OR search_label ~* '\\ysamsung\\y')
-      AND (title ~* '\\ygalaxy\\y' OR search_label ~* '\\ygalaxy\\y')
-      AND (title ~* '\\ya24\\y'    OR search_label ~* '\\ya24\\y')
-    → only rows containing ALL three terms; Samsung TVs excluded.
+    require_all=False: ANY keyword can match — broad fallback
+
+    Word boundaries (\y) prevent 'a24' matching 'AR2A24', etc.
     """
     col_clause = " OR ".join(f"{c} ~* %s" for c in columns)
     keyword_clauses = [f"({col_clause})" for _ in keywords]
@@ -446,38 +394,20 @@ def _build_where(columns: list, keywords: list, require_all: bool = True) -> tup
 
 
 def search_market_data(query: str) -> dict:
-    """
-    Search the market prices database for records matching the query.
-    Strips filler words first so 'iphone prices' searches for 'iphone'.
-    Returns up to 5 sample rows plus a total count.
-    """
     keywords = _extract_keywords(query)
     findings = {}
 
-    # Market prices (electronics, vehicles, appliances, etc.)
     url = DB_URLS.get("market_prices", "")
     if url:
         try:
             where, params = _build_where(["title", "search_label"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM market_prices WHERE {where}",
-                params) or 0
-
-            # Build relevance ORDER: titles that START WITH the keyword rank highest,
-            # then order by price DESC so actual products (expensive) beat accessories (cheap).
-            kw_starts = " OR ".join(
-                f"LOWER(title) LIKE %s" for _ in keywords
-            )
+            total = _scalar(url, f"SELECT COUNT(*) FROM market_prices WHERE {where}", params) or 0
+            kw_starts = " OR ".join(f"LOWER(title) LIKE %s" for _ in keywords)
             start_params = [f"{kw}%" for kw in keywords]
-
             rows = _query(url, f"""
                 SELECT title, price_ghs, location, condition, product_category, collected_date
-                FROM market_prices
-                WHERE {where}
-                ORDER BY
-                  CASE WHEN {kw_starts} THEN 0 ELSE 1 END,
-                  price_ghs DESC,
-                  collected_date DESC
+                FROM market_prices WHERE {where}
+                ORDER BY CASE WHEN {kw_starts} THEN 0 ELSE 1 END, price_ghs DESC, collected_date DESC
                 LIMIT 5
             """, params + start_params)
             if rows:
@@ -485,94 +415,70 @@ def search_market_data(query: str) -> dict:
         except Exception as e:
             print(f"[db.py] search market_prices error: {e}")
 
-    # Property prices
     url = DB_URLS.get("property", "")
     if url:
         try:
             where, params = _build_where(["title", "location"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM property_prices WHERE {where}",
-                params) or 0
+            total = _scalar(url, f"SELECT COUNT(*) FROM property_prices WHERE {where}", params) or 0
             rows = _query(url, f"""
                 SELECT title, price_ghs, location, property_type, listing_type, bedrooms, collected_date
-                FROM property_prices
-                WHERE {where}
-                ORDER BY collected_date DESC LIMIT 5
+                FROM property_prices WHERE {where} ORDER BY collected_date DESC LIMIT 5
             """, params)
             if rows:
                 findings["property"] = {"label": "Property Prices", "total": total, "rows": rows}
         except Exception as e:
             print(f"[db.py] search property error: {e}")
 
-    # Commodity prices
     url = DB_URLS.get("commodities", "")
     if url:
         try:
             where, params = _build_where(["commodity_name"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM commodity_prices WHERE {where}",
-                params) or 0
+            total = _scalar(url, f"SELECT COUNT(*) FROM commodity_prices WHERE {where}", params) or 0
             rows = _query(url, f"""
                 SELECT commodity_name, price_ghs, unit, market, region, collected_date
-                FROM commodity_prices
-                WHERE {where}
-                ORDER BY collected_date DESC LIMIT 5
+                FROM commodity_prices WHERE {where} ORDER BY collected_date DESC LIMIT 5
             """, params)
             if rows:
                 findings["commodities"] = {"label": "Commodity Prices", "total": total, "rows": rows}
         except Exception as e:
             print(f"[db.py] search commodities error: {e}")
 
-    # Stock prices
     url = DB_URLS.get("financials", "")
     if url:
         try:
             where, params = _build_where(["company_name", "symbol"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM stock_prices WHERE {where}",
-                params) or 0
+            total = _scalar(url, f"SELECT COUNT(*) FROM stock_prices WHERE {where}", params) or 0
             rows = _query(url, f"""
                 SELECT symbol, company_name, closing_price_ghs, change_pct, volume, collected_date
-                FROM stock_prices
-                WHERE {where}
-                ORDER BY collected_date DESC LIMIT 5
+                FROM stock_prices WHERE {where} ORDER BY collected_date DESC LIMIT 5
             """, params)
             if rows:
                 findings["financials"] = {"label": "Stock Prices (GSE)", "total": total, "rows": rows}
         except Exception as e:
             print(f"[db.py] search financials error: {e}")
 
-    # Accommodation
     url = DB_URLS.get("accommodation", "")
     if url:
         try:
             where, params = _build_where(["city", "hotel_name"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM hotel_prices WHERE {where}",
-                params) or 0
+            total = _scalar(url, f"SELECT COUNT(*) FROM hotel_prices WHERE {where}", params) or 0
             rows = _query(url, f"""
                 SELECT hotel_name, city, stars, price_per_night_usd, review_score, collected_date
-                FROM hotel_prices
-                WHERE {where}
-                ORDER BY collected_date DESC LIMIT 5
+                FROM hotel_prices WHERE {where} ORDER BY collected_date DESC LIMIT 5
             """, params)
             if rows:
                 findings["accommodation"] = {"label": "Accommodation Prices", "total": total, "rows": rows}
         except Exception as e:
             print(f"[db.py] search accommodation error: {e}")
 
-    # Economic indicators
     url = DB_URLS.get("economic", "")
     if url:
         try:
             where, params = _build_where(["indicator_name"], keywords)
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM economic_indicators WHERE {where}",
-                params) or 0
+            total = _scalar(url, f"SELECT COUNT(*) FROM economic_indicators WHERE {where}", params) or 0
             rows = _query(url, f"""
                 SELECT indicator_name, value, unit, year, month, sector
-                FROM economic_indicators
-                WHERE {where}
+                FROM economic_indicators WHERE {where}
                 ORDER BY year DESC, month DESC NULLS LAST LIMIT 5
             """, params)
             if rows:
@@ -583,9 +489,8 @@ def search_market_data(query: str) -> dict:
     return findings
 
 
-# ── Smart search using AI-parsed params ───────────────────────────────────────
+# ── Smart search ──────────────────────────────────────────────────────────────
 
-# Maps AI category names → product_category values in the DB
 _CATEGORY_MAP = {
     "Mobile Phones":      ["Mobile Phones", "Electronics", "Phones", "Smartphones", "Phone & Tablets"],
     "Electronics":        ["Electronics", "Mobile Phones", "Computers", "Laptops", "TVs"],
@@ -596,16 +501,11 @@ _CATEGORY_MAP = {
     "Furniture":          ["Furniture", "Home Furniture", "Home & Garden", "Home Appliances"],
 }
 
-
-# Categories where item_type = 'product' filter makes sense
-# (eliminates accessories and spare parts from results)
 _PRODUCT_ONLY_CATEGORIES = {"Mobile Phones", "Electronics", "Vehicles", "Furniture"}
+_ITEM_TYPE_COL_EXISTS: bool | None = None
 
-# Column exists in DB once migration has run — if column missing, we skip the filter gracefully
-_ITEM_TYPE_COL_EXISTS: bool | None = None  # None = unchecked
 
 def _check_item_type_col(url: str) -> bool:
-    """Return True if item_type column exists in market_prices (migration has run)."""
     global _ITEM_TYPE_COL_EXISTS
     if _ITEM_TYPE_COL_EXISTS is not None:
         return _ITEM_TYPE_COL_EXISTS
@@ -621,138 +521,113 @@ def _check_item_type_col(url: str) -> bool:
 
 def search_market_data_smart(parsed: dict) -> dict:
     """
-    Search using AI-parsed query params for accurate, relevant results.
-    parsed = {keywords, exclude, min_price_ghs, category}
-
-    When item_type column exists (migration ran) AND category is product-heavy
-    (Mobile Phones, Electronics, Vehicles, Furniture), adds
-      AND item_type = 'product'
-    to eliminate accessories and spare parts at SQL level.
-    Falls back gracefully to text-exclusion-only if column doesn't exist yet.
+    Smart search with:
+    - AND keyword logic: all keywords must appear in the same listing
+    - Word-boundary regex: 'a24' won't match 'AR2A24'
+    - item_type='product' filter for product-heavy categories
+    - Fallback to OR logic if AND returns no results
     """
-    keywords    = [k.lower() for k in parsed.get("keywords", []) if k]
-    exclude     = [e.lower() for e in parsed.get("exclude", []) if e]
-    min_price   = parsed.get("min_price_ghs", 0) or 0
-    category    = parsed.get("category", "General")
+    keywords  = [k.lower() for k in parsed.get("keywords", []) if k]
+    exclude   = [e.lower() for e in parsed.get("exclude", []) if e]
+    min_price = parsed.get("min_price_ghs", 0) or 0
+    category  = parsed.get("category", "General")
 
     if not keywords:
         return {}
 
     findings = {}
-
-    # ── Market prices ──────────────────────────────────────────────────────────
     url = DB_URLS.get("market_prices", "")
-    if url:
-        try:
-            # Check if classification columns exist (migration ran)
-            has_item_type = _check_item_type_col(url)
-            use_item_type_filter = (
-                has_item_type and category in _PRODUCT_ONLY_CATEGORIES
-            )
+    if not url:
+        return findings
 
-            # Include: ALL keywords must match (AND logic) — prevents
-            # "samsung galaxy a24" from returning Samsung TVs
-            where, params = _build_where(["title", "search_label"], keywords, require_all=True)
+    try:
+        has_item_type = _check_item_type_col(url)
+        use_item_type_filter = has_item_type and category in _PRODUCT_ONLY_CATEGORIES
 
-            # item_type = 'product' — clean DB-level filter (when available)
-            if use_item_type_filter:
-                where  += " AND item_type = %s"
-                params.append("product")
+        # Primary: AND logic — all keywords must match
+        where, params = _build_where(["title", "search_label"], keywords, require_all=True)
 
-            # Exclude: accessory/unrelated terms (text-based, always applied)
+        if use_item_type_filter:
+            where += " AND item_type = %s"
+            params.append("product")
+
+        for ex in exclude[:12]:
+            where += " AND LOWER(title) NOT LIKE %s"
+            params.append(f"%{ex}%")
+
+        if min_price > 0:
+            where += " AND price_ghs >= %s"
+            params.append(min_price)
+
+        db_cats = _CATEGORY_MAP.get(category, [])
+        if db_cats:
+            ph = ",".join(["%s"] * len(db_cats))
+            where += f" AND product_category IN ({ph})"
+            params.extend(db_cats)
+
+        kw_starts  = " OR ".join(f"LOWER(title) LIKE %s" for _ in keywords)
+        ord_params = [f"{kw}%" for kw in keywords]
+
+        total = _scalar(url, f"SELECT COUNT(*) FROM market_prices WHERE {where}", params) or 0
+        rows  = _query(url, f"""
+            SELECT title, price_ghs, location, condition, product_category, collected_date
+            FROM market_prices WHERE {where}
+            ORDER BY CASE WHEN {kw_starts} THEN 0 ELSE 1 END, price_ghs DESC, collected_date DESC
+            LIMIT 5
+        """, params + ord_params)
+
+        if rows:
+            findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
+        else:
+            # Fallback: OR logic — any keyword can match
+            where2, params2 = _build_where(["title", "search_label"], keywords, require_all=False)
             for ex in exclude[:12]:
-                where  += " AND LOWER(title) NOT LIKE %s"
-                params.append(f"%{ex}%")
-
-            # Price floor
-            if min_price > 0:
-                where  += " AND price_ghs >= %s"
-                params.append(min_price)
-
-            # Category filter
-            db_cats = _CATEGORY_MAP.get(category, [])
-            if db_cats:
-                ph = ",".join(["%s"] * len(db_cats))
-                where  += f" AND product_category IN ({ph})"
-                params.extend(db_cats)
-
-            # Relevance ORDER: title starts with keyword → rank 0; else rank 1
-            kw_starts  = " OR ".join(f"LOWER(title) LIKE %s" for _ in keywords)
-            ord_params = [f"{kw}%" for kw in keywords]
-
-            total = _scalar(url,
-                f"SELECT COUNT(*) FROM market_prices WHERE {where}", params) or 0
-            rows  = _query(url, f"""
+                where2 += " AND LOWER(title) NOT LIKE %s"
+                params2.append(f"%{ex}%")
+            total2 = _scalar(url, f"SELECT COUNT(*) FROM market_prices WHERE {where2}", params2) or 0
+            rows2  = _query(url, f"""
                 SELECT title, price_ghs, location, condition, product_category, collected_date
-                FROM market_prices
-                WHERE {where}
-                ORDER BY
-                  CASE WHEN {kw_starts} THEN 0 ELSE 1 END,
-                  price_ghs DESC,
-                  collected_date DESC
+                FROM market_prices WHERE {where2}
+                ORDER BY CASE WHEN {kw_starts} THEN 0 ELSE 1 END, price_ghs DESC, collected_date DESC
                 LIMIT 5
-            """, params + ord_params)
+            """, params2 + ord_params)
+            if rows2:
+                findings["market_prices"] = {"label": "Market Prices", "total": total2, "rows": rows2}
 
-            if rows:
-                findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
-            elif min_price > 0 or db_cats or use_item_type_filter or len(keywords) > 1:
-                # Retry with OR logic (any keyword) if AND returned nothing
-                where2, params2 = _build_where(["title", "search_label"], keywords, require_all=False)
-                for ex in exclude[:12]:
-                    where2  += " AND LOWER(title) NOT LIKE %s"
-                    params2.append(f"%{ex}%")
-                total2 = _scalar(url,
-                    f"SELECT COUNT(*) FROM market_prices WHERE {where2}", params2) or 0
-                rows2  = _query(url, f"""
-                    SELECT title, price_ghs, location, condition, product_category, collected_date
-                    FROM market_prices WHERE {where2}
-                    ORDER BY CASE WHEN {kw_starts} THEN 0 ELSE 1 END, price_ghs DESC, collected_date DESC
-                    LIMIT 5
-                """, params2 + ord_params)
-                if rows2:
-                    findings["market_prices"] = {"label": "Market Prices", "total": total2, "rows": rows2}
-
-        except Exception as e:
-            print(f"[db.py] smart search market_prices error: {e}")
+    except Exception as e:
+        print(f"[db.py] smart search error: {e}")
 
     return findings
 
 
 def format_search_results(query: str, findings: dict) -> str:
-    """Format DB search results into a text block the AI agent can include in its response."""
     if not findings:
         return ""
-
-    lines = [f'📊 LIVE DATA PREVIEW — Results for "{query}" from SG Datalytics databases:\n']
-
+    lines = [f'📊 LIVE DATA PREVIEW -- Results for "{query}" from SG Datalytics databases:\n']
     for db_key, info in findings.items():
-        lines.append(f"── {info['label']} ({info['total']:,} total records) ──")
-        rows = info["rows"]
-
-        for r in rows:
+        lines.append(f"-- {info['label']} ({info['total']:,} total records) --")
+        for r in info["rows"]:
             if db_key == "market_prices":
                 price = f"GHS {r['price_ghs']:,.2f}" if r.get('price_ghs') else "N/A"
-                lines.append(f"  • {r.get('title','')[:60]} | {price} | {r.get('location','')} | {r.get('condition','')}")
+                lines.append(f"  * {r.get('title','')[:60]} | {price} | {r.get('location','')} | {r.get('condition','')}")
             elif db_key == "property":
                 price = f"GHS {r['price_ghs']:,.2f}" if r.get('price_ghs') else "N/A"
                 beds = f"{r.get('bedrooms','')} bed" if r.get('bedrooms') else ""
-                lines.append(f"  • {r.get('title','')[:50]} | {price} | {r.get('listing_type','')} | {beds} | {r.get('location','')}")
+                lines.append(f"  * {r.get('title','')[:50]} | {price} | {r.get('listing_type','')} | {beds} | {r.get('location','')}")
             elif db_key == "commodities":
                 price = f"GHS {r['price_ghs']:,.2f}/{r.get('unit','unit')}" if r.get('price_ghs') else "N/A"
-                lines.append(f"  • {r.get('commodity_name','')} | {price} | {r.get('market','')} | {r.get('region','')}")
+                lines.append(f"  * {r.get('commodity_name','')} | {price} | {r.get('market','')} | {r.get('region','')}")
             elif db_key == "financials":
                 price = f"GHS {r['closing_price_ghs']}" if r.get('closing_price_ghs') else "N/A"
                 chg = f"{r['change_pct']:+.2f}%" if r.get('change_pct') is not None else ""
-                lines.append(f"  • {r.get('symbol','')} — {r.get('company_name','')} | {price} {chg}")
+                lines.append(f"  * {r.get('symbol','')} -- {r.get('company_name','')} | {price} {chg}")
             elif db_key == "accommodation":
                 price = f"USD {r['price_per_night_usd']}/night" if r.get('price_per_night_usd') else "N/A"
-                stars = "⭐" * (r.get('stars') or 0)
-                lines.append(f"  • {r.get('hotel_name','')[:50]} | {r.get('city','')} | {stars} | {price}")
+                lines.append(f"  * {r.get('hotel_name','')[:50]} | {r.get('city','')} | {price}")
             elif db_key == "economic":
                 val = f"{r['value']:,.2f} {r.get('unit','')}" if r.get('value') is not None else "N/A"
                 period = f"{r.get('year','')} M{r.get('month','')}" if r.get('month') else str(r.get('year',''))
-                lines.append(f"  • {r.get('indicator_name','')} | {val} | {period}")
+                lines.append(f"  * {r.get('indicator_name','')} | {val} | {period}")
         lines.append("")
-
-    lines.append("🛒 Get the full dataset at: https://sgdatalytics.org/marketplace.html")
+    lines.append("Get the full dataset at: https://sgdatalytics.org/marketplace.html")
     return "\n".join(lines)
