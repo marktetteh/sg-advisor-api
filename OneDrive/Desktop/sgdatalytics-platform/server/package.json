@@ -1,0 +1,49 @@
+{
+  "name": "sgdatalytics-server",
+  "version": "2.0.0",
+  "description": "SG Datalytics — Ghana Market Intelligence Data Engine (CSV, no database)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "collect:wb": "node collectors/worldbank.js",
+    "collect:bog": "node collectors/bog.js",
+    "collect:npa": "node collectors/npa.js",
+    "collect:gss": "node collectors/gss.js",
+    "collect:gse": "node collectors/gse.js",
+    "collect:jiji": "node collectors/jiji.js",
+    "collect:melcom": "node collectors/melcom.js",
+    "collect:mofa": "node collectors/mofa.js",
+    "collect:market": "node collectors/market-pipeline.js",
+    "collect:market:jiji-only": "node collectors/market-pipeline.js --skip-melcom --skip-mofa",
+    "collect:market:melcom-only": "node collectors/market-pipeline.js --skip-jiji --skip-mofa",
+    "collect:market:mofa-only": "node collectors/market-pipeline.js --mofa-only",
+    "collect:hotels": "node collectors/hotels.js",
+    "collect:airbnb": "node collectors/airbnb.js",
+    "collect:market:hotels-only": "node collectors/market-pipeline.js --hotels-only",
+    "collect:market:airbnb-only": "node collectors/market-pipeline.js --airbnb-only",
+    "collect:meqasa": "node collectors/meqasa.js",
+    "collect:market:meqasa-only": "node collectors/market-pipeline.js --meqasa-only",
+    "collect:economic": "node collectors/run-all.js --no-market",
+    "collect:all": "node collectors/run-all.js",
+    "consolidate": "node collectors/consolidate.js",
+    "report": "node collectors/generate-report.js",
+    "flyer": "node collectors/generate-flyer.js",
+    "schedule": "node scheduler.js",
+    "data:dir": "node -e \"const {getDataDir}=require('./collectors/csv-utils'); console.log(getDataDir());\""
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.20.0",
+    "playwright": "^1.40.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
