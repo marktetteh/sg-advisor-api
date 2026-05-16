@@ -545,7 +545,7 @@ def search_market_data_smart(parsed: dict) -> dict:
         use_item_type_filter = has_item_type and category in _PRODUCT_ONLY_CATEGORIES
 
         # Primary: AND logic — all keywords must match
-        where, params = _build_where(["title", "search_label"], keywords, require_all=True)
+        where, params = _build_where(["title", "search_label", "normalized_name", "brand", "model"], keywords, require_all=True)
 
         if use_item_type_filter:
             where += " AND item_type = %s"
@@ -580,7 +580,7 @@ def search_market_data_smart(parsed: dict) -> dict:
             findings["market_prices"] = {"label": "Market Prices", "total": total, "rows": rows}
         else:
             # Fallback: OR logic — any keyword can match
-            where2, params2 = _build_where(["title", "search_label"], keywords, require_all=False)
+            where2, params2 = _build_where(["title", "search_label", "normalized_name", "brand", "model"], keywords, require_all=False)
             for ex in exclude[:12]:
                 where2 += " AND LOWER(title) NOT LIKE %s"
                 params2.append(f"%{ex}%")

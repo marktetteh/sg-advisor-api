@@ -19,7 +19,7 @@ except ImportError:
 from datasets import DATASETS as FALLBACK_DATASETS
 
 MAX_FREE_DATASETS = 5
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent"
 
 # ── Keyword-based category detector (fallback when no Gemini API key) ─────────
 _CATEGORY_KEYWORDS = {
