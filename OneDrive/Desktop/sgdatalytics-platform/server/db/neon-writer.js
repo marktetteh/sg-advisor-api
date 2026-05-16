@@ -105,10 +105,10 @@ const TABLE_CONFIG = {
     envKey:       'NEON_PROPERTY',
     conflictCols: ['source', 'listing_url', 'week_number', 'year'],
     dbCols:  ['week_number', 'year', 'source', 'property_type', 'listing_type',
-               'title', 'price_raw', 'price_ghs', 'location',
+               'title', 'price_raw', 'price_ghs', 'location', 'neighborhood', 'city',
                'bedrooms', 'bathrooms', 'size_sqm', 'listing_url'],
     csvKeys: ['week_number', 'year', 'source', 'property_type', 'listing_type',
-               'title', 'price_raw', 'price_ghs', 'location',
+               'title', 'price_raw', 'price_ghs', 'location', 'neighborhood', 'city',
                'bedrooms', 'bathrooms', 'size_sqm', 'listing_url'],
   },
 

@@ -16,6 +16,7 @@ const {
   getDateStr, getWeekAndYear, getWeekStr, appendNewToMaster,
 } = require('./csv-utils');
 const { insertRows, writeFallbackExcel, closeAllPools } = require('../db/neon-writer');
+const { enrichPropertyListings } = require('./property-enricher');
 
 const HEADLESS  = process.env.BROWSER_HEADLESS !== 'false';
 const MAX_PAGES = parseInt(process.env.MAX_PAGES || '3');
@@ -27,7 +28,7 @@ const log = (msg, sym = '→') =>
 const MEQASA_HEADERS = [
   'scraped_date', 'week_number', 'year', 'source',
   'property_type', 'listing_type', 'title',
-  'price_raw', 'price_ghs', 'location',
+  'price_raw', 'price_ghs', 'location', 'neighborhood', 'city',
   'bedrooms', 'bathrooms', 'size_sqm', 'listing_url',
 ];
 
@@ -200,6 +201,8 @@ async function run() {
             price_raw:     item.price,
             price_ghs:     parsePrice(item.price) ?? '',
             location:      extractLocation(item.title),
+            neighborhood:  '',
+            city:          '',
             bedrooms:      item.bedrooms,
             bathrooms:     item.bathrooms,
             size_sqm:      item.size,
@@ -218,12 +221,15 @@ async function run() {
     await browser.close();
   }
 
+  // ── AI location enrichment ────────────────────────────────
+  const rowsToSave = await enrichPropertyListings(allRows);
+
   // ── Save ──────────────────────────────────────────────────
-  const rawSaved = appendCsv(rawFile, MEQASA_HEADERS, allRows);
+  const rawSaved = appendCsv(rawFile, MEQASA_HEADERS, rowsToSave);
   log(`Raw snapshot → ${rawFile} (${rawSaved} rows)`, '💾');
 
   const masterSaved = appendNewToMaster(
-    masterFile, MEQASA_HEADERS, allRows,
+    masterFile, MEQASA_HEADERS, rowsToSave,
     ['source', 'listing_url', 'week_number', 'year']
   );
   log(`Master property_prices.csv → ${masterSaved} new rows added`, '📦');
@@ -231,13 +237,13 @@ async function run() {
   // ── Write to Neon ─────────────────────────────────────────
   let neonInserted = 0;
   try {
-    const { inserted, errors } = await insertRows('property_prices', allRows);
+    const { inserted, errors } = await insertRows('property_prices', rowsToSave);
     if (errors.length) log(`Neon warnings: ${errors.join('; ')}`, '⚠');
     neonInserted = inserted;
     log(`Neon property_prices → ${inserted} rows inserted`, '🐘');
   } catch (err) {
     log(`Neon insert failed (${err.message}) — writing fallback Excel`, '⚠');
-    await writeFallbackExcel('property_prices', allRows, MEQASA_HEADERS);
+    await writeFallbackExcel('property_prices', rowsToSave, MEQASA_HEADERS);
   }
   await closeAllPools();
 
