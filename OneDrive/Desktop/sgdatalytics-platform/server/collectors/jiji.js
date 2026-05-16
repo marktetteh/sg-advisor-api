@@ -272,7 +272,12 @@ async function run() {
   if (dedupedOut > 0) log(`Deduped ${dedupedOut} cross-label duplicates (${uniqueRows.length} unique listings)`, '🔄');
 
   // AI enrichment — normalize brand/model/storage/normalized_name via Gemini Flash
-  const rowsToSave = await enrichListings(uniqueRows);
+  const enriched = await enrichListings(uniqueRows);
+
+  // ── Quality gate: only keep rows with a normalized name ───
+  const rowsToSave = enriched.filter(r => r.normalized_name && r.normalized_name.trim());
+  const dropped = enriched.length - rowsToSave.length;
+  if (dropped > 0) log(`Quality gate: dropped ${dropped} unenriched rows (no normalized_name)`, '🚫');
 
   // Save raw snapshot
   const rawSaved = appendCsv(rawFile, MARKET_HEADERS, rowsToSave);
