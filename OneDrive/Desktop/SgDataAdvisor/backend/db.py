@@ -422,17 +422,20 @@ def _extract_keywords(query: str) -> list:
 
 def _build_where(columns: list, keywords: list) -> tuple:
     """
-    Build a SQL WHERE clause and params list that matches ANY keyword in ANY column.
-    Example: columns=["title","search_label"], keywords=["iphone","pro"]
-    → WHERE (LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s)
-         OR (LOWER(title) LIKE %s OR LOWER(search_label) LIKE %s)
+    Build a SQL WHERE clause using word-boundary regex matching (~*).
+    Using \y word boundaries prevents 'a24' matching 'AR2A24',
+    'screen' matching 'screensaver', etc.
+    Example: columns=["title","search_label"], keywords=["samsung","a24"]
+    → WHERE (title ~* %s OR search_label ~* %s)
+         OR (title ~* %s OR search_label ~* %s)
+    params = ['\\ysamsung\\y', '\\ysamsung\\y', '\\ya24\\y', '\\ya24\\y']
     """
-    col_clause = " OR ".join(f"LOWER({c}) LIKE %s" for c in columns)
+    col_clause = " OR ".join(f"{c} ~* %s" for c in columns)
     parts = [f"({col_clause})"] * len(keywords)
     where = " OR ".join(parts)
     params = []
     for kw in keywords:
-        params.extend([f"%{kw}%"] * len(columns))
+        params.extend([f"\\y{kw}\\y"] * len(columns))
     return where, params
 
 
