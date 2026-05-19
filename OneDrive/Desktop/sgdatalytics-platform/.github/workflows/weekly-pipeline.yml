@@ -1,0 +1,62 @@
+name: Weekly Data Pipeline
+
+on:
+  schedule:
+    # Every Monday at 07:00 UTC (same as Africa/Accra)
+    - cron: '0 7 * * 1'
+  workflow_dispatch:  # allows manual trigger from GitHub UI
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: cd server && npm ci
+
+      - name: Install Playwright browsers
+        run: cd server && npx playwright install chromium --with-deps
+
+      - name: Write Google credentials file
+        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > server/google-credentials.json
+
+      - name: Create .env file
+        run: |
+          cat > server/.env << EOF
+          DATA_DIR=/tmp/sgdatalytics-data
+          MAX_PAGES=3
+          BROWSER_HEADLESS=true
+          NODE_ENV=production
+          NEON_MARKET_PRICES=${{ secrets.NEON_MARKET_PRICES }}
+          NEON_ACCOMMODATION=${{ secrets.NEON_ACCOMMODATION }}
+          NEON_PROPERTY=${{ secrets.NEON_PROPERTY }}
+          NEON_ECONOMIC=${{ secrets.NEON_ECONOMIC }}
+          NEON_COMMODITIES=${{ secrets.NEON_COMMODITIES }}
+          NEON_FINANCIALS=${{ secrets.NEON_FINANCIALS }}
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS_PATH=/home/runner/work/sgdatalytics-platform/sgdatalytics-platform/server/google-credentials.json
+          EOF
+
+      - name: Create data directory
+        run: mkdir -p /tmp/sgdatalytics-data
+
+      - name: Run full pipeline
+        run: cd server && node collectors/run-all.js
+        continue-on-error: true
+
+      - name: Update Google Sheets
+        run: cd server && node db/sheets-writer.js
+
+      - name: Pipeline complete
+        run: echo "✅ Weekly pipeline finished at $(date)"
