@@ -45,21 +45,29 @@ async function enrichBatch(titles) {
     '- brand: manufacturer name (Samsung, Apple, Tecno, Infinix, Itel, Xiaomi, Oppo, Nokia, Huawei, HP, Dell, Lenovo, Toyota, Honda etc.) or null\n' +
     '- model: specific model name/number or null\n' +
     '- storage: storage/RAM spec if present or null\n' +
-    '- normalized_name: clean canonical product name (brand + model only)\n\n' +
+    '- normalized_name: clean canonical product name (brand + model only)\n' +
+    '- condition: "New" if title suggests brand new/sealed/unopened, "Used" if title suggests second-hand/fairly used/tokunbo/pre-owned/refurbished, null if unclear\n\n' +
     'Titles:\n' + numbered + '\n\n' +
     'Return exactly ' + titles.length + ' objects:\n' +
-    '[{"brand":null,"model":null,"storage":null,"normalized_name":null}, ...]';
+    '[{"brand":null,"model":null,"storage":null,"normalized_name":null,"condition":null}, ...]';
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const resp = await postJson(GEMINI_URL + '?key=' + GEMINI_API_KEY, {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 1024 },
+        generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
       });
 
       if (resp.status === 429) {
         const wait = attempt * 15000;
         log('Gemini 429 - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+
+      if (resp.status === 503) {
+        const wait = attempt * 10000;
+        log('Gemini 503 - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
         await new Promise(r => setTimeout(r, wait));
         continue;
       }
@@ -118,10 +126,12 @@ async function enrichListings(rows) {
         row.model           = res.model           || row.model  || '';
         row.storage         = res.storage         || '';
         row.normalized_name = res.normalized_name || (row.brand + (row.model ? ' ' + row.model : ''));
+        row.condition       = res.condition       || row.condition || '';
         enriched++;
       } else {
         row.storage         = row.storage         || '';
         row.normalized_name = row.normalized_name || (row.brand ? row.brand + (row.model ? ' ' + row.model : '') : '');
+        row.condition       = row.condition       || '';
         failed++;
       }
     }

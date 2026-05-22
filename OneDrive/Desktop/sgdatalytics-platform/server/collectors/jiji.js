@@ -14,7 +14,9 @@
 require('dotenv').config();
 const axios      = require('axios');
 const cheerio    = require('cheerio');
-const { chromium } = require('playwright');
+const { chromium } = require('playwright-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+chromium.use(StealthPlugin());
 const { MARKET_PRODUCTS } = require('./config');
 const { parsePrice, normalizeCondition, cleanLocation } = require('./scraper-utils');
 const {
@@ -27,9 +29,10 @@ const { enrichListings } = require('./enricher');
 
 const BASE_URL    = 'https://jiji.com.gh';
 const MAX_PAGES   = parseInt(process.env.MAX_PAGES   || '3');
-const CONCURRENCY = parseInt(process.env.CONCURRENCY || '2');  // 2 keeps us under rate-limit
+const CONCURRENCY = parseInt(process.env.CONCURRENCY || '1');  // 1 = safest, avoids bot detection
 const HEADLESS    = process.env.BROWSER_HEADLESS !== 'false';
 const PAGE_TIMEOUT = 60000;   // ms — applies to Playwright fallback
+const BATCH_SIZE  = 50;       // flush to Neon/CSV every N products
 
 // ── User-agent pool — rotated per request ────────────────────
 const USER_AGENTS = [
@@ -171,57 +174,63 @@ async function scrapeProduct(page, product, workerId) {
     results.push(...items);
     log(`${tag} page ${p} → ${items.length} listings`, '  ');
 
-    // 3–5 s jitter between pages — stays under Jiji rate-limit
-    if (p < MAX_PAGES) await jitterDelay(3000, 5000);
+    // 8–15 s jitter between pages — avoids Jiji bot detection
+    if (p < MAX_PAGES) await jitterDelay(8000, 15000);
   }
 
-  // Inter-product pause (stagger workers from each other)
-  await jitterDelay(1500, 3000);
+  // Inter-product pause — longer gap between products
+  await jitterDelay(5000, 10000);
 
   log(`${tag} → ${results.length} total`, '✓');
   return results;
 }
 
-// ── Worker: grabs next product from shared queue ───────────────
-async function worker(page, queue, dateStr, week_number, year, workerId, allRows) {
-  while (true) {
-    // Atomically claim next index
-    const idx = queue.next++;
-    if (idx >= queue.products.length) break;
+// ── Flush a batch: dedup → enrich → save CSV → write Neon ─────
+async function flushBatch(batch, seenUrls, rawFile, masterFile, totals) {
+  if (!batch.length) return;
 
-    const product = queue.products[idx];
-    const items   = await scrapeProduct(page, product, workerId);
+  // Dedup within batch + across previous batches (by listing_url)
+  const unique = batch.filter(r => {
+    if (!r.listing_url || seenUrls.has(r.listing_url)) return false;
+    seenUrls.add(r.listing_url);
+    return true;
+  });
+  const dedupedOut = batch.length - unique.length;
+  if (dedupedOut > 0) log(`Batch dedup: removed ${dedupedOut} duplicates (${unique.length} unique)`, '🔄');
+  if (!unique.length) return;
 
-    for (const item of items) {
-      if (!item.url || !item.title) continue;
-      const { item_type, brand, model } = classify(item.title);
-      allRows.push({
-        scraped_date:     dateStr,
-        week_number,
-        year,
-        source:           'SG Datalytics Market Survey',
-        collection_method:'jiji.com.gh',
-        product_category: product.category,
-        search_label:     product.label,
-        title:            item.title,
-        price_raw:        item.price_raw,
-        price_ghs:        parsePrice(item.price_raw) ?? '',
-        location:         cleanLocation(item.location) ?? '',
-        condition:        normalizeCondition(item.condition),
-        listing_url:      item.url,
-        item_type,
-        brand:            brand ?? '',
-        model:            model ?? '',
-        storage:          '',
-        normalized_name:  '',
-      });
-    }
+  // AI enrichment (best-effort — save all rows even if Gemini fails)
+  const enriched = await enrichListings(unique);
+
+  // Save ALL rows — unenriched rows will have normalized_name='' and can be backfilled later
+  const toSave = enriched;
+  const unenriched = enriched.filter(r => !r.normalized_name || !r.normalized_name.trim()).length;
+  if (unenriched > 0) log(`${unenriched} rows saved without normalized_name (will backfill later)`, '⚠');
+  if (!toSave.length) return;
+
+  // Save to CSV
+  const rawSaved    = appendCsv(rawFile, MARKET_HEADERS, toSave);
+  const masterSaved = appendNewToMaster(masterFile, MARKET_HEADERS, toSave, ['source', 'listing_url', 'week_number', 'year']);
+  log(`CSV: +${rawSaved} raw · +${masterSaved} master`, '💾');
+
+  // Write to Neon
+  try {
+    const { inserted, errors } = await insertRows('market_prices', toSave);
+    if (errors.length) log(`Neon warnings: ${errors.slice(0, 3).join('; ')}`, '⚠');
+    totals.neon += inserted;
+    log(`Neon: +${inserted} rows (total so far: ${totals.neon})`, '🐘');
+  } catch (err) {
+    log(`Neon insert failed: ${err.message} — saving fallback Excel`, '⚠');
+    await writeFallbackExcel('market_prices', toSave, MARKET_HEADERS);
   }
+
+  totals.scraped += batch.length;
+  totals.saved   += masterSaved;
 }
 
 // ── MAIN ──────────────────────────────────────────────────────
 async function run() {
-  log(`Jiji scraper starting — ${MARKET_PRODUCTS.length} products · ${CONCURRENCY} parallel pages`, '🕷');
+  log(`Jiji scraper starting — ${MARKET_PRODUCTS.length} products · ${CONCURRENCY} parallel pages · batch every ${BATCH_SIZE}`, '🕷');
   ensureDirs();
 
   const browser = await chromium.launch({ headless: HEADLESS });
@@ -238,73 +247,60 @@ async function run() {
   const rawFile    = getRawPath('market', `jiji_${weekStr}_${dateStr}.csv`);
   const masterFile = getMasterPath('market_prices.csv');
 
-  // Shared mutable queue (plain object — no true threading, just async interleaving)
-  const queue = { products: MARKET_PRODUCTS, next: 0 };
-  const allRows = [];   // pushed to from all workers (JS is single-threaded, safe)
+  const seenUrls = new Set();  // tracks duplicates across all batches
+  const totals   = { scraped: 0, saved: 0, neon: 0 };
+  let   batch    = [];         // current batch buffer
+  let   page;
 
   try {
-    // Spin up CONCURRENCY pages, run workers concurrently
-    const pages   = await Promise.all(
-      Array.from({ length: CONCURRENCY }, () => context.newPage())
-    );
+    page = await context.newPage();
+    log(`Browser ready — dispatching ${MARKET_PRODUCTS.length} products…`, '⚡');
 
-    log(`${CONCURRENCY} pages opened — dispatching queue…`, '⚡');
+    for (let i = 0; i < MARKET_PRODUCTS.length; i++) {
+      const product = MARKET_PRODUCTS[i];
+      const items   = await scrapeProduct(page, product, 1);
 
-    await Promise.all(
-      pages.map((page, i) => worker(page, queue, dateStr, week_number, year, i + 1, allRows))
-    );
+      for (const item of items) {
+        if (!item.url || !item.title) continue;
+        const { item_type, brand, model } = classify(item.title);
+        batch.push({
+          scraped_date:     dateStr,
+          week_number,
+          year,
+          source:           'SG Datalytics Market Survey',
+          collection_method:'jiji.com.gh',
+          product_category: product.category,
+          search_label:     product.label,
+          title:            item.title,
+          price_raw:        item.price_raw,
+          price_ghs:        parsePrice(item.price_raw) ?? '',
+          location:         cleanLocation(item.location) ?? '',
+          condition:        normalizeCondition(item.condition),
+          listing_url:      item.url,
+          item_type,
+          brand:            brand ?? '',
+          model:            model ?? '',
+          storage:          '',
+          normalized_name:  '',
+        });
+      }
 
-    log(`All workers finished — ${allRows.length} rows collected`, '🏁');
+      // Flush every BATCH_SIZE products
+      if ((i + 1) % BATCH_SIZE === 0 || i === MARKET_PRODUCTS.length - 1) {
+        log(`── Flushing batch (products ${i - batch.length / 24 | 0}–${i + 1} of ${MARKET_PRODUCTS.length}) ──`, '📦');
+        await flushBatch(batch, seenUrls, rawFile, masterFile, totals);
+        batch = [];  // clear buffer — free memory
+      }
+    }
+
+    log(`All products scraped — ${totals.scraped} rows collected`, '🏁');
   } finally {
     await browser.close();
+    await closeAllPools();
   }
 
-  // Deduplicate by listing_url within this run before saving.
-  // The same URL can appear under multiple search labels when a listing
-  // matches more than one search term — keep the first occurrence only.
-  const seenUrls  = new Set();
-  const uniqueRows = allRows.filter(r => {
-    if (!r.listing_url || seenUrls.has(r.listing_url)) return false;
-    seenUrls.add(r.listing_url);
-    return true;
-  });
-  const dedupedOut = allRows.length - uniqueRows.length;
-  if (dedupedOut > 0) log(`Deduped ${dedupedOut} cross-label duplicates (${uniqueRows.length} unique listings)`, '🔄');
-
-  // AI enrichment — normalize brand/model/storage/normalized_name via Gemini Flash
-  const enriched = await enrichListings(uniqueRows);
-
-  // ── Quality gate: only keep rows with a normalized name ───
-  const rowsToSave = enriched.filter(r => r.normalized_name && r.normalized_name.trim());
-  const dropped = enriched.length - rowsToSave.length;
-  if (dropped > 0) log(`Quality gate: dropped ${dropped} unenriched rows (no normalized_name)`, '🚫');
-
-  // Save raw snapshot
-  const rawSaved = appendCsv(rawFile, MARKET_HEADERS, rowsToSave);
-  log(`Raw → ${rawFile} (${rawSaved} rows)`, '💾');
-
-  // Append new rows to master (deduplicate by source + listing_url + week + year)
-  const masterSaved = appendNewToMaster(
-    masterFile, MARKET_HEADERS, rowsToSave,
-    ['source', 'listing_url', 'week_number', 'year']
-  );
-  log(`Master market_prices.csv → ${masterSaved} new rows added`, '📦');
-
-  // ── Write to Neon ─────────────────────────────────────────
-  let neonInserted = 0;
-  try {
-    const { inserted, errors } = await insertRows('market_prices', rowsToSave);
-    if (errors.length) log(`Neon warnings: ${errors.join('; ')}`, '⚠');
-    neonInserted = inserted;
-    log(`Neon market_prices → ${inserted} rows inserted`, '🐘');
-  } catch (err) {
-    log(`Neon insert failed (${err.message}) — writing fallback Excel`, '⚠');
-    await writeFallbackExcel('market_prices', rowsToSave, MARKET_HEADERS);
-  }
-  await closeAllPools();
-
-  log(`Jiji complete — ${allRows.length} scraped · ${masterSaved} CSV · ${neonInserted} Neon`, '✅');
-  return { total: allRows.length, saved: masterSaved, neon: neonInserted };
+  log(`Jiji complete — ${totals.scraped} scraped · ${totals.saved} CSV · ${totals.neon} Neon`, '✅');
+  return totals;
 }
 
 // ── Optional: export to Excel (call separately when needed) ──

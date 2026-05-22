@@ -69,7 +69,7 @@ const TABLE_CONFIG = {
   // ── NEON_MARKET_PRICES ──────────────────────────────────────
   market_prices: {
     envKey:       'NEON_MARKET_PRICES',
-    conflictCols: ['source', 'listing_url'],
+    conflictCols: ['source', 'listing_url', 'week_number', 'year'],
     dbCols:  ['week_number', 'year', 'source', 'product_category', 'search_label',
                'title', 'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
                'item_type', 'brand', 'model', 'storage', 'normalized_name'],
