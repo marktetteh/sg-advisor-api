@@ -44,6 +44,36 @@ function jitterDelay(minMs = 2000, maxMs = 4000) {
   return new Promise(r => setTimeout(r, minMs + Math.random() * (maxMs - minMs)));
 }
 
+// ── Network health check ──────────────────────────────────────
+function isNetworkUp() {
+  return new Promise(resolve => {
+    const dns = require('dns');
+    dns.lookup('tonaton.com', err => resolve(!err));
+  });
+}
+
+async function waitForNetwork() {
+  const CHECK_INTERVAL = 30000;
+  const MAX_WAIT_MS    = 3 * 60 * 60 * 1000;  // 3 hours max
+  const started        = Date.now();
+  log('Network appears to be down — waiting for connection to recover…', '📡');
+  while (Date.now() - started < MAX_WAIT_MS) {
+    await new Promise(r => setTimeout(r, CHECK_INTERVAL));
+    if (await isNetworkUp()) { log('Network restored — resuming scrape', '✅'); return true; }
+    const waited = Math.round((Date.now() - started) / 1000);
+    log(`Still offline (${waited}s elapsed) — retrying in 30s…`, '📡');
+  }
+  log('Network did not recover after 3 hours — stopping', '❌');
+  return false;
+}
+
+function isNetworkError(err) {
+  const msg = err && err.message ? err.message.toLowerCase() : '';
+  return msg.includes('enotfound') || msg.includes('econnreset') ||
+         msg.includes('econnrefused') || msg.includes('err_internet_disconnected') ||
+         msg.includes('err_name_not_resolved') || msg.includes('etimedout');
+}
+
 // ── CSV column schema (matches market_prices Neon table) ──────
 const MARKET_HEADERS = [
   'scraped_date', 'week_number', 'year', 'source', 'collection_method',
@@ -88,8 +118,14 @@ async function scrapeProduct(product) {
     try {
       adverts = await fetchPage(product.query, p);
     } catch (err) {
-      log(`"${product.label}" page ${p} error: ${err.message}`, '  –');
-      break;
+      if (isNetworkError(err)) {
+        const recovered = await waitForNetwork();
+        if (!recovered) break;
+        try { adverts = await fetchPage(product.query, p); } catch(e) { break; }
+      } else {
+        log(`"${product.label}" page ${p} error: ${err.message}`, '  –');
+        break;
+      }
     }
 
     if (!adverts.length) {
@@ -173,8 +209,14 @@ async function run() {
     try {
       adverts = await scrapeProduct(product);
     } catch (err) {
-      log(`Product "${product.label}" failed: ${err.message}`, '❌');
-      adverts = [];
+      if (isNetworkError(err)) {
+        const recovered = await waitForNetwork();
+        if (!recovered) break;
+        try { adverts = await scrapeProduct(product); } catch(e) { adverts = []; }
+      } else {
+        log(`Product "${product.label}" failed: ${err.message}`, '❌');
+        adverts = [];
+      }
     }
 
     for (const advert of adverts) {

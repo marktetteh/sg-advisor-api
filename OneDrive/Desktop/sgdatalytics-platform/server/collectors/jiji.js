@@ -49,6 +49,47 @@ function jitterDelay(minMs = 3000, maxMs = 5000) {
   return new Promise(r => setTimeout(r, minMs + Math.random() * (maxMs - minMs)));
 }
 
+// ── Network health check ──────────────────────────────────────
+// Returns true if jiji.com.gh resolves, false otherwise
+function isNetworkUp() {
+  return new Promise(resolve => {
+    const dns = require('dns');
+    dns.lookup('jiji.com.gh', err => resolve(!err));
+  });
+}
+
+// Waits until the network comes back — checks every 30s, gives up after 20 mins
+async function waitForNetwork() {
+  const CHECK_INTERVAL = 30000;      // 30 s between checks
+  const MAX_WAIT_MS    = 3 * 60 * 60 * 1000;  // 3 hours max
+  const started        = Date.now();
+
+  log('Network appears to be down — waiting for connection to recover…', '📡');
+  while (Date.now() - started < MAX_WAIT_MS) {
+    await new Promise(r => setTimeout(r, CHECK_INTERVAL));
+    if (await isNetworkUp()) {
+      log('Network restored — resuming scrape', '✅');
+      return true;
+    }
+    const waited = Math.round((Date.now() - started) / 1000);
+    log(`Still offline (${waited}s elapsed) — retrying in 30s…`, '📡');
+  }
+  log('Network did not recover after 3 hours — stopping', '❌');
+  return false;
+}
+
+// Detects whether an error is a network-level failure (not a scraping block)
+function isNetworkError(err) {
+  const msg = err && err.message ? err.message.toLowerCase() : '';
+  return msg.includes('enotfound') ||
+         msg.includes('econnreset') ||
+         msg.includes('econnrefused') ||
+         msg.includes('err_internet_disconnected') ||
+         msg.includes('err_name_not_resolved') ||
+         msg.includes('network error') ||
+         msg.includes('etimedout');
+}
+
 const log = (msg, sym = '→') =>
   console.log(`  [${new Date().toLocaleTimeString()}] ${sym} ${msg}`);
 
@@ -157,12 +198,30 @@ async function scrapeProduct(page, product, workerId) {
         items = await scrapePagePlaywright(page, url);
       }
     } catch (axiosErr) {
-      log(`${tag} page ${p} axios error (${axiosErr.message}) — trying Playwright…`, '  ⚡');
-      try {
-        items = await scrapePagePlaywright(page, url);
-      } catch (pwErr) {
-        log(`${tag} page ${p} Playwright also failed: ${pwErr.message}`, '  –');
-        break;
+      // ── Network dropped? Wait for it to recover before continuing ──
+      if (isNetworkError(axiosErr)) {
+        const recovered = await waitForNetwork();
+        if (!recovered) break;
+        // Retry this page once after recovery
+        try {
+          items = await scrapePageAxios(url);
+        } catch (retryErr) {
+          log(`${tag} page ${p} still failing after recovery: ${retryErr.message}`, '  –');
+          break;
+        }
+      } else {
+        log(`${tag} page ${p} axios error (${axiosErr.message}) — trying Playwright…`, '  ⚡');
+        try {
+          items = await scrapePagePlaywright(page, url);
+        } catch (pwErr) {
+          if (isNetworkError(pwErr)) {
+            const recovered = await waitForNetwork();
+            if (!recovered) break;
+          } else {
+            log(`${tag} page ${p} Playwright also failed: ${pwErr.message}`, '  –');
+            break;
+          }
+        }
       }
     }
 
