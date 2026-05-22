@@ -224,10 +224,22 @@ async function run() {
   // ── AI location enrichment ────────────────────────────────
   const enriched = await enrichPropertyListings(allRows);
 
-  // ── Quality gate: only keep rows where at least city is known ─
-  const rowsToSave = enriched.filter(r => r.city && r.city.trim());
-  const dropped = enriched.length - rowsToSave.length;
-  if (dropped > 0) log(`Quality gate: dropped ${dropped} rows with no city/location`, '🚫');
+  // ── Regex fallback: extract city from title when Gemini failed ─
+  let fallbackApplied = 0;
+  for (const row of enriched) {
+    if (!row.city || !row.city.trim()) {
+      const loc = extractLocation(row.title);
+      if (loc) {
+        row.neighborhood = row.neighborhood || loc;
+        row.city = 'Accra'; // Meqasa is Ghana-only; most listings are Accra/nearby
+        fallbackApplied++;
+      }
+    }
+  }
+  if (fallbackApplied > 0) log(`Regex fallback: city set for ${fallbackApplied} rows (Gemini was unavailable)`, '⚠');
+  const unenriched = enriched.filter(r => !r.city || !r.city.trim()).length;
+  if (unenriched > 0) log(`${unenriched} rows saved without city (will backfill later)`, '⚠');
+  const rowsToSave = enriched; // save ALL rows — never drop on enrichment failure
 
   // ── Save ──────────────────────────────────────────────────
   const rawSaved = appendCsv(rawFile, MEQASA_HEADERS, rowsToSave);

@@ -74,6 +74,13 @@ async function enrichBatch(titles) {
         continue;
       }
 
+      if (resp.status === 503) {
+        const wait = attempt * 10000;
+        log('Gemini 503 — waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')…', 'WAIT');
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+
       if (resp.status !== 200) {
         const errMsg = (resp.body && resp.body.error && resp.body.error.message) || JSON.stringify(resp.body).slice(0, 200);
         log('Gemini HTTP ' + resp.status + ': ' + errMsg, 'WARN');
