@@ -2,11 +2,10 @@ name: Weekly Data Pipeline
 
 on:
   schedule:
-    # Every Monday at 06:00 UTC (same as Africa/Accra — market opens ~08:00 local)
+    # Every Monday at 06:00 UTC (= 06:00 Africa/Accra)
     - cron: '0 6 * * 1'
   workflow_dispatch:  # manual trigger from GitHub Actions UI
 
-# Shared env setup used by both jobs
 env:
   DATA_DIR: /tmp/sgdatalytics-data
   NODE_VERSION: '20'
@@ -14,10 +13,10 @@ env:
 jobs:
 
   # ── JOB 1: API Collectors ──────────────────────────────────────────────────
-  # Fast, no browser needed. Runs World Bank, BOG, NPA, GSS, GSE, MOFA.
-  # Always completes — even if job 2 (scrapers) fails, this data is saved.
+  # No browser needed. World Bank, BOG, NPA, GSS, MOFA — all pure API/HTTP.
+  # GSE moved to Job 2 because it requires Playwright (scrapes gse.com.gh).
   api-collectors:
-    name: API Collectors (WB · BOG · NPA · GSS · GSE · MOFA)
+    name: API Collectors (WB · BOG · NPA · GSS · MOFA)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -57,8 +56,24 @@ jobs:
       - name: Create data directory
         run: mkdir -p ${{ env.DATA_DIR }}
 
-      - name: Run API collectors (WB, BOG, NPA, GSS, GSE, MOFA)
-        run: cd server && node collectors/run-all.js --no-market --no-flyer
+      - name: World Bank
+        run: cd server && node collectors/worldbank.js
+        continue-on-error: true
+
+      - name: Bank of Ghana (rates + indicators)
+        run: cd server && node collectors/bog.js
+        continue-on-error: true
+
+      - name: NPA Fuel Prices
+        run: cd server && node collectors/npa.js
+        continue-on-error: true
+
+      - name: Ghana Statistical Service
+        run: cd server && node collectors/gss.js
+        continue-on-error: true
+
+      - name: MOFA Agricultural Prices
+        run: cd server && node collectors/mofa.js
         continue-on-error: true
 
       - name: Update Google Sheets
@@ -69,14 +84,15 @@ jobs:
         run: echo "✅ API collectors finished at $(date)"
 
 
-  # ── JOB 2: Market Scrapers ─────────────────────────────────────────────────
-  # Browser-based. Runs Jiji, Melcom, Esoko, Hotels, Airbnb, Meqasa.
-  # Needs Playwright + Chromium. Longer timeout (90 min).
+  # ── JOB 2: Browser-based Scrapers ─────────────────────────────────────────
+  # Needs Playwright + Chromium. Runs in parallel with Job 1 (no dependency).
+  # Includes GSE (requires browser), Jiji, Melcom, Esoko, Meqasa.
+  # Hotels + Airbnb run last — Booking.com/Airbnb may block CI IPs so
+  # they are isolated and won't affect the rest if they fail.
   market-scrapers:
-    name: Market Scrapers (Jiji · Melcom · Esoko · Hotels · Airbnb · Meqasa)
+    name: Market Scrapers (GSE · Jiji · Melcom · Esoko · Meqasa · Hotels · Airbnb)
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    needs: api-collectors  # runs after API job finishes
 
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +106,7 @@ jobs:
       - name: Install dependencies
         run: cd server && npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright + Chromium
         run: cd server && npx playwright install chromium --with-deps
 
       - name: Write Google credentials
@@ -103,7 +119,7 @@ jobs:
           cat > server/.env << EOF
           DATA_DIR=${{ env.DATA_DIR }}
           MAX_PAGES=3
-          CONCURRENCY=1
+          CONCURRENCY=2
           BROWSER_HEADLESS=true
           NODE_ENV=production
           NEON_MARKET_PRICES=${{ secrets.NEON_MARKET_PRICES }}
@@ -119,28 +135,40 @@ jobs:
       - name: Create data directory
         run: mkdir -p ${{ env.DATA_DIR }}
 
-      - name: Run Jiji (market prices)
+      - name: Ghana Stock Exchange (GSE)
+        run: cd server && node collectors/gse.js
+        continue-on-error: true
+
+      - name: Jiji Ghana (market prices)
         run: cd server && node collectors/jiji.js
+        timeout-minutes: 50
         continue-on-error: true
 
-      - name: Run Melcom (retail prices)
+      - name: Melcom Ghana (retail prices)
         run: cd server && node collectors/melcom.js
+        timeout-minutes: 15
         continue-on-error: true
 
-      - name: Run Esoko (commodity prices)
+      - name: Esoko (commodity prices)
         run: cd server && node collectors/esoko.js
+        timeout-minutes: 10
         continue-on-error: true
 
-      - name: Run Hotels (Booking.com)
-        run: cd server && node collectors/hotels.js
-        continue-on-error: true
-
-      - name: Run Airbnb
-        run: cd server && node collectors/airbnb.js
-        continue-on-error: true
-
-      - name: Run Meqasa (property listings)
+      - name: Meqasa (property listings)
         run: cd server && node collectors/meqasa.js
+        timeout-minutes: 15
+        continue-on-error: true
+
+      - name: Hotels — Booking.com
+        # May be blocked on CI IPs — runs last, failure is acceptable
+        run: cd server && node collectors/hotels.js
+        timeout-minutes: 10
+        continue-on-error: true
+
+      - name: Airbnb
+        # May be blocked on CI IPs — runs last, failure is acceptable
+        run: cd server && node collectors/airbnb.js
+        timeout-minutes: 10
         continue-on-error: true
 
       - name: Weekly consolidation
