@@ -17,7 +17,7 @@ const cheerio    = require('cheerio');
 const { chromium } = require('playwright-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 chromium.use(StealthPlugin());
-const { MARKET_PRODUCTS } = require('./config');
+const { MARKET_PRODUCTS: _ALL_PRODUCTS } = require('./config');
 const { parsePrice, normalizeCondition, cleanLocation } = require('./scraper-utils');
 const {
   ensureDirs, appendCsv, getRawPath, getMasterPath,
@@ -30,6 +30,15 @@ const { enrichListings } = require('./enricher');
 const BASE_URL    = 'https://jiji.com.gh';
 const MAX_PAGES   = parseInt(process.env.MAX_PAGES   || '3');
 const CONCURRENCY = parseInt(process.env.CONCURRENCY || '1');  // 1 = safest, avoids bot detection
+
+// Optional: CATEGORY_FILTER=Furniture,"Food & FMCG","Sports & Fitness"
+// Comma-separated list of product_category values to restrict the run to.
+const _CAT_FILTER = process.env.CATEGORY_FILTER
+  ? process.env.CATEGORY_FILTER.split(',').map(s => s.trim().replace(/^"|"$/g, ''))
+  : null;
+const MARKET_PRODUCTS = _CAT_FILTER
+  ? _ALL_PRODUCTS.filter(p => _CAT_FILTER.includes(p.category))
+  : _ALL_PRODUCTS;
 const HEADLESS    = process.env.BROWSER_HEADLESS !== 'false';
 const PAGE_TIMEOUT = 60000;   // ms — applies to Playwright fallback
 const BATCH_SIZE  = 50;       // flush to Neon/CSV every N products
