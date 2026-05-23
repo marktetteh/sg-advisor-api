@@ -4,9 +4,11 @@
  *
  * Run: node collectors/run-all.js
  * Flags:
- *   --no-market        skip Jiji + market pipeline
+ *   --no-market        skip market pipeline (Jiji, Melcom, Esoko, Hotels, Airbnb, Meqasa)
  *   --no-wb            skip World Bank
- *   --only-market      only Jiji + consolidate
+ *   --no-gse           skip Ghana Stock Exchange
+ *   --no-mofa          skip MOFA agricultural prices
+ *   --only-market      only run market pipeline
  *   --no-consolidate   skip weekly consolidation
  *   --no-flyer         skip flyer generation
  */
@@ -15,6 +17,8 @@ const { ensureDirs, getDataDir } = require('./csv-utils');
 
 const skipMarket      = process.argv.includes('--no-market');
 const skipWB          = process.argv.includes('--no-wb');
+const skipGSE         = process.argv.includes('--no-gse');
+const skipMOFA        = process.argv.includes('--no-mofa');
 const onlyMarket      = process.argv.includes('--only-market');
 const skipConsolidate = process.argv.includes('--no-consolidate');
 const skipFlyer       = process.argv.includes('--no-flyer');
@@ -52,12 +56,24 @@ async function main() {
     const gss = require('./gss');
     await gss.run().catch(e => console.error('  GSS error:', e.message));
 
-    // Note: Esoko commodity prices run inside market-pipeline (step 3)
+    // ── Ghana Stock Exchange (GSE) ──────────────────────────
+    if (!skipGSE) {
+      console.log('\n  ── Ghana Stock Exchange (GSE) ──────────────────');
+      const gse = require('./gse');
+      await gse.run().catch(e => console.error('  GSE error:', e.message));
+    }
+
+    // ── MOFA Agricultural Prices ────────────────────────────
+    if (!skipMOFA) {
+      console.log('\n  ── MOFA Agricultural Prices ────────────────────');
+      const mofa = require('./mofa');
+      await mofa.run().catch(e => console.error('  MOFA error:', e.message));
+    }
   }
 
-  // ── Market Pipeline (Jiji 1000 + Melcom + Esoko) ─────────
+  // ── Market Pipeline (Jiji + Melcom + Esoko + Hotels + Airbnb + Meqasa) ─
   if (!skipMarket) {
-    console.log('\n  ── Market Pipeline (Jiji 1000 + Melcom + Esoko) ────');
+    console.log('\n  ── Market Pipeline ─────────────────────────────');
     const pipeline = require('./market-pipeline');
     await pipeline.run().catch(e => console.error('  Pipeline error:', e.message));
 
@@ -70,7 +86,6 @@ async function main() {
   }
 
   // ── Weekly Social Media Flyers ───────────────────────────────
-  // Runs after all Neon inserts are complete so queries see fresh data
   if (!skipFlyer) {
     console.log('\n  ── Weekly Flyer Generation ─────────────────────');
     const flyer = require('./generate-flyer');

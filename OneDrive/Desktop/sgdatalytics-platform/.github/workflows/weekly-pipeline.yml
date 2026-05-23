@@ -2,40 +2,46 @@ name: Weekly Data Pipeline
 
 on:
   schedule:
-    # Every Monday at 07:00 UTC (same as Africa/Accra)
-    - cron: '0 7 * * 1'
-  workflow_dispatch:  # allows manual trigger from GitHub UI
+    # Every Monday at 06:00 UTC (same as Africa/Accra — market opens ~08:00 local)
+    - cron: '0 6 * * 1'
+  workflow_dispatch:  # manual trigger from GitHub Actions UI
+
+# Shared env setup used by both jobs
+env:
+  DATA_DIR: /tmp/sgdatalytics-data
+  NODE_VERSION: '20'
 
 jobs:
-  run-pipeline:
+
+  # ── JOB 1: API Collectors ──────────────────────────────────────────────────
+  # Fast, no browser needed. Runs World Bank, BOG, NPA, GSS, GSE, MOFA.
+  # Always completes — even if job 2 (scrapers) fails, this data is saved.
+  api-collectors:
+    name: API Collectors (WB · BOG · NPA · GSS · GSE · MOFA)
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: server/package-lock.json
 
       - name: Install dependencies
         run: cd server && npm ci
 
-      - name: Install Playwright browsers
-        run: cd server && npx playwright install chromium --with-deps
+      - name: Write Google credentials
+        env:
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: echo "$GOOGLE_CREDS" > server/google-credentials.json
 
-      - name: Write Google credentials file
-        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > server/google-credentials.json
-
-      - name: Create .env file
+      - name: Create .env
         run: |
           cat > server/.env << EOF
-          DATA_DIR=/tmp/sgdatalytics-data
-          MAX_PAGES=3
+          DATA_DIR=${{ env.DATA_DIR }}
           BROWSER_HEADLESS=true
           NODE_ENV=production
           NEON_MARKET_PRICES=${{ secrets.NEON_MARKET_PRICES }}
@@ -49,14 +55,97 @@ jobs:
           EOF
 
       - name: Create data directory
-        run: mkdir -p /tmp/sgdatalytics-data
+        run: mkdir -p ${{ env.DATA_DIR }}
 
-      - name: Run full pipeline
-        run: cd server && node collectors/run-all.js
+      - name: Run API collectors (WB, BOG, NPA, GSS, GSE, MOFA)
+        run: cd server && node collectors/run-all.js --no-market --no-flyer
         continue-on-error: true
 
       - name: Update Google Sheets
         run: cd server && node db/sheets-writer.js
+        continue-on-error: true
 
-      - name: Pipeline complete
-        run: echo "✅ Weekly pipeline finished at $(date)"
+      - name: Done
+        run: echo "✅ API collectors finished at $(date)"
+
+
+  # ── JOB 2: Market Scrapers ─────────────────────────────────────────────────
+  # Browser-based. Runs Jiji, Melcom, Esoko, Hotels, Airbnb, Meqasa.
+  # Needs Playwright + Chromium. Longer timeout (90 min).
+  market-scrapers:
+    name: Market Scrapers (Jiji · Melcom · Esoko · Hotels · Airbnb · Meqasa)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: api-collectors  # runs after API job finishes
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: cd server && npm ci
+
+      - name: Install Playwright browsers
+        run: cd server && npx playwright install chromium --with-deps
+
+      - name: Write Google credentials
+        env:
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: echo "$GOOGLE_CREDS" > server/google-credentials.json
+
+      - name: Create .env
+        run: |
+          cat > server/.env << EOF
+          DATA_DIR=${{ env.DATA_DIR }}
+          MAX_PAGES=3
+          CONCURRENCY=1
+          BROWSER_HEADLESS=true
+          NODE_ENV=production
+          NEON_MARKET_PRICES=${{ secrets.NEON_MARKET_PRICES }}
+          NEON_ACCOMMODATION=${{ secrets.NEON_ACCOMMODATION }}
+          NEON_PROPERTY=${{ secrets.NEON_PROPERTY }}
+          NEON_ECONOMIC=${{ secrets.NEON_ECONOMIC }}
+          NEON_COMMODITIES=${{ secrets.NEON_COMMODITIES }}
+          NEON_FINANCIALS=${{ secrets.NEON_FINANCIALS }}
+          GOOGLE_SHEET_ID=${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_CREDENTIALS_PATH=/home/runner/work/sgdatalytics-platform/sgdatalytics-platform/server/google-credentials.json
+          EOF
+
+      - name: Create data directory
+        run: mkdir -p ${{ env.DATA_DIR }}
+
+      - name: Run Jiji (market prices)
+        run: cd server && node collectors/jiji.js
+        continue-on-error: true
+
+      - name: Run Melcom (retail prices)
+        run: cd server && node collectors/melcom.js
+        continue-on-error: true
+
+      - name: Run Esoko (commodity prices)
+        run: cd server && node collectors/esoko.js
+        continue-on-error: true
+
+      - name: Run Hotels (Booking.com)
+        run: cd server && node collectors/hotels.js
+        continue-on-error: true
+
+      - name: Run Airbnb
+        run: cd server && node collectors/airbnb.js
+        continue-on-error: true
+
+      - name: Run Meqasa (property listings)
+        run: cd server && node collectors/meqasa.js
+        continue-on-error: true
+
+      - name: Weekly consolidation
+        run: cd server && node collectors/consolidate.js
+        continue-on-error: true
+
+      - name: Done
+        run: echo "✅ Market scrapers finished at $(date)"
