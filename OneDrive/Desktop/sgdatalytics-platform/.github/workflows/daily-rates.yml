@@ -1,9 +1,10 @@
 name: Daily Rates (FX + Fuel)
 
 on:
-  schedule:
-    # Every day at 07:00 UTC
-    - cron: '0 7 * * *'
+  # Schedule disabled — collections run manually via PowerShell (run-weekly.ps1)
+  # Uncomment below to re-enable automation:
+  # schedule:
+  #   - cron: '0 7 * * *'
   workflow_dispatch:
 
 jobs:
@@ -26,7 +27,12 @@ jobs:
         run: cd server && npm ci
 
       - name: Write Google credentials file
-        run: echo '${{ secrets.GOOGLE_CREDENTIALS_JSON }}' > server/google-credentials.json
+        env:
+          GOOGLE_CREDS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: |
+          python3 -c "import os; open('server/google-credentials.json','w').write(os.environ['GOOGLE_CREDS'])"
+          echo "Credentials file size: $(wc -c < server/google-credentials.json) bytes"
+          python3 -c "import json; json.load(open('server/google-credentials.json')); print('✓ JSON is valid')"
 
       - name: Create .env file
         run: |

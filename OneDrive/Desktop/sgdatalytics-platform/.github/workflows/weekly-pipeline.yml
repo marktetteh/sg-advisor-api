@@ -1,10 +1,11 @@
 name: Weekly Data Pipeline
 
 on:
-  schedule:
-    # Every Monday at 06:00 UTC (= 06:00 Africa/Accra)
-    - cron: '0 6 * * 1'
-  workflow_dispatch:  # manual trigger from GitHub Actions UI
+  # Schedule disabled — collections run manually via PowerShell (run-weekly.ps1)
+  # Uncomment below to re-enable automation:
+  # schedule:
+  #   - cron: '0 6 * * 1'
+  workflow_dispatch:  # can still trigger manually from GitHub Actions UI
 
 env:
   DATA_DIR: /tmp/sgdatalytics-data
@@ -13,8 +14,6 @@ env:
 jobs:
 
   # ── JOB 1: API Collectors ──────────────────────────────────────────────────
-  # No browser needed. World Bank, BOG, NPA, GSS, MOFA — all pure API/HTTP.
-  # GSE moved to Job 2 because it requires Playwright (scrapes gse.com.gh).
   api-collectors:
     name: API Collectors (WB · BOG · NPA · GSS · MOFA)
     runs-on: ubuntu-latest
@@ -56,23 +55,28 @@ jobs:
       - name: Create data directory
         run: mkdir -p ${{ env.DATA_DIR }}
 
-      - name: World Bank
+      - id: worldbank
+        name: World Bank
         run: cd server && node collectors/worldbank.js
         continue-on-error: true
 
-      - name: Bank of Ghana (rates + indicators)
+      - id: bog
+        name: Bank of Ghana
         run: cd server && node collectors/bog.js
         continue-on-error: true
 
-      - name: NPA Fuel Prices
+      - id: npa
+        name: NPA Fuel Prices
         run: cd server && node collectors/npa.js
         continue-on-error: true
 
-      - name: Ghana Statistical Service
+      - id: gss
+        name: Ghana Statistical Service
         run: cd server && node collectors/gss.js
         continue-on-error: true
 
-      - name: MOFA Agricultural Prices
+      - id: mofa
+        name: MOFA Agricultural Prices
         run: cd server && node collectors/mofa.js
         continue-on-error: true
 
@@ -80,15 +84,46 @@ jobs:
         run: cd server && node db/sheets-writer.js
         continue-on-error: true
 
-      - name: Done
-        run: echo "✅ API collectors finished at $(date)"
+      - name: Notify on failures
+        if: always()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          WB:   ${{ steps.worldbank.outcome }}
+          BOG:  ${{ steps.bog.outcome }}
+          NPA:  ${{ steps.npa.outcome }}
+          GSS:  ${{ steps.gss.outcome }}
+          MOFA: ${{ steps.mofa.outcome }}
+        run: |
+          FAILED=""
+          COMMANDS=""
+          [ "$WB"   = "failure" ] && FAILED="$FAILED World Bank," && COMMANDS="$COMMANDS\nnode collectors/worldbank.js"
+          [ "$BOG"  = "failure" ] && FAILED="$FAILED BOG," && COMMANDS="$COMMANDS\nnode collectors/bog.js"
+          [ "$NPA"  = "failure" ] && FAILED="$FAILED NPA Fuel," && COMMANDS="$COMMANDS\nnode collectors/npa.js"
+          [ "$GSS"  = "failure" ] && FAILED="$FAILED GSS," && COMMANDS="$COMMANDS\nnode collectors/gss.js"
+          [ "$MOFA" = "failure" ] && FAILED="$FAILED MOFA," && COMMANDS="$COMMANDS\nnode collectors/mofa.js"
+
+          if [ -n "$FAILED" ]; then
+            FAILED="${FAILED%,}"
+            BODY="<h2 style='color:#c0392b'>⚠️ Weekly Pipeline — Collector Failures</h2>
+            <p>The following API collectors failed on <strong>$(date '+%A %d %B %Y')</strong>:</p>
+            <p style='color:#c0392b;font-weight:bold'>$FAILED</p>
+            <p>Run these manually from PowerShell to collect the missing data:</p>
+            <pre style='background:#f4f4f4;padding:16px;border-radius:6px;font-size:13px'>cd C:\\Users\\markt\\OneDrive\\Desktop\\sgdatalytics-platform\\server
+            $(echo -e "$COMMANDS" | sed 's/^//')
+            </pre>
+            <p style='color:#666;font-size:13px'>Check the full run log at: https://github.com/marktetteh/sgdatalytics-platform/actions</p>"
+
+            curl -s -X POST https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"from\":\"SG Datalytics <data@sgdatalytics.org>\",\"to\":[\"marktetteh07@gmail.com\"],\"subject\":\"⚠️ Pipeline Alert — $FAILED failed\",\"html\":\"$BODY\"}"
+            echo "Alert sent for:$FAILED"
+          else
+            echo "✅ All API collectors succeeded — no alert needed"
+          fi
 
 
-  # ── JOB 2: Browser-based Scrapers ─────────────────────────────────────────
-  # Needs Playwright + Chromium. Runs in parallel with Job 1 (no dependency).
-  # Includes GSE (requires browser), Jiji, Melcom, Esoko, Meqasa.
-  # Hotels + Airbnb run last — Booking.com/Airbnb may block CI IPs so
-  # they are isolated and won't affect the rest if they fail.
+  # ── JOB 2: Market Scrapers ─────────────────────────────────────────────────
   market-scrapers:
     name: Market Scrapers (GSE · Jiji · Melcom · Esoko · Meqasa · Hotels · Airbnb)
     runs-on: ubuntu-latest
@@ -135,38 +170,44 @@ jobs:
       - name: Create data directory
         run: mkdir -p ${{ env.DATA_DIR }}
 
-      - name: Ghana Stock Exchange (GSE)
+      - id: gse
+        name: Ghana Stock Exchange (GSE)
         run: cd server && node collectors/gse.js
+        timeout-minutes: 10
         continue-on-error: true
 
-      - name: Jiji Ghana (market prices)
+      - id: jiji
+        name: Jiji Ghana (market prices)
         run: cd server && node collectors/jiji.js
         timeout-minutes: 50
         continue-on-error: true
 
-      - name: Melcom Ghana (retail prices)
+      - id: melcom
+        name: Melcom Ghana (retail prices)
         run: cd server && node collectors/melcom.js
         timeout-minutes: 15
         continue-on-error: true
 
-      - name: Esoko (commodity prices)
+      - id: esoko
+        name: Esoko (commodity prices)
         run: cd server && node collectors/esoko.js
         timeout-minutes: 10
         continue-on-error: true
 
-      - name: Meqasa (property listings)
+      - id: meqasa
+        name: Meqasa (property listings)
         run: cd server && node collectors/meqasa.js
         timeout-minutes: 15
         continue-on-error: true
 
-      - name: Hotels — Booking.com
-        # May be blocked on CI IPs — runs last, failure is acceptable
+      - id: hotels
+        name: Hotels — Booking.com
         run: cd server && node collectors/hotels.js
         timeout-minutes: 10
         continue-on-error: true
 
-      - name: Airbnb
-        # May be blocked on CI IPs — runs last, failure is acceptable
+      - id: airbnb
+        name: Airbnb
         run: cd server && node collectors/airbnb.js
         timeout-minutes: 10
         continue-on-error: true
@@ -175,5 +216,44 @@ jobs:
         run: cd server && node collectors/consolidate.js
         continue-on-error: true
 
-      - name: Done
-        run: echo "✅ Market scrapers finished at $(date)"
+      - name: Notify on failures
+        if: always()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GSE:    ${{ steps.gse.outcome }}
+          JIJI:   ${{ steps.jiji.outcome }}
+          MELCOM: ${{ steps.melcom.outcome }}
+          ESOKO:  ${{ steps.esoko.outcome }}
+          MEQASA: ${{ steps.meqasa.outcome }}
+          HOTELS: ${{ steps.hotels.outcome }}
+          AIRBNB: ${{ steps.airbnb.outcome }}
+        run: |
+          FAILED=""
+          COMMANDS=""
+          [ "$GSE"    = "failure" ] && FAILED="$FAILED GSE," && COMMANDS="$COMMANDS\nnode collectors/gse.js"
+          [ "$JIJI"   = "failure" ] && FAILED="$FAILED Jiji," && COMMANDS="$COMMANDS\nnode collectors/jiji.js"
+          [ "$MELCOM" = "failure" ] && FAILED="$FAILED Melcom," && COMMANDS="$COMMANDS\nnode collectors/melcom.js"
+          [ "$ESOKO"  = "failure" ] && FAILED="$FAILED Esoko," && COMMANDS="$COMMANDS\nnode collectors/esoko.js"
+          [ "$MEQASA" = "failure" ] && FAILED="$FAILED Meqasa," && COMMANDS="$COMMANDS\nnode collectors/meqasa.js"
+          [ "$HOTELS" = "failure" ] && FAILED="$FAILED Hotels," && COMMANDS="$COMMANDS\nnode collectors/hotels.js"
+          [ "$AIRBNB" = "failure" ] && FAILED="$FAILED Airbnb," && COMMANDS="$COMMANDS\nnode collectors/airbnb.js"
+
+          if [ -n "$FAILED" ]; then
+            FAILED="${FAILED%,}"
+            BODY="<h2 style='color:#c0392b'>⚠️ Weekly Pipeline — Scraper Failures</h2>
+            <p>The following scrapers failed on <strong>$(date '+%A %d %B %Y')</strong>:</p>
+            <p style='color:#c0392b;font-weight:bold'>$FAILED</p>
+            <p>Run these manually from PowerShell to collect the missing data:</p>
+            <pre style='background:#f4f4f4;padding:16px;border-radius:6px;font-size:13px'>cd C:\\Users\\markt\\OneDrive\\Desktop\\sgdatalytics-platform\\server
+            $(echo -e "$COMMANDS" | sed 's/^[[:space:]]*//')
+            </pre>
+            <p style='color:#666;font-size:13px'>Check the full run log: https://github.com/marktetteh/sgdatalytics-platform/actions</p>"
+
+            curl -s -X POST https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "{\"from\":\"SG Datalytics <data@sgdatalytics.org>\",\"to\":[\"marktetteh07@gmail.com\"],\"subject\":\"⚠️ Pipeline Alert — $FAILED failed\",\"html\":\"$BODY\"}"
+            echo "Alert sent for:$FAILED"
+          else
+            echo "✅ All scrapers succeeded — no alert needed"
+          fi
