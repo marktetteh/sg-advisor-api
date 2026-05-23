@@ -90,8 +90,7 @@ const TABLE_CONFIG = {
 
   hotel_prices: {
     envKey:       'NEON_ACCOMMODATION',
-    // source_platform distinguishes booking.com vs hotels.com rows
-    conflictCols: ['source_platform', 'city', 'hotel_name', 'week_number', 'year'],
+    conflictCols: [],  // no unique constraint on hotel_prices — plain insert
     dbCols:  ['week_number', 'year', 'source', 'source_platform', 'city',
                'hotel_name', 'star_rating', 'stars',
                'review_score', 'review_count', 'price_raw', 'price_per_night_usd', 'hotel_url'],
@@ -188,7 +187,9 @@ async function insertRows(table, rows, overrideDate) {
   const { dbCols, csvKeys, conflictCols } = config;
   const allDbCols         = ['collected_date', ...dbCols];
   const colList           = allDbCols.join(', ');
-  const conflictClause    = `ON CONFLICT (${conflictCols.join(', ')}) DO NOTHING`;
+  const conflictClause    = conflictCols && conflictCols.length
+    ? `ON CONFLICT (${conflictCols.join(', ')}) DO NOTHING`
+    : '';
   const pool              = getPool(connStr);
 
   let inserted = 0;
