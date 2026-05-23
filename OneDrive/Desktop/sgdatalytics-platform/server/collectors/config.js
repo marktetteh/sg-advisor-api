@@ -408,42 +408,9 @@ const MARKET_PRODUCTS = [
 
   { query: '3 bedroom house for sale accra', label: '3-Bed House For Sale (Accra)', category: 'Real Estate', jijiPath: '/houses-apartments-for-sale' },
 
-  // ═══════════════════════════════════════════════════════════
-  // FURNITURE
-  // ═══════════════════════════════════════════════════════════
-
-  { query: 'sofa couch',              label: 'Sofa / Couch',             category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'dining table chairs',     label: 'Dining Table & Chairs',    category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'bedroom set wardrobe',    label: 'Bedroom Set / Wardrobe',   category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'office chair desk',       label: 'Office Chair & Desk',      category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'mattress bed frame',      label: 'Mattress & Bed Frame',     category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'curtains blinds',         label: 'Curtains / Blinds',        category: 'Furniture', jijiPath: '/furniture-decor' },
-  { query: 'bookshelf shelving unit', label: 'Bookshelf / Shelving',     category: 'Furniture', jijiPath: '/furniture-decor' },
-
-  // ═══════════════════════════════════════════════════════════
-  // FOOD & FMCG
-  // ═══════════════════════════════════════════════════════════
-
-  { query: 'cooking oil vegetable',   label: 'Cooking Oil',              category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'noodles indomie',         label: 'Noodles / Indomie',        category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'sugar sachet 1kg',        label: 'Sugar (1kg)',              category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'rice bag 25kg',           label: 'Rice (25kg bag)',          category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'tomato paste tin',        label: 'Tomato Paste (Tin)',       category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'milk powder tin',         label: 'Powdered Milk (Tin)',      category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'baby diapers pampers',    label: 'Baby Diapers',             category: 'Food & FMCG', jijiPath: '/ghana' },
-  { query: 'body lotion cream',       label: 'Body Lotion / Cream',      category: 'Food & FMCG', jijiPath: '/ghana' },
-
-  // ═══════════════════════════════════════════════════════════
-  // SPORTS & FITNESS
-  // ═══════════════════════════════════════════════════════════
-
-  { query: 'treadmill exercise',      label: 'Treadmill',                category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'dumbbells weights set',   label: 'Dumbbells / Weights',      category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'football boots cleats',   label: 'Football Boots',           category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'gym equipment bench',     label: 'Gym Bench / Equipment',    category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'bicycle mountain bike',   label: 'Bicycle / Mountain Bike',  category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'yoga mat fitness',        label: 'Yoga Mat',                 category: 'Sports & Fitness', jijiPath: '/sports' },
-  { query: 'boxing gloves training',  label: 'Boxing Gloves',            category: 'Sports & Fitness', jijiPath: '/sports' },
+  // NOTE: Furniture → sourced from Melcom collector (MELCOM_CATEGORIES has Living Room & Bedroom)
+  // NOTE: Food & FMCG → sourced from commodity_prices (MOFA agricultural data)
+  // NOTE: Sports & Fitness → no reliable Ghana online source yet; data gap acknowledged
 
 ];
 
