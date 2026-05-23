@@ -207,70 +207,7 @@ async function scrapeGSE(page, today, week_number, year) {
       { date: today, week_number, year, index_name: 'GSE-FSI', value: 2341.15, change_points: '', change_pct: '', source: 'SG Datalytics Financial Survey', collection_method: 'gse.com.gh' },
     );
 
-    // ── All 35 listed equities — approximate last-known prices (GHS) ──
-    // Update these periodically from gse.com.gh/equities/
-    const STOCK_ESTIMATES = [
-      // Core banks & telecoms
-      { symbol: 'MTN',    name: 'MTN Ghana',                        close: 2.60  },
-      { symbol: 'GCB',    name: 'GCB Bank',                         close: 6.10  },
-      { symbol: 'CAL',    name: 'Cal Bank',                         close: 1.10  },
-      { symbol: 'EBG',    name: 'Ecobank Ghana',                    close: 9.00  },
-      { symbol: 'SCB',    name: 'Standard Chartered Bank Ghana',    close: 23.50 },
-      { symbol: 'SOGEGH', name: 'Societe Generale Ghana',           close: 1.45  },
-      { symbol: 'ACCESS', name: 'Access Bank Ghana',                close: 5.55  },
-      { symbol: 'HFC',    name: 'HFC Bank (Republic Bank Ghana)',   close: 0.32  },
-      // Energy & industrials
-      { symbol: 'TOTAL',  name: 'TotalEnergies Ghana',              close: 6.30  },
-      { symbol: 'GOIL',   name: 'GOIL Company',                     close: 2.20  },
-      { symbol: 'TLW',    name: 'Tullow Oil',                       close: 14.50 },
-      // Consumer goods
-      { symbol: 'UNIL',   name: 'Unilever Ghana',                   close: 14.30 },
-      { symbol: 'FML',    name: 'Fan Milk Ghana',                   close: 2.05  },
-      { symbol: 'GGBL',   name: 'Guinness Ghana Breweries',         close: 2.90  },
-      { symbol: 'PBC',    name: 'Produce Buying Company',           close: 0.11  },
-      { symbol: 'BOPP',   name: 'Benso Oil Palm Plantation',        close: 3.20  },
-      // Manufacturing & other
-      { symbol: 'AYRTN',  name: 'Ayrton Drugs Manufacturing',      close: 0.24  },
-      { symbol: 'CLYD',   name: 'Clydestone Ghana',                 close: 0.07  },
-      { symbol: 'SPL',    name: 'Samartex Timber & Plywood',        close: 0.46  },
-      { symbol: 'SIC',    name: 'SIC Insurance Company',            close: 0.28  },
-      // ── Additional listed equities (added May 2026) ───────────
-      { symbol: 'ADB',    name: 'Agricultural Development Bank',    close: 6.50  },
-      { symbol: 'CMLT',   name: 'Camelot Ghana',                    close: 0.07  },
-      { symbol: 'CPC',    name: 'Cocoa Processing Company',         close: 0.05  },
-      { symbol: 'EGL',    name: 'Enterprise Group',                 close: 4.20  },
-      { symbol: 'ETI',    name: 'Ecobank Transnational Inc',        close: 0.15  },
-      { symbol: 'GHAIM',  name: 'Ghana International Insurance',    close: 0.18  },
-      { symbol: 'GLD',    name: 'Gold Coast Fund Management',       close: 0.06  },
-      { symbol: 'GMCR',   name: 'Ghana Manganese Company',          close: 0.22  },
-      { symbol: 'GSR',    name: 'Golden Star Resources',            close: 0.35  },
-      { symbol: 'MLC',    name: 'Mechanical Lloyd Company',         close: 0.20  },
-      { symbol: 'PRIMUS', name: 'Primus Bank (formerly UT Bank)',   close: 0.30  },
-      { symbol: 'RBGH',   name: 'Republic Bank Ghana',              close: 0.45  },
-      { symbol: 'SIC-IT', name: 'SIC Insurance (IT Division)',      close: 0.12  },
-      { symbol: 'SWL',    name: 'Samba Wood Limited',               close: 0.14  },
-      { symbol: 'TBL',    name: 'Trust Bank Limited',               close: 0.11  },
-      { symbol: 'UTB',    name: 'Universal Trust Bank',             close: 0.09  },
-    ];
-
-    for (const s of STOCK_ESTIMATES) {
-      stocks.push({
-        date: today, week_number, year,
-        symbol:              s.symbol,
-        company_name:        s.name,
-        opening_price_ghs:   '',
-        closing_price_ghs:   s.close,
-        change_ghs:          '',
-        change_pct:          '',
-        volume:              '',
-        value_ghs:           '',
-        year_high:           '',
-        year_low:            '',
-        source:              'SG Datalytics Financial Survey',
-        collection_method:   'gse.com.gh',
-      });
-    }
-    log(`Seeded ${stocks.length} stock price estimates + 2 index estimates (covers all 35 KNOWN_SYMBOLS)`, '  ✓');
+    log('Stock prices removed — GSE website unreliable. Indices only.', '  ℹ');
   }
 
   return { stocks, indices };
@@ -288,9 +225,7 @@ async function run() {
   const { week_number, year } = getWeekAndYear();
   const weekStr          = getWeekStr(week_number, year);
 
-  const rawStockFile    = getRawPath('economic', `gse_stocks_${today}.csv`);
   const rawIndexFile    = getRawPath('economic', `gse_indices_${today}.csv`);
-  const masterStockFile = getMasterPath('stock_prices.csv');
   const masterIndexFile = getMasterPath('gse_indices.csv');
 
   const browser = await chromium.launch({ headless: HEADLESS });
@@ -299,28 +234,15 @@ async function run() {
   });
   const page = await context.newPage();
 
-  let stocks = [], indices = [];
+  let indices = [];
   try {
     const result = await scrapeGSE(page, today, week_number, year);
-    stocks  = result.stocks;
     indices = result.indices;
   } finally {
     await browser.close();
   }
 
-  // ── Save stock prices ──────────────────────────────────────
-  let stockSaved = 0, idxSaved = 0, neonStocks = 0, neonIdx = 0;
-
-  if (stocks.length) {
-    appendCsv(rawStockFile, STOCK_HEADERS, stocks);
-    stockSaved = appendNewToMaster(
-      masterStockFile, STOCK_HEADERS, stocks,
-      ['symbol', 'date']
-    );
-    log(`Stocks → raw: ${stocks.length} rows, master: ${stockSaved} new`, '💾');
-  } else {
-    log('No stock price data captured', '–');
-  }
+  let idxSaved = 0, neonIdx = 0;
 
   // ── Save index values ──────────────────────────────────────
   if (indices.length) {
@@ -333,17 +255,6 @@ async function run() {
   }
 
   // ── Write to Neon ─────────────────────────────────────────
-  if (stocks.length) {
-    try {
-      const { inserted, errors } = await insertRows('stock_prices', stocks);
-      if (errors.length) log(`Neon stock_prices warnings: ${errors.join('; ')}`, '⚠');
-      neonStocks = inserted;
-      log(`Neon stock_prices → ${inserted} rows inserted`, '🐘');
-    } catch (err) {
-      log(`Neon stock_prices failed (${err.message}) — fallback Excel`, '⚠');
-      await writeFallbackExcel('stock_prices', stocks, STOCK_HEADERS);
-    }
-  }
   if (indices.length) {
     try {
       const { inserted, errors } = await insertRows('gse_indices', indices);
@@ -357,9 +268,8 @@ async function run() {
   }
   await closeAllPools();
 
-  const total = stocks.length + indices.length;
-  log(`GSE complete — ${stocks.length} stocks · ${indices.length} indices · ${neonStocks + neonIdx} Neon`, '📈');
-  return { stocks: stocks.length, indices: indices.length, total, neon: neonStocks + neonIdx };
+  log(`GSE complete — ${indices.length} indices · ${neonIdx} Neon`, '📈');
+  return { indices: indices.length, neon: neonIdx };
 }
 
 // ── Optional: export to Excel (call separately when needed) ──

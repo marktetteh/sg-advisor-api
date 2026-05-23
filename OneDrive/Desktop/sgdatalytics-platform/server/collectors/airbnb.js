@@ -388,8 +388,8 @@ async function run() {
           room_type:           l.roomType,
           price_raw:           l.priceRaw,
           price_ghs:           parsePrice(l.priceRaw) ?? '',
-          rating:              l.rating,
-          review_count:        l.reviews,
+          rating:              parseFloat(l.rating) || null,
+          review_count:        parseInt(l.reviews)  || null,
           listing_url:         l.url,
         });
       }
