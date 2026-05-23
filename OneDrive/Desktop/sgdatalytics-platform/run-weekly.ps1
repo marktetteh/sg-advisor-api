@@ -80,6 +80,7 @@ Write-Host "  ──────────────────────
 $scrapers = @(
     @{ name = "Ghana Stock Exchange (GSE)";   script = "collectors/gse.js";     timeout = 300  },
     @{ name = "Jiji Ghana (market prices)";   script = "collectors/jiji.js";    timeout = 3600 },
+    @{ name = "Tonaton Ghana (market prices)";script = "collectors/tonaton.js"; timeout = 3600 },
     @{ name = "Melcom (retail prices)";       script = "collectors/melcom.js";  timeout = 600  },
     @{ name = "Esoko (commodity prices)";     script = "collectors/esoko.js";   timeout = 300  },
     @{ name = "Meqasa (property listings)";   script = "collectors/meqasa.js";  timeout = 600  },

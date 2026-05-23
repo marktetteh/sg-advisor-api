@@ -182,6 +182,12 @@ jobs:
         timeout-minutes: 50
         continue-on-error: true
 
+      - id: tonaton
+        name: Tonaton Ghana (market prices)
+        run: cd server && node collectors/tonaton.js
+        timeout-minutes: 50
+        continue-on-error: true
+
       - id: melcom
         name: Melcom Ghana (retail prices)
         run: cd server && node collectors/melcom.js
@@ -220,23 +226,25 @@ jobs:
         if: always()
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          GSE:    ${{ steps.gse.outcome }}
-          JIJI:   ${{ steps.jiji.outcome }}
-          MELCOM: ${{ steps.melcom.outcome }}
-          ESOKO:  ${{ steps.esoko.outcome }}
-          MEQASA: ${{ steps.meqasa.outcome }}
-          HOTELS: ${{ steps.hotels.outcome }}
-          AIRBNB: ${{ steps.airbnb.outcome }}
+          GSE:     ${{ steps.gse.outcome }}
+          JIJI:    ${{ steps.jiji.outcome }}
+          TONATON: ${{ steps.tonaton.outcome }}
+          MELCOM:  ${{ steps.melcom.outcome }}
+          ESOKO:   ${{ steps.esoko.outcome }}
+          MEQASA:  ${{ steps.meqasa.outcome }}
+          HOTELS:  ${{ steps.hotels.outcome }}
+          AIRBNB:  ${{ steps.airbnb.outcome }}
         run: |
           FAILED=""
           COMMANDS=""
-          [ "$GSE"    = "failure" ] && FAILED="$FAILED GSE," && COMMANDS="$COMMANDS\nnode collectors/gse.js"
-          [ "$JIJI"   = "failure" ] && FAILED="$FAILED Jiji," && COMMANDS="$COMMANDS\nnode collectors/jiji.js"
-          [ "$MELCOM" = "failure" ] && FAILED="$FAILED Melcom," && COMMANDS="$COMMANDS\nnode collectors/melcom.js"
-          [ "$ESOKO"  = "failure" ] && FAILED="$FAILED Esoko," && COMMANDS="$COMMANDS\nnode collectors/esoko.js"
-          [ "$MEQASA" = "failure" ] && FAILED="$FAILED Meqasa," && COMMANDS="$COMMANDS\nnode collectors/meqasa.js"
-          [ "$HOTELS" = "failure" ] && FAILED="$FAILED Hotels," && COMMANDS="$COMMANDS\nnode collectors/hotels.js"
-          [ "$AIRBNB" = "failure" ] && FAILED="$FAILED Airbnb," && COMMANDS="$COMMANDS\nnode collectors/airbnb.js"
+          [ "$GSE"     = "failure" ] && FAILED="$FAILED GSE,"     && COMMANDS="$COMMANDS\nnode collectors/gse.js"
+          [ "$JIJI"    = "failure" ] && FAILED="$FAILED Jiji,"    && COMMANDS="$COMMANDS\nnode collectors/jiji.js"
+          [ "$TONATON" = "failure" ] && FAILED="$FAILED Tonaton," && COMMANDS="$COMMANDS\nnode collectors/tonaton.js"
+          [ "$MELCOM"  = "failure" ] && FAILED="$FAILED Melcom,"  && COMMANDS="$COMMANDS\nnode collectors/melcom.js"
+          [ "$ESOKO"   = "failure" ] && FAILED="$FAILED Esoko,"   && COMMANDS="$COMMANDS\nnode collectors/esoko.js"
+          [ "$MEQASA"  = "failure" ] && FAILED="$FAILED Meqasa,"  && COMMANDS="$COMMANDS\nnode collectors/meqasa.js"
+          [ "$HOTELS"  = "failure" ] && FAILED="$FAILED Hotels,"  && COMMANDS="$COMMANDS\nnode collectors/hotels.js"
+          [ "$AIRBNB"  = "failure" ] && FAILED="$FAILED Airbnb,"  && COMMANDS="$COMMANDS\nnode collectors/airbnb.js"
 
           if [ -n "$FAILED" ]; then
             FAILED="${FAILED%,}"
