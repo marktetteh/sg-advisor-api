@@ -14,12 +14,16 @@
  *  7. Does the same for commodity_prices and exchange_rates
  */
 require('dotenv').config();
-const fs   = require('fs');
-const path = require('path');
+const fs    = require('fs');
+const path  = require('path');
+const https = require('https');
+const http  = require('http');
 const {
   getDataDir, ensureDirs, readCsv, writeCsv, appendNewToMaster,
   getWeekAndYear, getWeekStr, getDateStr, getWeeklyPath, getMasterPath,
 } = require('./csv-utils');
+const { Pool } = require('pg');
+const { loadGroupFloors, cleanRows, printCleanReport, detectJumps, printJumpReport } = require('./price-cleaner');
 
 const log = (msg, sym = '→') => console.log(`  [${new Date().toLocaleTimeString()}] ${sym} ${msg}`);
 
@@ -137,7 +141,7 @@ function buildMarketStats(rows) {
 
 // ── CONSOLIDATE MARKET PRICES ─────────────────────────────────
 
-function consolidateMarket(week_number, year) {
+function consolidateMarket(week_number, year, groupFloors = {}) {
   const weekStr = getWeekStr(week_number, year);
   log(`Loading raw market files for ${weekStr}…`, '▶');
 
@@ -155,6 +159,19 @@ function consolidateMarket(week_number, year) {
   const dedupedRows = deduplicateMarket(cleanedRows);
   log(`After deduplication: ${dedupedRows.length} unique listings`, '  ✓');
 
+  // Price intelligence cleaning (layer 1: product-group/category floors + layer 2: IQR)
+  const { kept: priceClean, rejected: priceRejected } = cleanRows(dedupedRows, groupFloors);
+  log(`After price cleaning: ${priceClean.length} valid · ${priceRejected.length} rejected`, '  🧹');
+  if (priceRejected.length) {
+    printCleanReport(priceClean, priceRejected, weekStr);
+    // Save rejected rows for audit
+    const rejFile = getWeeklyPath(`rejected_prices_${weekStr}.csv`);
+    const REJ_HEADERS = ['product_category','search_label','price_ghs','price_raw','source','listing_url','reject_reason'];
+    writeCsv(rejFile, REJ_HEADERS, priceRejected);
+    log(`Rejected prices → ${rejFile}`, '📄');
+  }
+  const finalRows = priceClean;
+
   // Write clean weekly snapshot
   const snapshotFile = getWeeklyPath(`market_prices_${weekStr}.csv`);
   const MARKET_HEADERS = [
@@ -162,19 +179,19 @@ function consolidateMarket(week_number, year) {
     'product_category', 'search_label', 'title',
     'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
   ];
-  writeCsv(snapshotFile, MARKET_HEADERS, dedupedRows);
-  log(`Weekly snapshot → ${snapshotFile} (${dedupedRows.length} rows)`, '💾');
+  writeCsv(snapshotFile, MARKET_HEADERS, finalRows);
+  log(`Weekly snapshot → ${snapshotFile} (${finalRows.length} rows)`, '💾');
 
   // Append to master
   const masterFile  = getMasterPath('market_prices.csv');
   const masterSaved = appendNewToMaster(
-    masterFile, MARKET_HEADERS, dedupedRows,
+    masterFile, MARKET_HEADERS, finalRows,
     ['source', 'listing_url', 'week_number', 'year']
   );
   log(`Master market_prices.csv → ${masterSaved} new rows added`, '📦');
 
   // Write weekly stats summary
-  const stats       = buildMarketStats(dedupedRows);
+  const stats       = buildMarketStats(finalRows);
   const statsFile   = getWeeklyPath(`market_stats_${weekStr}.csv`);
   const STATS_HEADERS = [
     'source', 'product_category', 'search_label',
@@ -184,7 +201,21 @@ function consolidateMarket(week_number, year) {
   writeCsv(statsFile, STATS_HEADERS, stats);
   log(`Weekly stats → ${statsFile}`, '📊');
 
-  return { rows: dedupedRows.length, masterSaved, stats: stats.length };
+  // Week-on-week jump detection — compare to previous week's stats
+  const prevWeekNum = week_number === 1 ? 52 : week_number - 1;
+  const prevYear    = week_number === 1 ? year - 1 : year;
+  const prevWeekStr = getWeekStr(prevWeekNum, prevYear);
+  const prevStatsFile = getWeeklyPath(`market_stats_${prevWeekStr}.csv`);
+  if (fs.existsSync(prevStatsFile)) {
+    const prevStats = readCsv(prevStatsFile);
+    const jumps     = detectJumps(stats, prevStats);
+    log(`Week-on-week jump check: ${jumps.length} products flagged (>50% move)`, '⚡');
+    printJumpReport(jumps, weekStr);
+  } else {
+    log(`No previous week stats found (${prevWeekStr}) — skipping jump detection`, '  –');
+  }
+
+  return { rows: finalRows.length, masterSaved, stats: stats.length, rejected: priceRejected.length };
 }
 
 // ── CONSOLIDATE COMMODITY PRICES ──────────────────────────────
@@ -274,6 +305,44 @@ function printReport(week_number, year) {
   console.log('  ╚══════════════════════════════════════════════════════════════╝\n');
 }
 
+// ── SNAPSHOT REGIONAL GMPI ────────────────────────────────────
+// Calls POST /api/gmpi/regional/snapshot on Railway after collection.
+// Requires ADMIN_KEY and optionally API_URL in .env
+
+async function snapshotGmpi() {
+  const API_URL   = process.env.API_URL || 'https://sgdatalytics-production.up.railway.app';
+  const adminKey  = process.env.ADMIN_KEY || '';
+  const url       = new URL('/api/gmpi/regional/snapshot', API_URL);
+  const isHttps   = url.protocol === 'https:';
+  const transport = isHttps ? https : http;
+
+  return new Promise((resolve) => {
+    const options = {
+      hostname: url.hostname,
+      port:     url.port || (isHttps ? 443 : 80),
+      path:     url.pathname,
+      method:   'POST',
+      headers:  {
+        'Content-Type':  'application/json',
+        'Content-Length': '0',
+        'X-Admin-Key':   adminKey,
+      },
+      timeout: 30000,
+    };
+    const req = transport.request(options, (res) => {
+      let body = '';
+      res.on('data', d => body += d);
+      res.on('end', () => {
+        try { resolve(JSON.parse(body)); }
+        catch(e) { resolve({ error: 'parse error', raw: body.slice(0, 120) }); }
+      });
+    });
+    req.on('error',   (e) => resolve({ error: e.message }));
+    req.on('timeout', ()  => { req.destroy(); resolve({ error: 'timeout' }); });
+    req.end();
+  });
+}
+
 // ── MAIN ──────────────────────────────────────────────────────
 
 async function run(opts = {}) {
@@ -288,9 +357,19 @@ async function run(opts = {}) {
 
   ensureDirs();
 
+  // Load product-group price floors from Neon (best-effort — falls back to category floors)
+  const floorsPool = new Pool({
+    connectionString: process.env.NEON_MARKET_PRICES,
+    ssl: { rejectUnauthorized: false },
+    max: 2,
+  });
+  const groupFloors = await loadGroupFloors(floorsPool);
+  await floorsPool.end();
+  log(`Loaded ${Object.keys(groupFloors).length} product-group price floors from Neon`, '⚙');
+
   // 1. Market prices
   log('── Market Prices ────────────────────────────────', ' ');
-  const market = consolidateMarket(week_number, year);
+  const market = consolidateMarket(week_number, year, groupFloors);
 
   // 2. Commodity prices
   log('── Commodity Prices ─────────────────────────────', ' ');
@@ -299,13 +378,26 @@ async function run(opts = {}) {
   // 3. Print summary
   printReport(week_number, year);
 
+  // 4. Snapshot regional GMPI to Neon
+  log('── Regional GMPI Snapshot ───────────────────────', ' ');
+  try {
+    const snap = await snapshotGmpi();
+    if (snap.error) {
+      log(`GMPI snapshot failed: ${snap.error}`, '  [FAILED]');
+    } else {
+      log(`GMPI snapshot saved — ${snap.regions} regions, ${snap.neighbourhoods} neighbourhoods (${snap.week})`, '  [OK]');
+    }
+  } catch(e) {
+    log(`GMPI snapshot error: ${e.message}`, '  [FAILED]');
+  }
+
   const summary = {
     week:         getWeekStr(week_number, year),
     marketRows:   market.rows,
     masterNew:    market.masterSaved,
     commodRows:   commod.rows,
   };
-  log(`Consolidation complete — ${summary.marketRows} market listings, ${summary.masterNew} new in master`, '✅');
+  log(`Consolidation complete — ${summary.marketRows} market listings, ${summary.masterNew} new in master`, '[OK]');
   return summary;
 }
 

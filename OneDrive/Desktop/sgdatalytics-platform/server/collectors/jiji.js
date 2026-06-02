@@ -105,7 +105,7 @@ const log = (msg, sym = '→') =>
 // CSV columns — shared with Melcom
 const MARKET_HEADERS = [
   'scraped_date', 'week_number', 'year', 'source', 'collection_method',
-  'product_category', 'search_label', 'title',
+  'product_category', 'search_label', 'product_group', 'title',
   'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
   'item_type', 'brand', 'model', 'storage', 'normalized_name',
 ];
@@ -339,6 +339,7 @@ async function run() {
           collection_method:'jiji.com.gh',
           product_category: product.category,
           search_label:     product.label,
+          product_group:    product.group || null,
           title:            item.title,
           price_raw:        item.price_raw,
           price_ghs:        parsePrice(item.price_raw) ?? '',

@@ -77,7 +77,7 @@ function isNetworkError(err) {
 // ── CSV column schema (matches market_prices Neon table) ──────
 const MARKET_HEADERS = [
   'scraped_date', 'week_number', 'year', 'source', 'collection_method',
-  'product_category', 'search_label', 'title',
+  'product_category', 'search_label', 'product_group', 'title',
   'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
   'item_type', 'brand', 'model', 'storage', 'normalized_name',
 ];
@@ -236,6 +236,7 @@ async function run() {
         collection_method:'tonaton.com',
         product_category: product.category,
         search_label:     product.label,
+        product_group:    product.group || null,
         title:            advert.title,
         price_raw:        advert.price_title || '',
         price_ghs:        (advert.price_obj && advert.price_obj.value) || parsePrice(advert.price_title) || '',

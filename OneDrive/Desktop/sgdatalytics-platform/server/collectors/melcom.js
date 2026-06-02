@@ -32,7 +32,7 @@ const MAX_PAGES = parseInt(process.env.MAX_PAGES || '3');
 // Same headers as jiji — shared master file
 const MARKET_HEADERS = [
   'scraped_date', 'week_number', 'year', 'source',
-  'product_category', 'search_label', 'title',
+  'product_category', 'search_label', 'product_group', 'title',
   'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
 ];
 
@@ -183,6 +183,7 @@ async function run() {
         collection_method: 'melcom.com',
         product_category: catConfig.category,
         search_label:     deriveLabel(title),
+        product_group:    catConfig.group || null,
         title:            title,
         price_raw:        priceRaw,
         price_ghs:        price,
