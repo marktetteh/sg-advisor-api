@@ -27,9 +27,10 @@ function median(arr) {
 // ── GET /api/market/summary ───────────────────────────────────
 router.get('/summary', (req, res) => {
   try {
-    const { category } = req.query;
+    const { category, product_group } = req.query;
     let rows = loadMarket().filter(r => r.price_ghs && r.price_ghs > 0);
-    if (category) rows = rows.filter(r => r.product_category?.toLowerCase() === category.toLowerCase());
+    if (category)      rows = rows.filter(r => r.product_category?.toLowerCase() === category.toLowerCase());
+    if (product_group) rows = rows.filter(r => r.product_group?.toLowerCase() === product_group.toLowerCase());
 
     // Group by product label, get stats for the LATEST week seen per label
     const labelMap = {};
@@ -57,6 +58,7 @@ router.get('/summary', (req, res) => {
       return {
         search_label:     label,
         product_category: ref?.product_category || '',
+        product_group:    ref?.product_group    || '',
         week_number:      lb.latest_week,
         year:             lb.latest_year,
         total_listings:   prices.length,
@@ -72,13 +74,14 @@ router.get('/summary', (req, res) => {
 });
 
 // ── GET /api/market/weekly ────────────────────────────────────
-// ?label=iPhone  ?category=Electronics
+// ?label=iPhone  ?category=Electronics  ?product_group=Smartphone
 router.get('/weekly', (req, res) => {
   try {
-    const { label, category } = req.query;
+    const { label, category, product_group } = req.query;
     let rows = loadMarket().filter(r => r.price_ghs && r.price_ghs > 0);
-    if (label)    rows = rows.filter(r => r.search_label?.toLowerCase() === label.toLowerCase());
-    if (category) rows = rows.filter(r => r.product_category?.toLowerCase() === category.toLowerCase());
+    if (label)         rows = rows.filter(r => r.search_label?.toLowerCase() === label.toLowerCase());
+    if (category)      rows = rows.filter(r => r.product_category?.toLowerCase() === category.toLowerCase());
+    if (product_group) rows = rows.filter(r => r.product_group?.toLowerCase() === product_group.toLowerCase());
 
     // Group by label + week + year
     const weekMap = {};
@@ -101,6 +104,26 @@ router.get('/weekly', (req, res) => {
     })).sort((a, b) => a.year - b.year || a.week_number - b.week_number);
 
     res.json(trend);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── GET /api/market/groups ────────────────────────────────────
+router.get('/groups', (req, res) => {
+  try {
+    const rows = loadMarket();
+    const groupMap = {};
+    for (const r of rows) {
+      const g = r.product_group;
+      if (!g) continue;
+      if (!groupMap[g]) groupMap[g] = { product_group: g, product_count: new Set(), total_listings: 0 };
+      groupMap[g].product_count.add(r.search_label);
+      groupMap[g].total_listings++;
+    }
+    res.json(Object.values(groupMap).map(g => ({
+      product_group:  g.product_group,
+      product_count:  g.product_count.size,
+      total_listings: g.total_listings,
+    })).sort((a, b) => b.total_listings - a.total_listings));
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
