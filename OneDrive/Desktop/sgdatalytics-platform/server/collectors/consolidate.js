@@ -176,7 +176,8 @@ function consolidateMarket(week_number, year, groupFloors = {}) {
   const snapshotFile = getWeeklyPath(`market_prices_${weekStr}.csv`);
   const MARKET_HEADERS = [
     'scraped_date', 'week_number', 'year', 'source',
-    'product_category', 'search_label', 'title',
+    'product_category', 'search_label', 'product_group', 'title',
+    'brand', 'model', 'normalized_name',
     'price_raw', 'price_ghs', 'location', 'condition', 'listing_url',
   ];
   writeCsv(snapshotFile, MARKET_HEADERS, finalRows);
