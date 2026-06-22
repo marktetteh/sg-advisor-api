@@ -141,11 +141,10 @@ const MARKET_PRODUCTS = [
   { query: 'sharp tv',               label: 'Sharp TV',               category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
   { query: 'sony bravia tv',         label: 'Sony Bravia TV',         category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
   { query: 'oled tv',                label: 'OLED TV',                category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
-  { query: '32 inch tv',             label: 'TV 32 inch',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
-  { query: '43 inch tv',             label: 'TV 43 inch',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
-  { query: '55 inch tv',             label: 'TV 55 inch',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
-  { query: '65 inch tv',             label: 'TV 65 inch',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
-  { query: '75 inch tv',             label: 'TV 75 inch',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
+  { query: 'skyworth tv',            label: 'Skyworth TV',            category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
+  { query: 'syinix tv',              label: 'Syinix TV',              category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
+  { query: 'vitron tv',              label: 'Vitron TV',              category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
+  { query: 'tornado tv',             label: 'Tornado TV',             category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
 
   // Audio
   { query: 'soundbar',               label: 'Soundbar',               category: 'Electronics', group: 'Audio Equipment',     jijiPath: '/electronics' },
