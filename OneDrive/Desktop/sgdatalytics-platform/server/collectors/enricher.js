@@ -1,24 +1,46 @@
 /**
  * SG Datalytics — AI Listing Enricher
- * Uses Gemini Flash to extract structured fields from raw listing titles.
- * Env: GEMINI_API_KEY
+ * Uses Groq (if GROQ_API_KEY set) or Gemini 2.0 Flash Lite (GEMINI_API_KEY) to extract
+ * structured fields from raw listing titles.
+ * Env: GROQ_API_KEY  (preferred — free, reliable)
+ *      GEMINI_API_KEY (fallback — paid standard tier, gemini-2.0-flash-lite)
  */
 require('dotenv').config();
 const https = require('https');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const GEMINI_URL     = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
-const BATCH_SIZE     = 30;
-const BATCH_DELAY_MS = 1000;
+const GROQ_API_KEY   = process.env.GROQ_API_KEY   || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY  || '';
+
+// Pick provider: Groq if key present, otherwise Gemini 2.0 Flash Lite
+// Gemini is default. Set USE_GROQ=1 in env to switch to Groq.
+const USE_GROQ    = process.env.USE_GROQ === '1' && !!GROQ_API_KEY;
+const GROQ_URL    = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL  = 'llama-3.1-8b-instant';
+const GEMINI_URL  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'; // paid standard tier — confirmed working
+
+const BATCH_SIZE     = 10;   // 10 titles per batch — works well with Gemini 2.5-flash
+const BATCH_DELAY_MS = 3000; // 3s between batches
 const MAX_RETRIES    = 3;
+const CIRCUIT_BREAKER_THRESHOLD = 3;
+const CIRCUIT_RESET_MS = 5 * 60 * 1000; // half-open after 5 min
+
 const log = (msg, sym = '->') => console.log(`  [${new Date().toLocaleTimeString()}] ${sym} ${msg}`);
 
-function postJson(url, body) {
+// Circuit breaker state
+let consecutiveFailures = 0;
+let circuitOpen         = false;
+let circuitOpenedAt     = null;
+
+function postJson(url, body, extraHeaders = {}) {
   return new Promise((resolve, reject) => {
     const data    = JSON.stringify(body);
     const options = {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+      headers: {
+        'Content-Type':   'application/json',
+        'Content-Length': Buffer.byteLength(data),
+        ...extraHeaders,
+      },
     };
     const req = https.request(url, options, res => {
       let raw = '';
@@ -35,10 +57,23 @@ function postJson(url, body) {
 }
 
 async function enrichBatch(titles) {
-  if (!GEMINI_API_KEY) return null;
+  if (!GROQ_API_KEY && !GEMINI_API_KEY) return null;
+  const provider = USE_GROQ ? 'Groq' : 'Gemini';
+
+  // Circuit breaker: skip if open, but half-open after CIRCUIT_RESET_MS
+  if (circuitOpen) {
+    const elapsed = Date.now() - circuitOpenedAt;
+    if (elapsed < CIRCUIT_RESET_MS) {
+      log('Circuit open — skipping enrichment (reset in ' + Math.ceil((CIRCUIT_RESET_MS - elapsed) / 1000) + 's)', 'SKIP');
+      return null;
+    }
+    log('Circuit half-open — testing if ' + provider + ' recovered…', 'TEST');
+    circuitOpen = false;
+  }
 
   const numbered = titles.map((t, i) => (i + 1) + '. "' + t + '"').join('\n');
-  const prompt = 'You are a product data extractor for a Ghana online marketplace.\n' +
+  const prompt =
+    'You are a product data extractor for a Ghana online marketplace.\n' +
     'Extract structured fields from each listing title below.\n' +
     'Return ONLY a valid JSON array - no explanation, no markdown.\n\n' +
     'For each title extract:\n' +
@@ -53,58 +88,108 @@ async function enrichBatch(titles) {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const resp = await postJson(GEMINI_URL + '?key=' + GEMINI_API_KEY, {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
-      });
+      let resp;
+      if (USE_GROQ) {
+        // Groq free tier: 6000 total token limit (input ~500 + output).
+        // 5 items → ~150 output tokens; cap at 1000 to stay well under limit.
+        resp = await postJson(
+          GROQ_URL,
+          { model: GROQ_MODEL, messages: [{ role: 'user', content: prompt }], temperature: 0.1, max_tokens: 1000 },
+          { 'Authorization': 'Bearer ' + GROQ_API_KEY }
+        );
+      } else {
+        resp = await postJson(
+          GEMINI_URL + '?key=' + GEMINI_API_KEY,
+          { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 8192 } }
+        );
+      }
+
+      if (resp.status === 413) {
+        log(provider + ' 413 — request too large, skipping batch (reduce BATCH_SIZE if this persists)', 'WARN');
+        return null; // don't retry, don't trip circuit breaker
+      }
 
       if (resp.status === 429) {
         const wait = attempt * 15000;
-        log('Gemini 429 - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
+        log(provider + ' 429 rate limit - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
         await new Promise(r => setTimeout(r, wait));
         continue;
       }
 
       if (resp.status === 503) {
-        const wait = attempt * 10000;
-        log('Gemini 503 - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
+        const wait = Math.min(attempt * 30000, 90000);
+        log(provider + ' 503 - waiting ' + (wait / 1000) + 's (retry ' + attempt + '/' + MAX_RETRIES + ')...', 'WAIT');
         await new Promise(r => setTimeout(r, wait));
         continue;
       }
 
       if (resp.status !== 200) {
         const errMsg = (resp.body && resp.body.error && resp.body.error.message) || JSON.stringify(resp.body).slice(0, 200);
-        log('Gemini HTTP ' + resp.status + ': ' + errMsg, 'WARN');
+        log(provider + ' HTTP ' + resp.status + ': ' + errMsg, 'WARN');
+        consecutiveFailures++;
+        if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+          circuitOpen = true; circuitOpenedAt = Date.now();
+          log('Circuit breaker OPEN — ' + provider + ' unavailable. Will retry in 5 min.', 'WARN');
+        }
         return null;
       }
 
-      let text = (resp.body &&
-                  resp.body.candidates &&
-                  resp.body.candidates[0] &&
-                  resp.body.candidates[0].content &&
-                  resp.body.candidates[0].content.parts &&
-                  resp.body.candidates[0].content.parts[0] &&
-                  resp.body.candidates[0].content.parts[0].text) || '';
+      // Parse response — Groq uses OpenAI format, Gemini uses its own
+      let text = '';
+      if (USE_GROQ) {
+        text = (resp.body && resp.body.choices && resp.body.choices[0] && resp.body.choices[0].message && resp.body.choices[0].message.content) || '';
+      } else {
+        text = (resp.body && resp.body.candidates && resp.body.candidates[0] && resp.body.candidates[0].content && resp.body.candidates[0].content.parts && resp.body.candidates[0].content.parts[0] && resp.body.candidates[0].content.parts[0].text) || '';
+      }
       text = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
 
       const parsed = JSON.parse(text);
       if (!Array.isArray(parsed) || parsed.length !== titles.length) {
-        log('Gemini returned ' + (parsed && parsed.length) + ' items, expected ' + titles.length, 'WARN');
+        log(provider + ' returned ' + (parsed && parsed.length) + ' items, expected ' + titles.length, 'WARN');
         return null;
       }
+      // Success — reset circuit breaker
+      consecutiveFailures = 0;
+      circuitOpen = false;
       return parsed;
+
     } catch (err) {
-      log('Gemini error: ' + err.message, 'WARN');
+      log(provider + ' error: ' + err.message, 'WARN');
+      // Only trip circuit breaker on network errors, not JSON parse issues
+      const isNetworkError = /ECONNRESET|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|socket hang up/i.test(err.message);
+      if (isNetworkError) {
+        consecutiveFailures++;
+        if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+          circuitOpen = true; circuitOpenedAt = Date.now();
+          log('Circuit breaker OPEN — ' + provider + ' unreachable. Will retry in 5 min.', 'WARN');
+        }
+      }
       return null;
     }
   }
-  log('Gemini failed after ' + MAX_RETRIES + ' retries', 'WARN');
+
+  // All retries exhausted
+  consecutiveFailures++;
+  log(provider + ' failed after ' + MAX_RETRIES + ' retries (' + consecutiveFailures + ' consecutive failures)', 'WARN');
+  if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
+    circuitOpen = true; circuitOpenedAt = Date.now();
+    log('Circuit breaker OPEN — ' + provider + ' persistently unavailable. Will retry in 5 min.', 'WARN');
+  }
   return null;
 }
 
 async function enrichListings(rows) {
-  if (!GEMINI_API_KEY) {
-    log('GEMINI_API_KEY not set - skipping AI enrichment', 'WARN');
+  if (!GROQ_API_KEY && !GEMINI_API_KEY) {
+    log('No API key set (GROQ_API_KEY or GEMINI_API_KEY) - skipping AI enrichment', 'WARN');
+    return rows;
+  }
+  // Reset circuit state when called fresh (each collector run starts clean)
+  consecutiveFailures = 0;
+  circuitOpen = false;
+  circuitOpenedAt = null;
+  log('Using ' + (USE_GROQ ? 'Groq (llama-3.1-8b-instant)' : 'Gemini (gemini-2.5-flash)') + ' for enrichment', '🤖');
+  if (process.env.SKIP_ENRICHMENT === '1') {
+    log('SKIP_ENRICHMENT=1 — skipping AI enrichment, saving raw rows', 'SKIP');
     return rows;
   }
 
