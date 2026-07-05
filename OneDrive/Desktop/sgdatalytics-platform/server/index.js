@@ -13,6 +13,7 @@ app.use(express.json());
 app.use('/api', require('./routes/indicators'));       // stats, sectors, indicators, exchange-rates
 app.use('/api/commodities', require('./routes/commodities'));
 app.use('/api/market',      require('./routes/market'));
+app.use('/admin',           require('./routes/admin'));  // protected admin jobs
 
 // ── Health ────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
