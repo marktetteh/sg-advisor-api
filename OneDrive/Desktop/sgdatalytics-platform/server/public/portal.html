@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SG Datalytics — Data Portal</title>
+<style>
+  :root {
+    --bg:       #0f1117;
+    --surface:  #1a1d27;
+    --border:   #2a2d3e;
+    --accent:   #00c896;
+    --accent2:  #0084ff;
+    --danger:   #ff4d6d;
+    --warn:     #f59e0b;
+    --text:     #e2e8f0;
+    --muted:    #8892a4;
+    --radius:   8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Login ── */
+  #login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 30% 40%, #0084ff11 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 70%, #00c89611 0%, transparent 60%), var(--bg);
+  }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 40px; width: 100%; max-width: 420px;
+  }
+  .login-logo { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  .login-sub  { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+  label       { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  input[type=text], input[type=password], select, input[type=date], input[type=number] {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-size: 14px; padding: 10px 12px; outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px;
+    font-weight: 600; padding: 10px 20px; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primary   { background: var(--accent);  color: #000; }
+  .btn-secondary { background: var(--border);  color: var(--text); }
+  .btn-outline   { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-danger    { background: var(--danger); color: #fff; }
+  .btn-full      { width: 100%; }
+  .error-msg  { background: #ff4d6d22; border: 1px solid var(--danger); border-radius: var(--radius); color: var(--danger); font-size: 13px; padding: 10px 14px; margin-top: 12px; display: none; }
+  .field      { margin-bottom: 20px; }
+
+  /* ── App shell ── */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; height: 56px; gap: 24px;
+  }
+  .topbar-logo { font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .topbar-client { font-size: 13px; color: var(--muted); flex: 1; }
+  .topbar-tier {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; border: 1px solid;
+  }
+  .tier-trial      { color: var(--muted); border-color: var(--muted); }
+  .tier-starter    { color: var(--accent2); border-color: var(--accent2); }
+  .tier-pro        { color: var(--accent);  border-color: var(--accent); }
+  .tier-enterprise { color: var(--warn);    border-color: var(--warn); }
+  .logout-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: none; }
+  .logout-btn:hover { color: var(--danger); }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; padding: 16px 24px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Content ── */
+  .content { padding: 28px 24px; max-width: 1000px; flex: 1; }
+  .pane { display: none; }
+  .pane.active { display: block; }
+  h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+  h3 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+
+  /* ── Cards ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+  .card-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .card-value { font-size: 26px; font-weight: 700; }
+  .card-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── Quota bar ── */
+  .quota-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
+  .quota-row  { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .quota-title { font-size: 14px; font-weight: 600; }
+  .quota-nums  { font-size: 13px; color: var(--muted); }
+  .bar-track  { background: var(--bg); border-radius: 4px; height: 10px; overflow: hidden; }
+  .bar-fill   { height: 100%; border-radius: 4px; transition: width .4s; background: var(--accent); }
+  .bar-fill.warn   { background: var(--warn); }
+  .bar-fill.danger { background: var(--danger); }
+  .quota-reset { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* ── Query builder ── */
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .filter-grid .field { margin-bottom: 0; }
+  .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .preview-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-top: 20px; overflow: hidden;
+  }
+  .preview-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .preview-count  { font-size: 13px; font-weight: 600; }
+  .preview-muted  { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff06; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+  .tag-new  { background: #00c89622; color: var(--accent); }
+  .tag-used { background: #f59e0b22; color: var(--warn); }
+
+  /* ── API docs ── */
+  .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+  .endpoint-header { padding: 14px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .method  { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+  .get     { background: #00c89633; color: var(--accent); }
+  .ep-path { font-size: 14px; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .ep-desc { font-size: 13px; color: var(--muted); flex: 1; }
+  .ep-body { padding: 0 18px 18px; display: none; }
+  .ep-body.open { display: block; }
+  pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+    overflow-x: auto; white-space: pre-wrap; color: #a8d8b8; margin-top: 10px;
+  }
+  .param-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  .param-table th { background: var(--bg); padding: 8px 12px; text-align: left; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .param-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .param-table tr:last-child td { border-bottom: none; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
+
+  /* ── Spinner ── */
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Empty state ── */
+  .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 600px) {
+    .filter-grid { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">SG Datalytics</div>
+    <div class="login-sub">Ghana Market Intelligence — Client Portal</div>
+    <div class="field">
+      <label>Your API Key</label>
+      <input type="password" id="key-input" placeholder="sgd_xxxxxxxxxxxxxxxx" autocomplete="off">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="login()">Access Portal</button>
+    <div class="error-msg" id="login-error">Invalid or revoked API key. Contact mark@sgdatalytics.com</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">SG Datalytics</div>
+    <div class="topbar-client" id="topbar-client"></div>
+    <span class="topbar-tier" id="topbar-tier"></span>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('dashboard', this)">Dashboard</div>
+    <div class="tab" onclick="showTab('query', this)">Query Builder</div>
+    <div class="tab" onclick="showTab('docs', this)">API Reference</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="pane active" id="pane-dashboard">
+      <h2>Usage Overview</h2>
+      <div class="quota-wrap" id="quota-wrap">
+        <div class="quota-row">
+          <span class="quota-title">Monthly Row Quota</span>
+          <span class="quota-nums" id="quota-nums">—</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="quota-bar" style="width:0%"></div></div>
+        <div class="quota-reset" id="quota-reset"></div>
+      </div>
+      <div class="cards" id="stat-cards">
+        <div class="card"><div class="card-label">Rows Used This Month</div><div class="card-value" id="stat-rows">—</div></div>
+        <div class="card"><div class="card-label">Requests This Month</div><div class="card-value" id="stat-reqs">—</div></div>
+        <div class="card"><div class="card-label">Rows Remaining</div><div class="card-value" id="stat-rem">—</div></div>
+        <div class="card"><div class="card-label">Quota Resets</div><div class="card-value" id="stat-reset" style="font-size:18px">—</div></div>
+      </div>
+      <h3>Available Categories</h3>
+      <div id="categories-grid" class="cards"></div>
+    </div>
+
+    <!-- ── QUERY BUILDER ── -->
+    <div class="pane" id="pane-query">
+      <h2>Query Builder</h2>
+      <div class="filter-grid">
+        <div class="field">
+          <label>Category</label>
+          <select id="q-category"><option value="">All available categories</option></select>
+        </div>
+        <div class="field">
+          <label>Product Group</label>
+          <input type="text" id="q-group" placeholder="e.g. Smartphone, Toyota">
+        </div>
+        <div class="field">
+          <label>Brand</label>
+          <input type="text" id="q-brand" placeholder="e.g. Samsung, Apple">
+        </div>
+        <div class="field">
+          <label>Condition</label>
+          <select id="q-condition">
+            <option value="">Any condition</option>
+            <option value="new">New</option>
+            <option value="used">Used</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Date From</label>
+          <input type="date" id="q-from">
+        </div>
+        <div class="field">
+          <label>Date To</label>
+          <input type="date" id="q-to">
+        </div>
+        <div class="field">
+          <label>Min Price (GHS)</label>
+          <input type="number" id="q-minprice" placeholder="0" min="0">
+        </div>
+        <div class="field">
+          <label>Max Price (GHS)</label>
+          <input type="number" id="q-maxprice" placeholder="no limit" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi">
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-primary" onclick="runQuery(false)">
+          <span id="preview-spinner" style="display:none" class="spinner"></span>
+          Preview Results
+        </button>
+        <button class="btn btn-secondary" onclick="runQuery(true)" id="dl-btn">Download CSV</button>
+        <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+      </div>
+
+      <div class="preview-box" id="preview-box" style="display:none">
+        <div class="preview-header">
+          <span class="preview-count" id="preview-count"></span>
+          <span class="preview-muted">Showing first 20 rows</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="preview-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Category</th><th>Product Group</th>
+                <th>Title</th><th>Brand</th><th>Condition</th>
+                <th>Price (GHS)</th><th>Location</th>
+              </tr>
+            </thead>
+            <tbody id="preview-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── API DOCS ── -->
+    <div class="pane" id="pane-docs">
+      <h2>API Reference</h2>
+      <p style="font-size:14px; color:var(--muted); margin-bottom:24px;">
+        Base URL: <code id="docs-base-url"></code> &nbsp;·&nbsp;
+        Pass your key as <code>X-API-Key</code> header on every request.
+      </p>
+
+      <!-- /data/prices -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="toggleEp(this)">
+          <span class="method get">GET</span>
+          <span class="ep-path">/data/prices</span>
+          <span class="ep-desc">Listing-level price data with filters</span>
+          <span style="color:var(--muted); font-size:12px">▶</span>
+        </div>
+        <div class="ep-body">
+          <table class="param-table">
+            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>category</code></td><td>string</td><td>Filter by product category (e.g. Electronics)</td></tr>
+            <tr><td><code>product_group</code></td><td>string</td><td>Specific product type (e.g. Smartphone)</td></tr>
+            <tr><td><code>brand</code></td><td>string</td><td>Brand name (e.g. Samsung)</td></tr>
+            <tr><td><code>condition</code></td><td>new | used</td><td>Listing condition</td></tr>
+            <tr><td><code>date_from</code></td><td>YYYY-MM-DD</td><td>Start of date range</td></tr>
+            <tr><td><code>date_to</code></td><td>YYYY-MM-DD</td><td>End of date range</td></tr>
+            <tr><td><code>location</code></td><td>string</td><td>Partial location match (e.g. Accra)</td></tr>
+            <tr><td><code>min_price</code></td><td>number</td><td>Minimum price in GHS</td></tr>
+            <tr><td><code>max_price</code></td><td>number</td><td>Maximum price in GHS</td></tr>
+            <tr><td><code>limit</code></td><td>integer</td><td>Max rows to return (capped by your tier)</td></tr>
+            <tr><td><code>offset</code></td><td>integer</td><td>Pagination offset</td></tr>
+            <tr><td><code>format</code></td><td>csv</td><td>Return a downloadable CSV file</td></tr>
+          </table>
+          <pre id="ex-prices"></pre>
+        </div>
+      </div>
+
+      <!-- /data/summary -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="toggleEp(this)">
+          <span class="method get">GET</span>
+          <span class="ep-path">/data/summary</span>
+          <span class="ep-desc">Aggregated stats: median, min, max, count per product group</span>
+          <span style="color:var(--muted); font-size:12px">▶</span>
+        </div>
+        <div class="ep-body">
+          <table class="param-table">
+            <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>category</code></td><td>string</td><td>Filter to one category</td></tr>
+            <tr><td><code>date_from</code></td><td>YYYY-MM-DD</td><td>Start of date range</td></tr>
+            <tr><td><code>date_to</code></td><td>YYYY-MM-DD</td><td>End of date range</td></tr>
+          </table>
+          <pre id="ex-summary"></pre>
+        </div>
+      </div>
+
+      <!-- /data/categories -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="toggleEp(this)">
+          <span class="method get">GET</span>
+          <span class="ep-path">/data/categories</span>
+          <span class="ep-desc">Categories available on your plan, with listing counts</span>
+          <span style="color:var(--muted); font-size:12px">▶</span>
+        </div>
+        <div class="ep-body">
+          <pre id="ex-categories"></pre>
+        </div>
+      </div>
+
+      <!-- /data/usage -->
+      <div class="endpoint">
+        <div class="endpoint-header" onclick="toggleEp(this)">
+          <span class="method get">GET</span>
+          <span class="ep-path">/data/usage</span>
+          <span class="ep-desc">Your quota status and remaining rows this month</span>
+          <span style="color:var(--muted); font-size:12px">▶</span>
+        </div>
+        <div class="ep-body">
+          <pre id="ex-usage"></pre>
+        </div>
+      </div>
+
+      <div style="margin-top:28px; padding:18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:10px;">
+          Need a higher limit or more categories? Contact us:
+        </div>
+        <strong>mark@sgdatalytics.com</strong>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let API_KEY   = '';
+  let CLIENT    = {};
+  let BASE_URL  = window.location.origin;
+
+  // ── Auth ──────────────────────────────────────────────────
+  async function login() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key) return;
+
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+
+    try {
+      const res = await fetch(`${BASE_URL}/data/usage`, {
+        headers: { 'X-API-Key': key }
+      });
+      if (!res.ok) {
+        errEl.style.display = 'block';
+        return;
+      }
+      API_KEY = key;
+      CLIENT  = await res.json();
+      sessionStorage.setItem('sgd_key', key);
+      bootApp();
+    } catch(e) {
+      errEl.style.display = 'block';
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('sgd_key');
+    API_KEY = ''; CLIENT = {};
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('key-input').value = '';
+  }
+
+  // ── Boot ──────────────────────────────────────────────────
+  function bootApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+
+    // Topbar
+    document.getElementById('topbar-client').textContent = CLIENT.client;
+    const tierEl = document.getElementById('topbar-tier');
+    tierEl.textContent = CLIENT.tier.toUpperCase();
+    tierEl.className = `topbar-tier tier-${CLIENT.tier}`;
+
+    renderDashboard();
+    populateCategoryDropdown();
+    renderDocs();
+
+    // Default dates for query builder
+    const to = new Date().toISOString().split('T')[0];
+    const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    document.getElementById('q-from').value = from;
+    document.getElementById('q-to').value   = to;
+  }
+
+  // ── Dashboard ─────────────────────────────────────────────
+  async function renderDashboard() {
+    const limit    = CLIENT.row_limit_monthly;
+    const used     = CLIENT.rows_used_this_month;
+    const rem      = CLIENT.rows_remaining;
+    const unlimited = limit === 'unlimited';
+
+    // Quota bar
+    const pct  = unlimited ? 0 : Math.min(1, used / limit);
+    const bar  = document.getElementById('quota-bar');
+    bar.style.width = (unlimited ? 0 : pct * 100) + '%';
+    bar.className   = 'bar-fill' + (pct >= .9 ? ' danger' : pct >= .8 ? ' warn' : '');
+
+    document.getElementById('quota-nums').textContent =
+      unlimited ? `${used.toLocaleString()} rows used (unlimited plan)` :
+                  `${used.toLocaleString()} / ${limit.toLocaleString()} rows`;
+    document.getElementById('quota-reset').textContent = `Quota resets ${CLIENT.quota_resets_at}`;
+
+    // Stat cards
+    document.getElementById('stat-rows').textContent  = used.toLocaleString();
+    document.getElementById('stat-reqs').textContent  = CLIENT.requests_this_month.toLocaleString();
+    document.getElementById('stat-rem').textContent   = unlimited ? '∞' : rem.toLocaleString();
+    document.getElementById('stat-reset').textContent = CLIENT.quota_resets_at;
+
+    // Categories
+    const catRes  = await apiFetch('/data/categories');
+    const grid    = document.getElementById('categories-grid');
+    grid.innerHTML = '';
+    if (catRes && catRes.data) {
+      catRes.data.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-label">${c.product_category}</div>
+          <div class="card-value" style="font-size:20px">${parseInt(c.total_listings).toLocaleString()}</div>
+          <div class="card-sub">listings · updated ${c.last_updated ? c.last_updated.split('T')[0] : '—'}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  }
+
+  // ── Query builder ─────────────────────────────────────────
+  async function populateCategoryDropdown() {
+    const res = await apiFetch('/data/categories');
+    if (!res || !res.data) return;
+    const sel = document.getElementById('q-category');
+    res.data.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.product_category;
+      opt.textContent = c.product_category;
+      sel.appendChild(opt);
+    });
+  }
+
+  function buildQueryParams(forDownload = false) {
+    const p = new URLSearchParams();
+    const v = id => document.getElementById(id).value.trim();
+    if (v('q-category'))  p.set('category',      v('q-category'));
+    if (v('q-group'))     p.set('product_group',  v('q-group'));
+    if (v('q-brand'))     p.set('brand',          v('q-brand'));
+    if (v('q-condition')) p.set('condition',       v('q-condition'));
+    if (v('q-from'))      p.set('date_from',       v('q-from'));
+    if (v('q-to'))        p.set('date_to',         v('q-to'));
+    if (v('q-location'))  p.set('location',        v('q-location'));
+    if (v('q-minprice'))  p.set('min_price',       v('q-minprice'));
+    if (v('q-maxprice'))  p.set('max_price',       v('q-maxprice'));
+    if (forDownload)      p.set('format', 'csv');
+    else                  p.set('limit', '20');
+    return p;
+  }
+
+  async function runQuery(download = false) {
+    if (download) {
+      const params = buildQueryParams(true);
+      window.location.href = `${BASE_URL}/data/prices?${params}&api_key=${encodeURIComponent(API_KEY)}`;
+      return;
+    }
+
+    const spinner = document.getElementById('preview-spinner');
+    spinner.style.display = 'inline-block';
+
+    const params = buildQueryParams(false);
+    const res    = await apiFetch(`/data/prices?${params}`);
+    spinner.style.display = 'none';
+
+    if (!res) return;
+
+    document.getElementById('preview-box').style.display = 'block';
+    document.getElementById('preview-count').textContent =
+      `${res.count} rows returned (${res.response_ms}ms)`;
+
+    const tbody = document.getElementById('preview-body');
+    tbody.innerHTML = '';
+    if (!res.data || !res.data.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="empty">No results for these filters.</td></tr>';
+      return;
+    }
+
+    res.data.forEach(row => {
+      const cond = row.condition || '';
+      const condTag = cond.toLowerCase().includes('new')
+        ? `<span class="tag tag-new">New</span>`
+        : cond ? `<span class="tag tag-used">Used</span>` : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.collected_date ? row.collected_date.split('T')[0] : '—'}</td>
+        <td>${row.product_category || '—'}</td>
+        <td>${row.product_group || '—'}</td>
+        <td style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${row.title || '—'}</td>
+        <td>${row.brand || '—'}</td>
+        <td>${condTag}</td>
+        <td style="font-weight:600">${row.price_ghs ? 'GHS ' + parseFloat(row.price_ghs).toLocaleString() : '—'}</td>
+        <td>${row.location || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function clearFilters() {
+    ['q-category','q-group','q-brand','q-condition','q-from','q-to','q-location','q-minprice','q-maxprice']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('preview-box').style.display = 'none';
+  }
+
+  // ── API docs ──────────────────────────────────────────────
+  function renderDocs() {
+    const base = BASE_URL;
+    document.getElementById('docs-base-url').textContent = base;
+
+    document.getElementById('ex-prices').textContent =
+`curl -H "X-API-Key: ${API_KEY}" \\
+  "${base}/data/prices?category=Electronics&condition=new&date_from=2026-09-01"
+
+# Download as CSV
+curl -H "X-API-Key: ${API_KEY}" \\
+  "${base}/data/prices?category=Vehicles&format=csv" -o vehicles.csv`;
+
+    document.getElementById('ex-summary').textContent =
+`curl -H "X-API-Key: ${API_KEY}" \\
+  "${base}/data/summary?category=Electronics"`;
+
+    document.getElementById('ex-categories').textContent =
+`curl -H "X-API-Key: ${API_KEY}" \\
+  "${base}/data/categories"`;
+
+    document.getElementById('ex-usage').textContent =
+`curl -H "X-API-Key: ${API_KEY}" \\
+  "${base}/data/usage"`;
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  async function apiFetch(path) {
+    try {
+      const res = await fetch(`${BASE_URL}${path}`, {
+        headers: { 'X-API-Key': API_KEY }
+      });
+      if (res.status === 429) {
+        const data = await res.json();
+        alert(data.error || 'Quota or rate limit exceeded.');
+        return null;
+      }
+      if (!res.ok) return null;
+      return res.json();
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+
+  function showTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`pane-${name}`).classList.add('active');
+  }
+
+  function toggleEp(header) {
+    const body  = header.nextElementSibling;
+    const arrow = header.querySelector('span:last-child');
+    const open  = body.classList.toggle('open');
+    arrow.textContent = open ? '▼' : '▶';
+  }
+
+  // ── Auto-login from session ───────────────────────────────
+  window.addEventListener('DOMContentLoaded', async () => {
+    const saved = sessionStorage.getItem('sgd_key');
+    if (saved) {
+      document.getElementById('key-input').value = saved;
+      await login();
+    }
+  });
+
+  // Allow Enter key on login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
+  });
+</script>
+</body>
+</html>

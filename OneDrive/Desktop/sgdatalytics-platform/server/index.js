@@ -14,6 +14,8 @@ app.use('/api', require('./routes/indicators'));       // stats, sectors, indica
 app.use('/api/commodities', require('./routes/commodities'));
 app.use('/api/market',      require('./routes/market'));
 app.use('/admin',           require('./routes/admin'));  // protected admin jobs
+app.use('/data',            require('./routes/distribution')); // authenticated client data API
+app.use('/portal',          require('./routes/portal'));        // client self-service portal
 
 // ── Health ────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
@@ -44,5 +46,12 @@ app.listen(PORT, () => {
   console.log(`     GET /api/market/data                    paginated listings  ?search=&category=`);
   console.log(`     GET /api/market/export                  download CSV`);
   console.log(`     GET /api/market/stocks                  GSE stock prices`);
-  console.log(`     GET /api/market/indices                 GSE-CI / GSE-FSI\n`);
+  console.log(`     GET /api/market/indices                 GSE-CI / GSE-FSI`);
+  console.log(`\n  🔐 Distribution API (requires X-API-Key header):`);
+  console.log(`     GET /data/prices      filtered market listings  ?category=&product_group=&brand=&date_from=&date_to=&format=csv`);
+  console.log(`     GET /data/summary     aggregated price stats    ?category=&date_from=&date_to=`);
+  console.log(`     GET /data/categories  available categories for this client`);
+  console.log(`     GET /data/usage       client quota and usage this month`);
+  console.log(`\n  🌐 Client Portal:`);
+  console.log(`     GET /portal           self-service portal (login with API key)\n`);
 });
