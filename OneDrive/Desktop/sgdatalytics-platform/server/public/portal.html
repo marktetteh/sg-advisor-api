@@ -108,7 +108,25 @@
   .quota-reset { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
   /* ── Query builder ── */
-  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .filter-section { margin-bottom: 24px; }
+  .filter-section-title {
+    font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .filter-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .step-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700;
+    background: var(--accent); color: #000; flex-shrink: 0;
+  }
+  .cascade-row {
+    display: grid; grid-template-columns: 1fr 24px 1fr 24px 1fr; gap: 0; align-items: end; margin-bottom: 0;
+  }
+  .cascade-arrow {
+    display: flex; align-items: center; justify-content: center; padding-bottom: 10px;
+    color: var(--muted); font-size: 16px;
+  }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
   .filter-grid .field { margin-bottom: 0; }
   .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
   .preview-box {
@@ -197,9 +215,11 @@
   /* ── Empty state ── */
   .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
 
-  @media (max-width: 600px) {
+  @media (max-width: 700px) {
     .filter-grid { grid-template-columns: 1fr; }
     .cards { grid-template-columns: 1fr 1fr; }
+    .cascade-row { grid-template-columns: 1fr; }
+    .cascade-arrow { display: none; }
   }
 </style>
 </head>
@@ -260,71 +280,89 @@
     <!-- ── QUERY BUILDER ── -->
     <div class="pane" id="pane-query">
       <h2>Query Builder</h2>
-      <div class="filter-grid">
-        <div class="field">
-          <label>Category</label>
-          <div class="sd-wrap" id="sd-category-wrap">
-            <input type="text" class="sd-input" id="sd-category-display" placeholder="All available categories" readonly>
-            <button class="sd-clear" id="sd-category-clear" onclick="clearSd('category')">✕</button>
-            <span class="sd-arrow">▼</span>
-            <div class="sd-dropdown" id="sd-category-dropdown">
-              <div class="sd-loading">Loading…</div>
+
+      <!-- Step 1: Product selection (cascading) -->
+      <div class="filter-section">
+        <div class="filter-section-title">
+          <span class="step-badge">1</span> Select what you want to find
+        </div>
+        <div class="cascade-row">
+          <!-- Category -->
+          <div class="field" style="margin-bottom:0">
+            <label>Category</label>
+            <div class="sd-wrap" id="sd-category-wrap">
+              <input type="text" class="sd-input" id="sd-category-display" placeholder="All categories" readonly>
+              <button class="sd-clear" id="sd-category-clear" onclick="clearSd('category')">✕</button>
+              <span class="sd-arrow">▼</span>
+              <div class="sd-dropdown" id="sd-category-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
+            <input type="hidden" id="q-category">
+            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Electronics, Vehicles</div>
           </div>
-          <input type="hidden" id="q-category">
-        </div>
-        <div class="field">
-          <label>Product Group</label>
-          <div class="sd-wrap" id="sd-group-wrap">
-            <input type="text" class="sd-input" id="sd-group-display" placeholder="All product groups" readonly>
-            <button class="sd-clear" id="sd-group-clear" onclick="clearSd('group')">✕</button>
-            <span class="sd-arrow">▼</span>
-            <div class="sd-dropdown" id="sd-group-dropdown">
-              <div class="sd-loading">Loading…</div>
+          <div class="cascade-arrow">→</div>
+          <!-- Product Group -->
+          <div class="field" style="margin-bottom:0">
+            <label>Product Group</label>
+            <div class="sd-wrap" id="sd-group-wrap">
+              <input type="text" class="sd-input" id="sd-group-display" placeholder="All product groups" readonly>
+              <button class="sd-clear" id="sd-group-clear" onclick="clearSd('group')">✕</button>
+              <span class="sd-arrow">▼</span>
+              <div class="sd-dropdown" id="sd-group-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
+            <input type="hidden" id="q-group">
+            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Smartphone, Toyota</div>
           </div>
-          <input type="hidden" id="q-group">
-        </div>
-        <div class="field">
-          <label>Brand</label>
-          <div class="sd-wrap" id="sd-brand-wrap">
-            <input type="text" class="sd-input" id="sd-brand-display" placeholder="All brands" readonly>
-            <button class="sd-clear" id="sd-brand-clear" onclick="clearSd('brand')">✕</button>
-            <span class="sd-arrow">▼</span>
-            <div class="sd-dropdown" id="sd-brand-dropdown">
-              <div class="sd-loading">Loading…</div>
+          <div class="cascade-arrow">→</div>
+          <!-- Brand -->
+          <div class="field" style="margin-bottom:0">
+            <label>Brand</label>
+            <div class="sd-wrap" id="sd-brand-wrap">
+              <input type="text" class="sd-input" id="sd-brand-display" placeholder="All brands" readonly>
+              <button class="sd-clear" id="sd-brand-clear" onclick="clearSd('brand')">✕</button>
+              <span class="sd-arrow">▼</span>
+              <div class="sd-dropdown" id="sd-brand-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
+            <input type="hidden" id="q-brand">
+            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Apple, Samsung, Toyota</div>
           </div>
-          <input type="hidden" id="q-brand">
-        </div>
-        <div class="field">
-          <label>Condition</label>
-          <select id="q-condition">
-            <option value="">Any condition</option>
-            <option value="new">New</option>
-            <option value="used">Used</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Date From</label>
-          <input type="date" id="q-from">
-        </div>
-        <div class="field">
-          <label>Date To</label>
-          <input type="date" id="q-to">
-        </div>
-        <div class="field">
-          <label>Min Price (GHS)</label>
-          <input type="number" id="q-minprice" placeholder="0" min="0">
-        </div>
-        <div class="field">
-          <label>Max Price (GHS)</label>
-          <input type="number" id="q-maxprice" placeholder="no limit" min="0">
         </div>
       </div>
-      <div class="field">
-        <label>Location</label>
-        <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi">
+
+      <!-- Step 2: Narrow filters -->
+      <div class="filter-section">
+        <div class="filter-section-title">
+          <span class="step-badge" style="background:var(--accent2)">2</span> Narrow your results
+        </div>
+        <div class="filter-grid">
+          <div class="field">
+            <label>Condition</label>
+            <select id="q-condition">
+              <option value="">Any condition</option>
+              <option value="new">New</option>
+              <option value="used">Used</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Location</label>
+            <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi">
+          </div>
+          <div class="field">
+            <label>Date From</label>
+            <input type="date" id="q-from">
+          </div>
+          <div class="field">
+            <label>Date To</label>
+            <input type="date" id="q-to">
+          </div>
+          <div class="field">
+            <label>Min Price (GHS)</label>
+            <input type="number" id="q-minprice" placeholder="0" min="0">
+          </div>
+          <div class="field">
+            <label>Max Price (GHS)</label>
+            <input type="number" id="q-maxprice" placeholder="no limit" min="0">
+          </div>
+        </div>
       </div>
       <div class="filter-actions">
         <button class="btn btn-primary" onclick="runQuery(false)">
