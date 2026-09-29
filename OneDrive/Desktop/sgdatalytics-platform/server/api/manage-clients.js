@@ -231,8 +231,18 @@ async function updateClient({ email, tier, categories, limit, notes }) {
     params.push(notes);
   }
 
+  // Handle key regeneration
+  const regenerate = Object.keys(require('process').argv).some(() => false) ||
+    process.argv.includes('--regenerate-key');
+  let newRawKey = null;
+  if (regenerate) {
+    newRawKey = generateKey();
+    updates.push(`api_key_hash = $${p++}`);
+    params.push(hashKey(newRawKey));
+  }
+
   if (!updates.length) {
-    console.log('  Nothing to update — pass at least one of: --tier --categories --limit --notes');
+    console.log('  Nothing to update — pass at least one of: --tier --categories --limit --notes --regenerate-key');
     return;
   }
 
@@ -246,7 +256,13 @@ async function updateClient({ email, tier, categories, limit, notes }) {
   console.log(`\n  ✅ Updated ${c.name} (${c.email})`);
   console.log(`     Tier:       ${existing.tier} → ${c.tier}`);
   console.log(`     Row limit:  ${existing.row_limit_monthly === -1 ? '∞' : existing.row_limit_monthly} → ${c.row_limit_monthly === -1 ? '∞ (unlimited)' : c.row_limit_monthly + '/month'}`);
-  console.log(`     Categories: ${c.allowed_categories.length ? c.allowed_categories.join(', ') : 'ALL'}\n`);
+  console.log(`     Categories: ${c.allowed_categories.length ? c.allowed_categories.join(', ') : 'ALL'}`);
+  if (newRawKey) {
+    console.log(`\n  🔑 NEW API KEY (share this with the client — shown once only):`);
+    console.log(`     ${newRawKey}`);
+    console.log('\n  ⚠  This key will NOT be shown again. Copy it now.');
+  }
+  console.log();
 }
 
 // ── REACTIVATE ────────────────────────────────────────────────

@@ -147,6 +147,49 @@
   .param-table tr:last-child td { border-bottom: none; }
   code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
 
+  /* ── Searchable dropdown ── */
+  .sd-wrap { position: relative; }
+  .sd-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-size: 14px; padding: 10px 32px 10px 12px; outline: none;
+    transition: border-color .15s; cursor: pointer;
+  }
+  .sd-input:focus { border-color: var(--accent); }
+  .sd-input.has-value { color: var(--text); }
+  .sd-arrow {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none; font-size: 11px;
+  }
+  .sd-clear {
+    position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); cursor: pointer; font-size: 14px; display: none;
+    background: none; border: none; padding: 2px;
+  }
+  .sd-clear:hover { color: var(--danger); }
+  .sd-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    max-height: 240px; overflow-y: auto; display: none; box-shadow: 0 8px 24px #00000044;
+  }
+  .sd-dropdown.open { display: block; }
+  .sd-search {
+    padding: 8px 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0;
+    background: var(--surface);
+  }
+  .sd-search input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-size: 13px; padding: 7px 10px; outline: none;
+  }
+  .sd-search input:focus { border-color: var(--accent); }
+  .sd-option {
+    padding: 9px 12px; font-size: 13px; cursor: pointer;
+    transition: background .1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sd-option:hover, .sd-option.focused { background: #ffffff0d; }
+  .sd-option.selected { color: var(--accent); font-weight: 600; }
+  .sd-empty { padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+  .sd-loading { padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+
   /* ── Spinner ── */
   .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -220,15 +263,39 @@
       <div class="filter-grid">
         <div class="field">
           <label>Category</label>
-          <select id="q-category"><option value="">All available categories</option></select>
+          <div class="sd-wrap" id="sd-category-wrap">
+            <input type="text" class="sd-input" id="sd-category-display" placeholder="All available categories" readonly>
+            <button class="sd-clear" id="sd-category-clear" onclick="clearSd('category')">✕</button>
+            <span class="sd-arrow">▼</span>
+            <div class="sd-dropdown" id="sd-category-dropdown">
+              <div class="sd-loading">Loading…</div>
+            </div>
+          </div>
+          <input type="hidden" id="q-category">
         </div>
         <div class="field">
           <label>Product Group</label>
-          <input type="text" id="q-group" placeholder="e.g. Smartphone, Toyota">
+          <div class="sd-wrap" id="sd-group-wrap">
+            <input type="text" class="sd-input" id="sd-group-display" placeholder="All product groups" readonly>
+            <button class="sd-clear" id="sd-group-clear" onclick="clearSd('group')">✕</button>
+            <span class="sd-arrow">▼</span>
+            <div class="sd-dropdown" id="sd-group-dropdown">
+              <div class="sd-loading">Loading…</div>
+            </div>
+          </div>
+          <input type="hidden" id="q-group">
         </div>
         <div class="field">
           <label>Brand</label>
-          <input type="text" id="q-brand" placeholder="e.g. Samsung, Apple">
+          <div class="sd-wrap" id="sd-brand-wrap">
+            <input type="text" class="sd-input" id="sd-brand-display" placeholder="All brands" readonly>
+            <button class="sd-clear" id="sd-brand-clear" onclick="clearSd('brand')">✕</button>
+            <span class="sd-arrow">▼</span>
+            <div class="sd-dropdown" id="sd-brand-dropdown">
+              <div class="sd-loading">Loading…</div>
+            </div>
+          </div>
+          <input type="hidden" id="q-brand">
         </div>
         <div class="field">
           <label>Condition</label>
@@ -482,17 +549,151 @@
     }
   }
 
-  // ── Query builder ─────────────────────────────────────────
+  // ── Searchable Dropdowns ──────────────────────────────────
+  const SD = {}; // { key: { value, items } }
+
+  function buildSdDropdown(key, items, placeholder) {
+    const dropdown = document.getElementById(`sd-${key}-dropdown`);
+    const search   = document.createElement('div');
+    search.className = 'sd-search';
+    search.innerHTML = `<input type="text" placeholder="Search ${placeholder}…" id="sd-${key}-search">`;
+
+    const list = document.createElement('div');
+    list.id = `sd-${key}-list`;
+
+    dropdown.innerHTML = '';
+    dropdown.appendChild(search);
+    dropdown.appendChild(list);
+
+    SD[key] = { value: SD[key]?.value || '', items };
+    renderSdList(key, '');
+
+    document.getElementById(`sd-${key}-search`).addEventListener('input', e => {
+      renderSdList(key, e.target.value);
+    });
+  }
+
+  function renderSdList(key, filter) {
+    const list  = document.getElementById(`sd-${key}-list`);
+    const items = SD[key]?.items || [];
+    const f     = filter.toLowerCase();
+    const filtered = filter ? items.filter(v => v.toLowerCase().includes(f)) : items;
+
+    list.innerHTML = '';
+
+    // "All" option
+    const allOpt = document.createElement('div');
+    allOpt.className = 'sd-option' + (!SD[key]?.value ? ' selected' : '');
+    allOpt.textContent = `All ${key === 'category' ? 'categories' : key === 'group' ? 'product groups' : 'brands'}`;
+    allOpt.onclick = () => selectSd(key, '', allOpt.textContent);
+    list.appendChild(allOpt);
+
+    if (!filtered.length) {
+      list.innerHTML += `<div class="sd-empty">No matches</div>`;
+      return;
+    }
+    filtered.forEach(v => {
+      const opt = document.createElement('div');
+      opt.className = 'sd-option' + (SD[key]?.value === v ? ' selected' : '');
+      opt.textContent = v;
+      opt.onclick = () => selectSd(key, v, v);
+      list.appendChild(opt);
+    });
+  }
+
+  function selectSd(key, value, label) {
+    SD[key] = { ...SD[key], value };
+    document.getElementById(`q-${key}`).value = value;
+    document.getElementById(`sd-${key}-display`).value = value ? label : '';
+    document.getElementById(`sd-${key}-display`).placeholder =
+      key === 'category' ? 'All available categories' :
+      key === 'group'    ? 'All product groups' : 'All brands';
+    document.getElementById(`sd-${key}-clear`).style.display = value ? 'block' : 'none';
+    closeSd(key);
+
+    // Cascade: category change → reload groups + brands; group change → reload brands
+    if (key === 'category') { loadOptions(); }
+    if (key === 'group')    { loadBrandsOnly(); }
+  }
+
+  function clearSd(key) {
+    selectSd(key, '', '');
+    if (key === 'category') { clearSd('group'); clearSd('brand'); }
+    if (key === 'group')    { clearSd('brand'); }
+  }
+
+  function closeSd(key) {
+    document.getElementById(`sd-${key}-dropdown`).classList.remove('open');
+    const search = document.getElementById(`sd-${key}-search`);
+    if (search) { search.value = ''; renderSdList(key, ''); }
+  }
+
+  function openSd(key) {
+    ['category','group','brand'].forEach(k => {
+      if (k !== key) closeSd(k);
+    });
+    document.getElementById(`sd-${key}-dropdown`).classList.toggle('open');
+    setTimeout(() => {
+      const s = document.getElementById(`sd-${key}-search`);
+      if (s) s.focus();
+    }, 50);
+  }
+
+  // Wire up display inputs to open dropdowns
+  function wireSdInputs() {
+    ['category','group','brand'].forEach(key => {
+      document.getElementById(`sd-${key}-display`).addEventListener('click', () => openSd(key));
+    });
+  }
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', e => {
+    ['category','group','brand'].forEach(key => {
+      const wrap = document.getElementById(`sd-${key}-wrap`);
+      if (wrap && !wrap.contains(e.target)) closeSd(key);
+    });
+  });
+
+  async function loadOptions() {
+    const cat = document.getElementById('q-category').value;
+    const params = cat ? `?category=${encodeURIComponent(cat)}` : '';
+    const res = await apiFetch(`/data/options${params}`);
+    if (!res) return;
+    buildSdDropdown('group', res.product_groups, 'product group');
+    buildSdDropdown('brand', res.brands, 'brand');
+    // Reset selections on cascade
+    if (!SD['group']?.value) {
+      document.getElementById('q-group').value = '';
+      document.getElementById('sd-group-display').value = '';
+    }
+    if (!SD['brand']?.value) {
+      document.getElementById('q-brand').value = '';
+      document.getElementById('sd-brand-display').value = '';
+    }
+  }
+
+  async function loadBrandsOnly() {
+    const cat   = document.getElementById('q-category').value;
+    const group = document.getElementById('q-group').value;
+    const params = new URLSearchParams();
+    if (cat)   params.set('category',      cat);
+    if (group) params.set('product_group', group);
+    const res = await apiFetch(`/data/options?${params}`);
+    if (!res) return;
+    buildSdDropdown('brand', res.brands, 'brand');
+    document.getElementById('q-brand').value = '';
+    document.getElementById('sd-brand-display').value = '';
+    document.getElementById('sd-brand-clear').style.display = 'none';
+    SD['brand'] = { ...SD['brand'], value: '' };
+  }
+
   async function populateCategoryDropdown() {
     const res = await apiFetch('/data/categories');
     if (!res || !res.data) return;
-    const sel = document.getElementById('q-category');
-    res.data.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.product_category;
-      opt.textContent = c.product_category;
-      sel.appendChild(opt);
-    });
+    const cats = res.data.map(c => c.product_category);
+    buildSdDropdown('category', cats, 'category');
+    wireSdInputs();
+    await loadOptions();
   }
 
   function buildQueryParams(forDownload = false) {
@@ -560,7 +761,8 @@
   }
 
   function clearFilters() {
-    ['q-category','q-group','q-brand','q-condition','q-from','q-to','q-location','q-minprice','q-maxprice']
+    clearSd('category');
+    ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice']
       .forEach(id => document.getElementById(id).value = '');
     document.getElementById('preview-box').style.display = 'none';
   }

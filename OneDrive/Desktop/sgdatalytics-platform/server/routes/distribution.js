@@ -269,6 +269,63 @@ router.get('/categories', async (req, res) => {
   }
 });
 
+// ── GET /data/options ─────────────────────────────────────────
+// Returns distinct product_groups and brands scoped to client's allowed categories.
+// Accepts optional ?category=&product_group= to narrow the lists.
+router.get('/options', async (req, res) => {
+  const { category, product_group } = req.query;
+  const client  = req.client;
+  const allowed = client.allowed_categories || [];
+
+  // Build base category filter
+  const catConditions = ['price_ghs > 0', 'is_flagged = FALSE'];
+  const catParams     = [];
+  let   cp            = 1;
+
+  if (allowed.length > 0) {
+    catConditions.push(`product_category = ANY($${cp++})`);
+    catParams.push(allowed);
+  }
+  if (category) {
+    catConditions.push(`LOWER(product_category) = LOWER($${cp++})`);
+    catParams.push(category);
+  }
+
+  // Product groups
+  const pgConditions = [...catConditions];
+  const pgParams     = [...catParams];
+  let   pp           = cp;
+
+  const pgResult = await pool.query(`
+    SELECT DISTINCT product_group
+    FROM market_prices
+    WHERE ${pgConditions.join(' AND ')} AND product_group IS NOT NULL AND product_group != ''
+    ORDER BY product_group
+  `, pgParams);
+
+  // Brands (narrowed further by product_group if provided)
+  const brConditions = [...catConditions];
+  const brParams     = [...catParams];
+  let   bp           = cp;
+
+  if (product_group) {
+    brConditions.push(`LOWER(product_group) = LOWER($${bp++})`);
+    brParams.push(product_group);
+  }
+
+  const brResult = await pool.query(`
+    SELECT DISTINCT brand
+    FROM market_prices
+    WHERE ${brConditions.join(' AND ')} AND brand IS NOT NULL AND brand != ''
+    ORDER BY brand
+  `, brParams);
+
+  res.json({
+    product_groups: pgResult.rows.map(r => r.product_group),
+    brands:         brResult.rows.map(r => r.brand),
+  });
+});
+
 // ── GET /data/usage ───────────────────────────────────────────
 // Shows the client their own quota status.
 router.get('/usage', async (req, res) => {
