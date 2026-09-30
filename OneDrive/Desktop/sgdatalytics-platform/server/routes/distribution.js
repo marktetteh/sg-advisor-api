@@ -110,25 +110,35 @@ router.get('/prices', async (req, res) => {
   const where = conditions.join(' AND ');
 
   try {
-    const result = await pool.query(`
-      SELECT
-        collected_date,
-        product_category,
-        product_group,
-        title,
-        brand,
-        model,
-        condition,
-        price_ghs,
-        location,
-        quality_score
-      FROM market_prices
-      WHERE ${where}
-      ORDER BY collected_date DESC, price_ghs
-      LIMIT $${p++} OFFSET $${p++}
-    `, [...params, limit, parseInt(offset)]);
+    // Run data query and total count in parallel
+    const offsetInt = parseInt(offset) || 0;
+    const [result, countResult] = await Promise.all([
+      pool.query(`
+        SELECT
+          collected_date,
+          product_category,
+          product_group,
+          title,
+          brand,
+          model,
+          condition,
+          price_ghs,
+          location,
+          quality_score
+        FROM market_prices
+        WHERE ${where}
+        ORDER BY collected_date DESC, price_ghs
+        LIMIT $${p} OFFSET $${p + 1}
+      `, [...params, limit, offsetInt]),
+      // Only count when not downloading CSV (saves time on downloads)
+      format === 'csv'
+        ? Promise.resolve(null)
+        : pool.query(`SELECT COUNT(*) AS total FROM market_prices WHERE ${where}`, params),
+    ]);
+    // p was used for LIMIT/OFFSET above; no need to increment further
 
     const rows       = result.rows;
+    const total      = countResult ? parseInt(countResult.rows[0].total) : null;
     const responseMs = Date.now() - t0;
 
     // Log usage (non-blocking)
@@ -150,8 +160,9 @@ router.get('/prices', async (req, res) => {
 
     return res.json({
       count:        rows.length,
+      total,
       limit,
-      offset:       parseInt(offset),
+      offset:       offsetInt,
       response_ms:  responseMs,
       data:         rows,
     });
