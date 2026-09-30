@@ -328,7 +328,35 @@
     .f-grid { grid-template-columns: 1fr 1fr; }
     .insights-strip { grid-template-columns: repeat(2, 1fr); }
     .browse-grid { grid-template-columns: 1fr 1fr; }
+    .hw-stats { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ── HERO CATEGORY CAROUSEL (light theme) ─────────── */
+  .hw-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
+  .hw-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; }
+  .hw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .hw-status { display: flex; align-items: center; gap: 7px; }
+  .hw-pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: hwpulse 2.5s ease-in-out infinite; }
+  @keyframes hwpulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 var(--accent)44} 50%{opacity:.85;box-shadow:0 0 0 5px transparent} }
+  .hw-cat-name { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+  .hw-date     { font-size: 10px; color: var(--text3); }
+  .hw-dots { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+  .hw-d { width: 6px; height: 6px; border-radius: 50%; background: var(--border2); cursor: pointer; transition: all .22s; border: 1px solid var(--border); flex-shrink: 0; }
+  .hw-d.active { background: var(--accent); border-color: var(--accent); }
+  .hw-d:hover:not(.active) { background: var(--text3); }
+  .hw-title { font-size: 15px; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hw-meta  { font-size: 11px; color: var(--text3); margin-top: 2px; margin-bottom: 6px; }
+  .hw-radar { display: flex; justify-content: center; align-items: center; flex: 1; min-height: 140px; }
+  .hw-radar canvas { display: block; }
+  .hw-prog-wrap { margin-top: 10px; }
+  .hw-prog-lbl  { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); margin-bottom: 5px; }
+  .hw-prog-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .hw-prog-fill  { height: 100%; background: var(--accent); border-radius: 2px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .hw-stats { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--card2); border-top: 1px solid var(--border); }
+  .hw-stat  { padding: 11px 14px; border-right: 1px solid var(--border); }
+  .hw-stat:last-child { border-right: none; }
+  .hw-stat-val { font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: -.6px; }
+  .hw-stat-lbl { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
 
 </style>
 </head>
@@ -466,13 +494,36 @@
           </div>
         </div>
 
-        <!-- Charts row 2: top products + spread -->
+        <!-- Charts row 2: hero carousel + spread -->
         <div class="chart-grid">
-          <div class="chart-card" style="padding:18px 0">
-            <div class="cc-head" style="padding: 0 20px">
-              <div><div class="cc-title">Top Product Groups by Median Price</div><div class="cc-sub">Click a row to explore in Query Builder</div></div>
+          <!-- Hero category carousel -->
+          <div class="hw-card">
+            <div class="hw-body">
+              <div class="hw-header">
+                <div class="hw-status">
+                  <div class="hw-pulse-dot"></div>
+                  <span class="hw-cat-name" id="hw-cat-name">—</span>
+                </div>
+                <span class="hw-date" id="hw-date">—</span>
+              </div>
+              <div class="hw-dots" id="hw-dots"></div>
+              <div class="hw-title" id="hw-title">—</div>
+              <div class="hw-meta" id="hw-meta">—</div>
+              <div class="hw-radar"><canvas id="hw-radar"></canvas></div>
+              <div class="hw-prog-wrap">
+                <div class="hw-prog-lbl">
+                  <span>Share of total listings</span>
+                  <span id="hw-pct">—</span>
+                </div>
+                <div class="hw-prog-track"><div class="hw-prog-fill" id="hw-prog" style="width:0%"></div></div>
+              </div>
             </div>
-            <div id="tp-table"></div>
+            <div class="hw-stats">
+              <div class="hw-stat"><div class="hw-stat-val" id="hws-total">—</div><div class="hw-stat-lbl">Total Listings</div></div>
+              <div class="hw-stat"><div class="hw-stat-val" id="hws-cats">—</div><div class="hw-stat-lbl">Categories</div></div>
+              <div class="hw-stat"><div class="hw-stat-val" id="hws-groups">—</div><div class="hw-stat-lbl">Product Groups</div></div>
+              <div class="hw-stat"><div class="hw-stat-val" id="hws-idx">—</div><div class="hw-stat-lbl">Avg Median GHS</div></div>
+            </div>
           </div>
           <div class="chart-card">
             <div class="cc-head">
@@ -785,7 +836,7 @@ async function loadDashboard() {
   // Charts
   drawBarChart(cats);
   drawDonut(condRes?.data || []);
-  drawTopProducts(sum);
+  buildHeroWidget(cats, sum, total);
   drawSpread(sum);
   drawBrowseGrid(cats, total);
 
@@ -886,24 +937,99 @@ function drawDonut(rows) {
   ).join('');
 }
 
-function drawTopProducts(sum) {
-  const el = document.getElementById('tp-table'); if (!el) return;
-  const sorted = [...sum].filter(r=>r.price_median&&parseFloat(r.price_median)>0)
-    .sort((a,b)=>parseFloat(b.price_median)-parseFloat(a.price_median)).slice(0,10);
-  const max = parseFloat(sorted[0]?.price_median||1);
-  el.innerHTML = `
-    <div class="tp-head"><span>#</span><span>Product Group</span><span style="text-align:right">Median</span><span style="text-align:right">Listings</span><span></span></div>
-    ${sorted.map((r,i)=>{
-      const p = Math.round(parseFloat(r.price_median)/max*100);
-      return `<div class="tp-row" onclick="jumpToQuery('${r.product_category}','${r.product_group}')">
-        <div class="tp-num">${i+1}</div>
-        <div><div class="tp-name">${r.product_group}</div><div class="tp-cat">${r.product_category}</div></div>
-        <div class="tp-med">GHS ${fmt(r.price_median)}</div>
-        <div class="tp-cnt">${parseInt(r.listing_count).toLocaleString()}</div>
-        <div class="tp-bar-col"><div class="tp-bar" style="width:${p}%"></div></div>
-      </div>`;
-    }).join('')}
-  `;
+/* ── HERO CATEGORY CAROUSEL ─────────────────────────── */
+let hwTimer=null, hwCats=[], hwSum={}, hwTotal=0, hwIdx=0;
+
+function buildHeroWidget(cats, sum, total) {
+  hwCats  = [...cats].sort((a,b)=>parseInt(b.total_listings)-parseInt(a.total_listings));
+  hwTotal = total;
+  hwSum   = {};
+  sum.forEach(r=>{ if(!hwSum[r.product_category]) hwSum[r.product_category]=[]; hwSum[r.product_category].push(r); });
+  // Bottom stats
+  const avgMed = sum.length ? Math.round(sum.reduce((s,r)=>s+parseFloat(r.price_median||0),0)/sum.length) : 0;
+  document.getElementById('hws-total').textContent  = total>=1000?(total/1000).toFixed(1)+'k':total;
+  document.getElementById('hws-cats').textContent   = cats.length;
+  document.getElementById('hws-groups').textContent = sum.length;
+  document.getElementById('hws-idx').textContent    = avgMed ? avgMed.toLocaleString() : '—';
+  // Dots
+  document.getElementById('hw-dots').innerHTML = hwCats.map((_,i)=>
+    `<div class="hw-d${i===0?' active':''}" onclick="hwGoTo(${i})"></div>`
+  ).join('');
+  // Date
+  document.getElementById('hw-date').textContent =
+    new Date().toLocaleString('en-GB',{month:'short',year:'numeric'});
+  hwGoTo(0);
+  if(hwTimer) clearInterval(hwTimer);
+  hwTimer = setInterval(()=>hwGoTo((hwIdx+1)%hwCats.length), 5000);
+}
+
+function hwGoTo(idx) {
+  hwIdx = idx;
+  const cat  = hwCats[idx]; if(!cat) return;
+  const name = cat.product_category;
+  const cnt  = parseInt(cat.total_listings);
+  const pct  = hwTotal ? Math.round(cnt/hwTotal*100) : 0;
+  const grps = hwSum[name] || [];
+  // Update dots
+  document.querySelectorAll('.hw-d').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  // Update text
+  document.getElementById('hw-cat-name').textContent = name;
+  document.getElementById('hw-title').textContent    = name;
+  document.getElementById('hw-meta').textContent     =
+    `${grps.length} product group${grps.length!==1?'s':''} · median GHS ${fmt(grps[0]?.price_median||0)}`;
+  document.getElementById('hw-pct').textContent = pct+'%';
+  setTimeout(()=>{ const pf=document.getElementById('hw-prog'); if(pf) pf.style.width=pct+'%'; },30);
+  // Radar
+  const top6 = [...grps].sort((a,b)=>parseInt(b.listing_count)-parseInt(a.listing_count)).slice(0,6);
+  if(top6.length>=3) {
+    const maxC = Math.max(...top6.map(r=>parseInt(r.listing_count)));
+    drawRadarLight('hw-radar', top6.map(r=>r.product_group), top6.map(r=>parseInt(r.listing_count)/maxC));
+  }
+}
+
+function drawRadarLight(canvasId, labels, values) {
+  const canvas = document.getElementById(canvasId); if(!canvas) return;
+  const wrap = canvas.parentElement;
+  const size = Math.min(wrap.clientWidth-16, 200);
+  if(size<80) return;
+  const dpr = window.devicePixelRatio||1;
+  canvas.width  = size*dpr; canvas.height = size*dpr;
+  canvas.style.width=size+'px'; canvas.style.height=size+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+  const n=labels.length; if(n<3) return;
+  const cx=size/2, cy=size/2, r=Math.min(cx,cy)-28;
+  const angles = labels.map((_,i)=>(i/n)*Math.PI*2-Math.PI/2);
+  // Grid
+  for(let ring=1;ring<=4;ring++){
+    const rr=r*ring/4;
+    ctx.beginPath();
+    angles.forEach((a,i)=>{ const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+    ctx.closePath(); ctx.strokeStyle='#dde3ea'; ctx.lineWidth=1; ctx.stroke();
+  }
+  // Axes
+  angles.forEach(a=>{
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+    ctx.strokeStyle='#dde3ea'; ctx.lineWidth=1; ctx.stroke();
+  });
+  // Polygon
+  ctx.beginPath();
+  angles.forEach((a,i)=>{ const v=Math.max(values[i]||0,.08); const x=cx+Math.cos(a)*r*v,y=cy+Math.sin(a)*r*v; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.closePath();
+  ctx.fillStyle='#009d7222'; ctx.fill();
+  ctx.strokeStyle='#009d72'; ctx.lineWidth=1.5; ctx.stroke();
+  // Dots
+  angles.forEach((a,i)=>{ const v=Math.max(values[i]||0,.08); const x=cx+Math.cos(a)*r*v,y=cy+Math.sin(a)*r*v;
+    ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+    ctx.fillStyle='#009d72'; ctx.fill();
+    ctx.strokeStyle='#ffffff'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+  // Labels
+  ctx.font='9px -apple-system,sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#8a9db5';
+  angles.forEach((a,i)=>{ const lx=cx+Math.cos(a)*(r+20),ly=cy+Math.sin(a)*(r+20);
+    const lb=labels[i].length>14?labels[i].substring(0,13)+'…':labels[i];
+    ctx.fillText(lb,lx,ly+3);
+  });
 }
 
 function drawSpread(sum) {
