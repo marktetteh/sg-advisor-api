@@ -6,445 +6,480 @@
 <title>SG Datalytics — Client Portal</title>
 <style>
   :root {
-    --bg:        #0b0d14;
-    --surface:   #13151f;
-    --surface2:  #1a1d2b;
-    --border:    #252838;
-    --border2:   #2e3347;
-    --accent:    #00d4a0;
-    --accent-dim:#00d4a022;
-    --blue:      #3b82f6;
-    --blue-dim:  #3b82f622;
-    --danger:    #f43f5e;
-    --warn:      #f59e0b;
-    --text:      #e2e8f0;
-    --text2:     #94a3b8;
-    --text3:     #64748b;
-    --radius:    10px;
-    --radius-sm: 6px;
-    --shadow:    0 4px 24px #00000040;
-    --shadow-sm: 0 2px 8px #00000030;
+    --bg:       #0d0f18;
+    --surface:  #141620;
+    --surface2: #1c1f2e;
+    --surface3: #222538;
+    --border:   #252839;
+    --border2:  #2e324a;
+    --accent:   #00d4a0;
+    --acc2:     #00b389;
+    --acc-dim:  #00d4a018;
+    --blue:     #4f8ef7;
+    --blue-dim: #4f8ef718;
+    --warn:     #f59e0b;
+    --warn-dim: #f59e0b18;
+    --danger:   #f43f5e;
+    --purple:   #a78bfa;
+    --purp-dim: #a78bfa18;
+    --text:     #e2e8f0;
+    --text2:    #8892a4;
+    --text3:    #525c6e;
+    --radius:   12px;
+    --rsm:      7px;
+    --shadow:   0 8px 32px #00000055;
+    --sidebar:  220px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  /* ── Login ────────────────────────────────────────────────── */
+  /* ── Login ──────────────────────────────────────────────── */
   #login-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 30%, #3b82f614 0%, transparent 100%),
-      radial-gradient(ellipse 50% 60% at 80% 70%, #00d4a014 0%, transparent 100%),
-      var(--bg);
+    background: radial-gradient(ellipse 70% 60% at 15% 20%, #4f8ef712, transparent),
+                radial-gradient(ellipse 60% 70% at 85% 80%, #00d4a012, transparent), var(--bg);
   }
-  .login-wrap { width: 100%; max-width: 400px; padding: 20px; }
-  .login-brand { text-align: center; margin-bottom: 32px; }
-  .login-brand-logo { font-size: 26px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
-  .login-brand-sub  { font-size: 13px; color: var(--text3); margin-top: 4px; }
-  .login-card {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 16px; padding: 36px; box-shadow: var(--shadow);
-  }
-  .login-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .login-hint  { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
-  .field { margin-bottom: 18px; }
-  label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 7px; }
-  input[type=text], input[type=password], select, input[type=date], input[type=number] {
-    width: 100%; background: var(--bg); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
-    padding: 10px 14px; outline: none; transition: border-color .2s, box-shadow .2s;
-    appearance: none; -webkit-appearance: none;
-  }
-  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  .key-field { position: relative; }
-  .key-field input { padding-right: 44px; font-family: 'SF Mono', monospace; font-size: 13px; letter-spacing: .03em; }
-  .key-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 16px; background: none; border: none; }
-  .key-eye:hover { color: var(--text); }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px;
-    font-weight: 600; padding: 11px 20px; transition: all .15s; letter-spacing: .01em;
-  }
+  .login-wrap { width: 100%; max-width: 420px; padding: 20px; }
+  .login-brand { text-align: center; margin-bottom: 36px; }
+  .login-logo { font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+  .login-sub  { font-size: 13px; color: var(--text3); margin-top: 5px; }
+  .login-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; padding: 38px; box-shadow: var(--shadow); }
+  .login-title { font-size: 19px; font-weight: 700; margin-bottom: 5px; }
+  .login-hint  { font-size: 13px; color: var(--text2); margin-bottom: 30px; line-height: 1.5; }
+  label { display: block; font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 7px; }
+  .field { margin-bottom: 20px; }
+  .key-wrap { position: relative; }
+  .key-wrap input { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--rsm); color: var(--text); font-size: 13px; padding: 11px 40px 11px 14px; outline: none; font-family: 'SF Mono', monospace; letter-spacing: .04em; transition: border .15s, box-shadow .15s; }
+  .key-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acc-dim); }
+  .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text3); font-size: 15px; line-height: 1; }
+  .eye-btn:hover { color: var(--text2); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: none; border-radius: var(--rsm); cursor: pointer; font-size: 14px; font-weight: 600; padding: 11px 20px; transition: all .15s; }
   .btn:active { transform: scale(.98); }
   .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:hover { background: #00e8b0; box-shadow: 0 0 20px #00d4a040; }
+  .btn-primary:hover { background: #00e8b0; box-shadow: 0 0 24px #00d4a038; }
   .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
   .btn-secondary:hover { border-color: var(--text3); }
-  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
-  .btn-outline:hover { border-color: var(--text3); color: var(--text); }
+  .btn-ghost { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--text3); color: var(--text); }
   .btn-full { width: 100%; }
-  .error-msg { background: #f43f5e18; border: 1px solid #f43f5e44; border-radius: var(--radius-sm); color: var(--danger); font-size: 13px; padding: 10px 14px; margin-top: 14px; display: none; }
-  .login-footer { text-align: center; font-size: 12px; color: var(--text3); margin-top: 20px; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+  .err-msg { background: #f43f5e16; border: 1px solid #f43f5e44; color: var(--danger); border-radius: var(--rsm); font-size: 13px; padding: 10px 14px; margin-top: 14px; display: none; }
+  .login-footer { text-align: center; font-size: 12px; color: var(--text3); margin-top: 18px; }
 
-  /* ── App shell ────────────────────────────────────────────── */
-  #app { display: none; flex-direction: column; min-height: 100vh; }
-  .topbar {
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; height: 58px; gap: 16px;
-    position: sticky; top: 0; z-index: 50; backdrop-filter: blur(8px);
-  }
-  .topbar-logo { font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; white-space: nowrap; }
-  .topbar-sep  { width: 1px; height: 20px; background: var(--border2); }
-  .topbar-client { font-size: 13px; color: var(--text2); flex: 1; }
-  .topbar-tier {
-    font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    padding: 4px 10px; border-radius: 20px; border: 1px solid;
-  }
-  .tier-trial      { color: var(--text3);   border-color: var(--text3); }
-  .tier-starter    { color: var(--blue);    border-color: var(--blue);  background: var(--blue-dim); }
-  .tier-pro        { color: var(--accent);  border-color: var(--accent); background: var(--accent-dim); }
-  .tier-enterprise { color: var(--warn);    border-color: var(--warn);  background: #f59e0b18; }
-  .logout-btn { font-size: 13px; color: var(--text3); cursor: pointer; background: none; border: none; padding: 6px 10px; border-radius: var(--radius-sm); transition: all .15s; }
-  .logout-btn:hover { color: var(--danger); background: #f43f5e12; }
+  /* ── Shell ──────────────────────────────────────────────── */
+  #app { display: none; height: 100vh; overflow: hidden; flex-direction: row; }
 
-  /* ── Tabs ─────────────────────────────────────────────────── */
-  .tabs-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; }
-  .tabs { display: flex; gap: 4px; }
-  .tab {
-    padding: 14px 18px; font-size: 13px; font-weight: 500; color: var(--text3);
-    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color .15s, border-color .15s; white-space: nowrap;
+  /* ── Sidebar ────────────────────────────────────────────── */
+  .sidebar {
+    width: var(--sidebar); flex-shrink: 0; height: 100vh; overflow-y: auto;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 0 0 24px;
   }
-  .tab:hover { color: var(--text2); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-
-  /* ── Content ──────────────────────────────────────────────── */
-  .content { padding: 28px 24px; max-width: 1100px; flex: 1; }
-  .pane { display: none; }
-  .pane.active { display: block; }
-  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.3px; }
-  .page-sub   { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
-  .section-label {
-    font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;
-    letter-spacing: .08em; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  .sb-logo { padding: 22px 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .sb-logo-text { font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: -.5px; }
+  .sb-logo-sub  { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .sb-section { padding: 12px 14px 4px; font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .1em; text-transform: uppercase; }
+  .sb-link {
+    display: flex; align-items: center; gap: 10px; padding: 9px 14px; margin: 1px 8px;
+    border-radius: 8px; cursor: pointer; color: var(--text2); font-size: 13px; font-weight: 500;
+    transition: all .15s; user-select: none;
   }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  /* ── Stat cards ───────────────────────────────────────────── */
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 28px; }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 20px; transition: border-color .2s;
+  .sb-link:hover { background: var(--surface2); color: var(--text); }
+  .sb-link.active { background: var(--acc-dim); color: var(--accent); font-weight: 600; }
+  .sb-link.active .sb-icon { opacity: 1; }
+  .sb-icon { font-size: 15px; width: 18px; text-align: center; opacity: .6; }
+  .sb-link.active .sb-icon { opacity: 1; }
+  .sb-badge { margin-left: auto; background: var(--surface3); color: var(--text2); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+  .sb-tier {
+    margin: auto 14px 0; padding: 12px 14px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border2);
   }
-  .stat-card:hover { border-color: var(--border2); }
-  .stat-icon { font-size: 20px; margin-bottom: 12px; }
-  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
-  .stat-value { font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -1px; }
-  .stat-value.accent { color: var(--accent); }
-  .stat-sub   { font-size: 12px; color: var(--text3); margin-top: 6px; }
+  .sb-tier-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; font-weight: 700; margin-bottom: 5px; }
+  .sb-tier-name { font-size: 13px; font-weight: 700; color: var(--accent); text-transform: capitalize; }
+  .sb-tier-client { font-size: 11px; color: var(--text2); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-logout { display: flex; align-items: center; gap: 8px; margin: 8px 8px 0; padding: 9px 14px; border-radius: 8px; cursor: pointer; color: var(--text3); font-size: 12px; transition: all .15s; }
+  .sb-logout:hover { color: var(--danger); background: #f43f5e10; }
 
-  /* ── Quota bar ────────────────────────────────────────────── */
-  .quota-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 22px 24px; margin-bottom: 24px;
-  }
-  .quota-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
-  .quota-title  { font-size: 14px; font-weight: 600; }
-  .quota-nums   { font-size: 13px; color: var(--text2); }
-  .bar-track    { background: var(--bg); border-radius: 6px; height: 8px; overflow: hidden; }
-  .bar-fill     { height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.4,0,.2,1); background: var(--accent); }
-  .bar-fill.warn   { background: var(--warn); }
-  .bar-fill.danger { background: var(--danger); }
-  .quota-footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--text3); }
+  /* ── Main ───────────────────────────────────────────────── */
+  .main { flex: 1; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
 
-  /* ── Category cards ───────────────────────────────────────── */
-  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  /* ── Topbar ─────────────────────────────────────────────── */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 58px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 40; }
+  .topbar-title { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+  .topbar-sub   { font-size: 12px; color: var(--text3); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .topbar-tier { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; border: 1px solid; }
+  .tier-trial      { color: var(--text3);  border-color: var(--text3); }
+  .tier-starter    { color: var(--blue);   border-color: var(--blue);  background: var(--blue-dim); }
+  .tier-pro        { color: var(--accent); border-color: var(--accent); background: var(--acc-dim); }
+  .tier-enterprise { color: var(--warn);   border-color: var(--warn);  background: var(--warn-dim); }
+
+  /* ── Pages ──────────────────────────────────────────────── */
+  .page { display: none; padding: 28px; flex: 1; }
+  .page.active { display: block; }
+
+  /* ── Stat cards ─────────────────────────────────────────── */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; transition: border-color .2s; }
+  .kpi:hover { border-color: var(--border2); }
+  .kpi-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .kpi-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .kpi-icon  { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .kpi-icon.green  { background: var(--acc-dim); }
+  .kpi-icon.blue   { background: var(--blue-dim); }
+  .kpi-icon.purple { background: var(--purp-dim); }
+  .kpi-icon.warn   { background: var(--warn-dim); }
+  .kpi-value { font-size: 30px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .kpi-sub   { font-size: 12px; color: var(--text3); margin-top: 5px; }
+  .kpi-change { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; margin-top: 6px; }
+  .kpi-change.up   { color: var(--accent); background: var(--acc-dim); }
+  .kpi-change.down { color: var(--danger); background: #f43f5e18; }
+
+  /* ── Chart row ──────────────────────────────────────────── */
+  .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 22px; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .chart-title  { font-size: 14px; font-weight: 700; }
+  .chart-sub    { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .chart-badge  { font-size: 11px; color: var(--text3); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; }
+  canvas.chart  { display: block; width: 100% !important; }
+
+  /* ── Category grid ──────────────────────────────────────── */
+  .section-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 14px; font-weight: 700; }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
   .cat-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 16px 18px; cursor: pointer; transition: all .2s;
+    padding: 16px 18px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
   }
-  .cat-card:hover { border-color: var(--accent); background: var(--surface2); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-  .cat-name  { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-  .cat-count { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
-  .cat-meta  { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .cat-card::after { content: ''; position: absolute; inset: 0; background: var(--accent); opacity: 0; transition: opacity .2s; }
+  .cat-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 6px 20px #00000040; }
+  .cat-card:hover::after { opacity: .03; }
+  .cat-name { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; }
+  .cat-count { font-size: 26px; font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1; }
+  .cat-bar { height: 3px; background: var(--surface2); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .cat-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
+  .cat-groups { font-size: 11px; color: var(--text3); margin-top: 8px; }
 
-  /* ── Searchable dropdown ──────────────────────────────────── */
+  /* ── Searchable dropdown ────────────────────────────────── */
   .sd-wrap { position: relative; }
-  .sd-input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
-    padding: 10px 36px 10px 14px; outline: none; cursor: pointer;
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .sd-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  .sd-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; font-size: 10px; }
-  .sd-clear { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); color: var(--text3); cursor: pointer; background: none; border: none; font-size: 13px; display: none; padding: 2px; line-height: 1; }
+  .sd-display { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--rsm); color: var(--text); font-size: 13px; padding: 10px 36px 10px 14px; cursor: pointer; outline: none; user-select: none; transition: border .15s, box-shadow .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sd-display:focus, .sd-display.open { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acc-dim); }
+  .sd-placeholder { color: var(--text3); }
+  .sd-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; font-size: 10px; transition: transform .15s; }
+  .sd-arrow.open { transform: translateY(-50%) rotate(180deg); }
+  .sd-clear { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); display: none; background: none; border: none; color: var(--text3); cursor: pointer; font-size: 12px; padding: 2px; }
   .sd-clear:hover { color: var(--danger); }
-  .sd-dropdown {
-    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
-    background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius);
-    max-height: 260px; overflow-y: auto; display: none; box-shadow: var(--shadow);
+  .sd-drop { position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); max-height: 280px; display: none; box-shadow: var(--shadow); overflow: hidden; flex-direction: column; }
+  .sd-drop.open { display: flex; }
+  .sd-search-row { padding: 10px 10px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .sd-search-input { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--rsm); color: var(--text); font-size: 12px; padding: 7px 11px; outline: none; }
+  .sd-search-input:focus { border-color: var(--accent); }
+  .sd-list { overflow-y: auto; flex: 1; }
+  .sd-opt { padding: 9px 14px; font-size: 13px; cursor: pointer; transition: background .1s; color: var(--text); }
+  .sd-opt:hover { background: #ffffff07; }
+  .sd-opt.sel { color: var(--accent); font-weight: 600; }
+  .sd-empty { padding: 14px; font-size: 12px; color: var(--text3); text-align: center; }
+  input[type=text], input[type=date], input[type=number], select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--rsm);
+    color: var(--text); font-size: 13px; padding: 10px 14px; outline: none; appearance: none; -webkit-appearance: none;
+    transition: border .15s, box-shadow .15s;
   }
-  .sd-dropdown.open { display: block; }
-  .sd-search { padding: 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface2); }
-  .sd-search input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm);
-    color: var(--text); font-size: 13px; padding: 8px 12px; outline: none;
-  }
-  .sd-search input:focus { border-color: var(--accent); }
-  .sd-option { padding: 10px 14px; font-size: 13px; cursor: pointer; transition: background .1s; }
-  .sd-option:hover { background: #ffffff08; }
-  .sd-option.selected { color: var(--accent); font-weight: 600; }
-  .sd-empty, .sd-loading { padding: 14px; font-size: 13px; color: var(--text3); text-align: center; }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--acc-dim); }
 
-  /* ── Filter sections ──────────────────────────────────────── */
-  .filter-section { margin-bottom: 24px; }
-  .step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-  .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-  .step-num.green { background: var(--accent); color: #000; }
-  .step-num.blue  { background: var(--blue);   color: #fff; }
-  .step-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); }
-  .step-line  { flex: 1; height: 1px; background: var(--border); }
-  .cascade-row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; gap: 0; align-items: end; }
-  .cascade-arrow { display: flex; align-items: center; justify-content: center; padding-bottom: 12px; color: var(--border2); font-size: 14px; }
+  /* ── Query builder ──────────────────────────────────────── */
+  .filter-paper { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 14px; }
+  .filter-paper-title { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .step-pill { background: var(--accent); color: #000; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; }
+  .step-pill.blue { background: var(--blue); color: #fff; }
+  .cascade { display: grid; grid-template-columns: 1fr 22px 1fr 22px 1fr; align-items: end; gap: 0; }
+  .cascade-sep { display: flex; align-items: center; justify-content: center; padding-bottom: 12px; color: var(--border2); font-size: 13px; }
+  .field-2 { margin-bottom: 0; }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
   .field-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
-  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+  .action-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
-  /* ── Results table ────────────────────────────────────────── */
-  .preview-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 24px; overflow: hidden; }
-  .preview-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .preview-count { font-size: 13px; font-weight: 600; }
-  .preview-note  { font-size: 12px; color: var(--text3); }
-  .table-wrap { overflow-x: auto; }
+  /* ── Results table ──────────────────────────────────────── */
+  .results-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 16px; }
+  .res-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .res-count { font-size: 13px; font-weight: 700; }
+  .res-meta  { font-size: 12px; color: var(--text3); }
+  .tbl-wrap  { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  th { background: var(--bg); padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #ffffff04; }
-  .price-cell { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
-  .tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-  .tag-new  { background: var(--accent-dim); color: var(--accent); }
-  .tag-used { background: #f59e0b18; color: var(--warn); }
-  .tag-refurb { background: var(--blue-dim); color: var(--blue); }
-  .empty-state { padding: 48px; text-align: center; color: var(--text3); }
-  .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
-  .empty-state-text { font-size: 14px; }
+  tr:hover td { background: #ffffff03; }
+  .price-val { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .cond-tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 5px; font-weight: 600; }
+  .cond-new    { background: var(--acc-dim);  color: var(--accent); }
+  .cond-used   { background: var(--warn-dim); color: var(--warn); }
+  .cond-refurb { background: var(--blue-dim); color: var(--blue); }
+  .empty-state { padding: 60px 20px; text-align: center; color: var(--text3); }
+  .empty-icon  { font-size: 36px; margin-bottom: 12px; }
 
-  /* ── Spinner ──────────────────────────────────────────────── */
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #00000030; border-top-color: #000; border-radius: 50%; animation: spin .6s linear infinite; }
+  /* ── Spinner ────────────────────────────────────────────── */
+  .spin { display: inline-block; width: 13px; height: 13px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin .6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── API docs ─────────────────────────────────────────────── */
-  .api-intro {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  }
-  .api-intro-item { display: flex; flex-direction: column; gap: 4px; }
-  .api-intro-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
-  .api-intro-val { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: var(--accent); }
-  .api-sep { width: 1px; height: 36px; background: var(--border); }
-  .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; transition: border-color .2s; }
-  .endpoint:hover { border-color: var(--border2); }
-  .endpoint-header { padding: 16px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
-  .method  { font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 5px; letter-spacing: .06em; }
-  .get     { background: var(--accent-dim); color: var(--accent); border: 1px solid #00d4a040; }
-  .ep-path { font-size: 14px; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
-  .ep-desc { font-size: 13px; color: var(--text2); flex: 1; }
-  .ep-chevron { color: var(--text3); font-size: 11px; transition: transform .2s; }
-  .ep-chevron.open { transform: rotate(90deg); }
-  .ep-body { padding: 0 18px 18px; display: none; border-top: 1px solid var(--border); padding-top: 18px; }
+  /* ── API Docs ───────────────────────────────────────────── */
+  .api-banner { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 18px; display: flex; flex-wrap: wrap; gap: 24px; }
+  .api-item-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; font-weight: 700; margin-bottom: 4px; }
+  .api-item-val { font-family: 'SF Mono', monospace; font-size: 13px; color: var(--accent); }
+  .ep { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+  .ep-head { display: flex; align-items: center; gap: 12px; padding: 15px 18px; cursor: pointer; user-select: none; transition: background .15s; }
+  .ep-head:hover { background: #ffffff04; }
+  .method { font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 5px; letter-spacing: .05em; background: var(--acc-dim); color: var(--accent); border: 1px solid #00d4a038; }
+  .ep-path { font-family: 'SF Mono', monospace; font-size: 13px; font-weight: 600; }
+  .ep-desc { font-size: 12px; color: var(--text2); flex: 1; }
+  .ep-chev { color: var(--text3); font-size: 11px; transition: transform .2s; }
+  .ep-chev.open { transform: rotate(90deg); }
+  .ep-body { display: none; border-top: 1px solid var(--border); padding: 18px; }
   .ep-body.open { display: block; }
-  .param-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
-  .param-table th { background: var(--bg); padding: 9px 12px; text-align: left; font-size: 11px; color: var(--text3); border-bottom: 1px solid var(--border); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
-  .param-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
-  .param-table tr:last-child td { border-bottom: none; }
-  .param-name { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent); }
-  .param-type { font-size: 12px; color: var(--blue); font-family: monospace; }
-  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); }
-  .code-block-wrap { position: relative; }
-  pre {
-    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 16px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
-    overflow-x: auto; white-space: pre; color: #a8d8b8; line-height: 1.6;
-  }
-  .copy-btn {
-    position: absolute; top: 8px; right: 8px; background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); color: var(--text3); font-size: 11px; padding: 4px 10px; cursor: pointer;
-    transition: all .15s;
-  }
+  .ptable { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .ptable th { background: var(--bg); padding: 8px 12px; text-align: left; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); font-weight: 700; }
+  .ptable td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .ptable tr:last-child td { border-bottom: none; }
+  .pname { font-family: monospace; color: var(--accent); font-size: 12px; }
+  .ptype { font-family: monospace; color: var(--blue); font-size: 12px; }
+  .code-wrap { position: relative; }
+  pre { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rsm); padding: 16px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; overflow-x: auto; color: #9ecbac; line-height: 1.65; }
+  .copy-btn { position: absolute; top: 8px; right: 8px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 5px; color: var(--text3); font-size: 11px; padding: 4px 10px; cursor: pointer; transition: all .15s; }
   .copy-btn:hover { color: var(--text); border-color: var(--text3); }
   .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+  .contact-row { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px 24px; margin-top: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+  .contact-label { font-size: 12px; color: var(--text2); }
+  .contact-email { font-size: 15px; font-weight: 700; margin-top: 3px; }
 
-  /* ── Contact card ─────────────────────────────────────────── */
-  .contact-card {
-    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
-    border: 1px solid var(--border2); border-radius: var(--radius); padding: 22px 24px;
-    margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  /* ── Responsive ─────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .chart-row { grid-template-columns: 1fr; }
+    .filter-grid { grid-template-columns: 1fr 1fr; }
   }
-  .contact-text { font-size: 13px; color: var(--text2); }
-  .contact-email { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; }
-
-  @media (max-width: 700px) {
-    .cascade-row { grid-template-columns: 1fr; }
-    .cascade-arrow { display: none; }
-    .filter-grid { grid-template-columns: 1fr; }
-    .stat-grid { grid-template-columns: 1fr 1fr; }
-    .content { padding: 20px 16px; }
-    .topbar { padding: 0 16px; }
-    .api-sep { display: none; }
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .cascade { grid-template-columns: 1fr; }
+    .cascade-sep { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN ──────────────────────────────────────────────────── -->
+<!-- ── LOGIN ──────────────────────────────────────────────── -->
 <div id="login-screen">
   <div class="login-wrap">
     <div class="login-brand">
-      <div class="login-brand-logo">SG Datalytics</div>
-      <div class="login-brand-sub">Ghana Market Intelligence Platform</div>
+      <div class="login-logo">SG Datalytics</div>
+      <div class="login-sub">Ghana Market Intelligence Platform</div>
     </div>
     <div class="login-card">
       <div class="login-title">Welcome back</div>
-      <div class="login-hint">Enter your API key to access the data portal</div>
+      <div class="login-hint">Enter your API key to access real-time market price data for Ghana.</div>
       <div class="field">
         <label>API Key</label>
-        <div class="key-field">
+        <div class="key-wrap">
           <input type="password" id="key-input" placeholder="sgd_xxxxxxxxxxxxxxxx" autocomplete="off">
-          <button class="key-eye" onclick="toggleKeyVis()" id="key-eye-btn">👁</button>
+          <button class="eye-btn" onclick="toggleEye()" id="eye-btn">👁</button>
         </div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="login()" id="login-btn">
-        <span id="login-spinner" style="display:none" class="spinner" style="border-top-color:#000"></span>
+      <button class="btn btn-primary btn-full" id="login-btn" onclick="login()">
+        <span id="login-spin" class="spin" style="display:none; border-top-color:#000"></span>
         Access Portal
       </button>
-      <div class="error-msg" id="login-error">Invalid or revoked API key. Please contact mark@sgdatalytics.com</div>
+      <div class="err-msg" id="login-err">Invalid or revoked API key. Contact mark@sgdatalytics.com</div>
     </div>
-    <div class="login-footer">Secure · Encrypted · Your data stays private</div>
+    <div class="login-footer">Secure · Encrypted in transit · Your data is private</div>
   </div>
 </div>
 
-<!-- ── APP ────────────────────────────────────────────────────── -->
+<!-- ── APP ────────────────────────────────────────────────── -->
 <div id="app">
-  <div class="topbar">
-    <div class="topbar-logo">SG Datalytics</div>
-    <div class="topbar-sep"></div>
-    <div class="topbar-client" id="topbar-client"></div>
-    <span class="topbar-tier" id="topbar-tier"></span>
-    <button class="logout-btn" onclick="logout()">Sign out</button>
-  </div>
 
-  <div class="tabs-wrap">
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
-      <div class="tab" onclick="showTab('query', this)">🔍 Query Builder</div>
-      <div class="tab" onclick="showTab('docs', this)">📖 API Reference</div>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">SG Datalytics</div>
+      <div class="sb-logo-sub">Market Intelligence</div>
     </div>
+
+    <div class="sb-section">Main</div>
+    <div class="sb-link active" onclick="showPage('dashboard', this)">
+      <span class="sb-icon">📊</span> Dashboard
+    </div>
+    <div class="sb-link" onclick="showPage('query', this)">
+      <span class="sb-icon">🔍</span> Query Builder
+    </div>
+    <div class="sb-link" onclick="showPage('docs', this)">
+      <span class="sb-icon">📖</span> API Reference
+    </div>
+
+    <div class="sb-section" style="margin-top:8px">Account</div>
+    <div class="sb-link" onclick="showPage('usage', this)">
+      <span class="sb-icon">📈</span> Usage &amp; Quota
+    </div>
+
+    <div class="sb-tier" id="sb-tier-card">
+      <div class="sb-tier-label">Your Plan</div>
+      <div class="sb-tier-name" id="sb-tier-name">—</div>
+      <div class="sb-tier-client" id="sb-tier-client">—</div>
+    </div>
+    <div class="sb-logout" onclick="logout()">↩ Sign out</div>
   </div>
 
-  <div class="content">
+  <!-- Main area -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-tier" id="topbar-tier"></span>
+      </div>
+    </div>
 
     <!-- ── DASHBOARD ── -->
-    <div class="pane active" id="pane-dashboard">
-      <div class="page-title">Usage Overview</div>
-      <div class="page-sub" id="dash-welcome">Loading your account…</div>
+    <div class="page active" id="page-dashboard">
 
-      <div class="quota-card">
-        <div class="quota-header">
-          <span class="quota-title">Monthly Row Quota</span>
-          <span class="quota-nums" id="quota-nums">—</span>
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Total Listings</span>
+            <span class="kpi-icon green">📦</span>
+          </div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-sub">active price records</div>
         </div>
-        <div class="bar-track"><div class="bar-fill" id="quota-bar" style="width:0%"></div></div>
-        <div class="quota-footer">
-          <span id="quota-pct">—</span>
-          <span id="quota-reset">Resets —</span>
+        <div class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Categories</span>
+            <span class="kpi-icon blue">🗂</span>
+          </div>
+          <div class="kpi-value" id="kpi-cats">—</div>
+          <div class="kpi-sub">market segments</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Rows Used</span>
+            <span class="kpi-icon purple">📥</span>
+          </div>
+          <div class="kpi-value" id="kpi-used">—</div>
+          <div class="kpi-sub" id="kpi-used-sub">this month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top">
+            <span class="kpi-label">Rows Remaining</span>
+            <span class="kpi-icon warn">✅</span>
+          </div>
+          <div class="kpi-value" id="kpi-rem" style="color:var(--accent)">—</div>
+          <div class="kpi-sub" id="kpi-rem-sub">available to query</div>
         </div>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-icon">📥</div>
-          <div class="stat-label">Rows Used This Month</div>
-          <div class="stat-value" id="stat-rows">—</div>
-          <div class="stat-sub" id="stat-rows-sub"></div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Listings by Category</div>
+              <div class="chart-sub">Number of verified price records per market segment</div>
+            </div>
+            <span class="chart-badge" id="dash-date-range">—</span>
+          </div>
+          <canvas class="chart" id="bar-chart" height="200"></canvas>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔁</div>
-          <div class="stat-label">Requests This Month</div>
-          <div class="stat-value" id="stat-reqs">—</div>
-          <div class="stat-sub">API calls made</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-label">Rows Remaining</div>
-          <div class="stat-value accent" id="stat-rem">—</div>
-          <div class="stat-sub">available to query</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">📅</div>
-          <div class="stat-label">Quota Resets</div>
-          <div class="stat-value" id="stat-reset" style="font-size:18px; letter-spacing:-.5px">—</div>
-          <div class="stat-sub">next billing cycle</div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Quota Usage</div>
+              <div class="chart-sub">Monthly row consumption</div>
+            </div>
+          </div>
+          <canvas class="chart" id="gauge-chart" height="200"></canvas>
+          <div style="text-align:center; margin-top:8px">
+            <div style="font-size:28px; font-weight:800; letter-spacing:-1px" id="gauge-pct">—</div>
+            <div style="font-size:12px; color:var(--text3)" id="gauge-label">of monthly quota used</div>
+          </div>
         </div>
       </div>
 
-      <div class="section-label">Available Data Categories</div>
-      <div class="cat-grid" id="categories-grid"></div>
+      <div class="section-row">
+        <div class="section-title">Available Data Categories</div>
+        <span style="font-size:12px; color:var(--text3)">Click a category to query it →</span>
+      </div>
+      <div class="cat-grid" id="cat-grid"></div>
     </div>
 
     <!-- ── QUERY BUILDER ── -->
-    <div class="pane" id="pane-query">
-      <div class="page-title">Query Builder</div>
-      <div class="page-sub">Build your query step by step, then preview or download results</div>
+    <div class="page" id="page-query">
 
       <!-- Step 1 -->
-      <div class="filter-section">
-        <div class="step-row">
-          <div class="step-num green">1</div>
-          <div class="step-title">Narrow your product</div>
-          <div class="step-line"></div>
+      <div class="filter-paper">
+        <div class="filter-paper-title">
+          <span class="step-pill">1</span>
+          Select Product
         </div>
-        <div class="cascade-row">
-          <div class="field" style="margin-bottom:0">
+        <div class="cascade">
+          <div>
             <label>Category</label>
             <div class="sd-wrap" id="sd-category-wrap">
-              <input type="text" class="sd-input" id="sd-category-display" placeholder="All categories" readonly>
+              <div class="sd-display sd-placeholder" id="sd-category-display" tabindex="0" onclick="openSd('category')">All categories</div>
               <button class="sd-clear" id="sd-category-clear" onclick="clearSd('category')">✕</button>
-              <span class="sd-arrow">▼</span>
-              <div class="sd-dropdown" id="sd-category-dropdown"><div class="sd-loading">Loading…</div></div>
+              <div class="sd-arrow" id="sd-category-arrow">▼</div>
+              <div class="sd-drop" id="sd-category-drop">
+                <div class="sd-search-row"><input class="sd-search-input" id="sd-category-search" placeholder="Search categories…" oninput="filterSd('category',this.value)"></div>
+                <div class="sd-list" id="sd-category-list"></div>
+              </div>
             </div>
             <input type="hidden" id="q-category">
             <div class="field-hint">e.g. Electronics, Vehicles</div>
           </div>
-          <div class="cascade-arrow">→</div>
-          <div class="field" style="margin-bottom:0">
+          <div class="cascade-sep">→</div>
+          <div>
             <label>Product Group</label>
             <div class="sd-wrap" id="sd-group-wrap">
-              <input type="text" class="sd-input" id="sd-group-display" placeholder="All product groups" readonly>
+              <div class="sd-display sd-placeholder" id="sd-group-display" tabindex="0" onclick="openSd('group')">All product groups</div>
               <button class="sd-clear" id="sd-group-clear" onclick="clearSd('group')">✕</button>
-              <span class="sd-arrow">▼</span>
-              <div class="sd-dropdown" id="sd-group-dropdown"><div class="sd-loading">Loading…</div></div>
+              <div class="sd-arrow" id="sd-group-arrow">▼</div>
+              <div class="sd-drop" id="sd-group-drop">
+                <div class="sd-search-row"><input class="sd-search-input" id="sd-group-search" placeholder="Search groups…" oninput="filterSd('group',this.value)"></div>
+                <div class="sd-list" id="sd-group-list"></div>
+              </div>
             </div>
             <input type="hidden" id="q-group">
-            <div class="field-hint">e.g. Smartphone, Toyota</div>
+            <div class="field-hint">e.g. Smartphone, Laptop</div>
           </div>
-          <div class="cascade-arrow">→</div>
-          <div class="field" style="margin-bottom:0">
+          <div class="cascade-sep">→</div>
+          <div>
             <label>Brand</label>
             <div class="sd-wrap" id="sd-brand-wrap">
-              <input type="text" class="sd-input" id="sd-brand-display" placeholder="All brands" readonly>
+              <div class="sd-display sd-placeholder" id="sd-brand-display" tabindex="0" onclick="openSd('brand')">All brands</div>
               <button class="sd-clear" id="sd-brand-clear" onclick="clearSd('brand')">✕</button>
-              <span class="sd-arrow">▼</span>
-              <div class="sd-dropdown" id="sd-brand-dropdown"><div class="sd-loading">Loading…</div></div>
+              <div class="sd-arrow" id="sd-brand-arrow">▼</div>
+              <div class="sd-drop" id="sd-brand-drop">
+                <div class="sd-search-row"><input class="sd-search-input" id="sd-brand-search" placeholder="Search brands…" oninput="filterSd('brand',this.value)"></div>
+                <div class="sd-list" id="sd-brand-list"></div>
+              </div>
             </div>
             <input type="hidden" id="q-brand">
-            <div class="field-hint">e.g. Apple, Samsung, Toyota</div>
+            <div class="field-hint">e.g. Apple, Samsung</div>
           </div>
         </div>
       </div>
 
       <!-- Step 2 -->
-      <div class="filter-section">
-        <div class="step-row">
-          <div class="step-num blue">2</div>
-          <div class="step-title">Apply filters</div>
-          <div class="step-line"></div>
+      <div class="filter-paper">
+        <div class="filter-paper-title">
+          <span class="step-pill blue">2</span>
+          Refine Filters
         </div>
         <div class="filter-grid">
-          <div class="field">
+          <div>
             <label>Condition</label>
             <select id="q-condition">
               <option value="">Any condition</option>
@@ -453,45 +488,44 @@
               <option value="refurbished">Refurbished</option>
             </select>
           </div>
-          <div class="field">
+          <div>
             <label>Location</label>
             <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi">
           </div>
-          <div class="field">
+          <div>
             <label>Date From</label>
             <input type="date" id="q-from">
           </div>
-          <div class="field">
+          <div>
             <label>Date To</label>
             <input type="date" id="q-to">
           </div>
-          <div class="field">
+          <div>
             <label>Min Price (GHS)</label>
             <input type="number" id="q-minprice" placeholder="0" min="0">
           </div>
-          <div class="field">
+          <div>
             <label>Max Price (GHS)</label>
             <input type="number" id="q-maxprice" placeholder="No limit" min="0">
           </div>
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="filter-actions">
+      <div class="action-row">
         <button class="btn btn-primary" onclick="runQuery(false)">
-          <span id="preview-spinner" style="display:none" class="spinner"></span>
+          <span id="q-spin" class="spin" style="display:none; border-top-color:#000"></span>
           Preview Results
         </button>
         <button class="btn btn-secondary" onclick="runQuery(true)">⬇ Download CSV</button>
-        <button class="btn btn-outline" onclick="clearFilters()">Clear Filters</button>
+        <button class="btn btn-ghost" onclick="clearFilters()">Clear All</button>
       </div>
 
-      <div class="preview-box" id="preview-box" style="display:none">
-        <div class="preview-header">
-          <span class="preview-count" id="preview-count"></span>
-          <span class="preview-note">Showing first 20 rows · Download CSV for full dataset</span>
+      <div class="results-card" id="results-card" style="display:none">
+        <div class="res-header">
+          <span class="res-count" id="res-count"></span>
+          <span class="res-meta">Showing first 20 rows · Download CSV for full dataset</span>
         </div>
-        <div class="table-wrap">
+        <div class="tbl-wrap">
           <table>
             <thead>
               <tr>
@@ -500,167 +534,188 @@
                 <th>Price (GHS)</th><th>Location</th>
               </tr>
             </thead>
-            <tbody id="preview-body"></tbody>
+            <tbody id="results-body"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ── API REFERENCE ── -->
-    <div class="pane" id="pane-docs">
-      <div class="page-title">API Reference</div>
-      <div class="page-sub">Integrate SG Datalytics market data directly into your systems</div>
+    <!-- ── USAGE PAGE ── -->
+    <div class="page" id="page-usage">
+      <div style="max-width:600px">
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; margin-bottom:16px">
+          <div style="font-size:14px; font-weight:700; margin-bottom:20px">Monthly Quota</div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px">
+            <span style="font-size:13px; color:var(--text2)" id="u-used-label">—</span>
+            <span style="font-size:13px; color:var(--text2)" id="u-limit-label">—</span>
+          </div>
+          <div style="background:var(--bg); border-radius:8px; height:10px; overflow:hidden">
+            <div id="u-bar" style="height:100%; border-radius:8px; background:var(--accent); width:0%; transition: width .6s"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:12px; color:var(--text3)">
+            <span id="u-pct"></span>
+            <span>Resets <span id="u-reset"></span></span>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+          <div class="kpi">
+            <div class="kpi-label" style="margin-bottom:10px">Requests This Month</div>
+            <div class="kpi-value" id="u-reqs">—</div>
+            <div class="kpi-sub">API calls made</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label" style="margin-bottom:10px">Last Request</div>
+            <div class="kpi-value" id="u-last" style="font-size:16px; letter-spacing:-.5px">—</div>
+            <div class="kpi-sub">most recent activity</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <div class="api-intro">
-        <div class="api-intro-item">
-          <span class="api-intro-label">Base URL</span>
-          <span class="api-intro-val" id="docs-base-url">—</span>
+    <!-- ── API DOCS ── -->
+    <div class="page" id="page-docs">
+
+      <div class="api-banner">
+        <div>
+          <div class="api-item-label">Base URL</div>
+          <div class="api-item-val" id="docs-url">—</div>
         </div>
-        <div class="api-sep"></div>
-        <div class="api-intro-item">
-          <span class="api-intro-label">Authentication</span>
-          <span class="api-intro-val">X-API-Key header</span>
+        <div>
+          <div class="api-item-label">Authentication</div>
+          <div class="api-item-val">X-API-Key header</div>
         </div>
-        <div class="api-sep"></div>
-        <div class="api-intro-item">
-          <span class="api-intro-label">Response Format</span>
-          <span class="api-intro-val">JSON or CSV</span>
+        <div>
+          <div class="api-item-label">Response Format</div>
+          <div class="api-item-val">JSON  ·  CSV</div>
         </div>
-        <div class="api-sep"></div>
-        <div class="api-intro-item">
-          <span class="api-intro-label">Rate Limit</span>
-          <span class="api-intro-val" id="docs-rate">—</span>
+        <div>
+          <div class="api-item-label">Rate Limit</div>
+          <div class="api-item-val" id="docs-rate">—</div>
         </div>
       </div>
 
-      <!-- /data/prices -->
-      <div class="endpoint">
-        <div class="endpoint-header" onclick="toggleEp(this)">
-          <span class="method get">GET</span>
-          <span class="ep-path">/data/prices</span>
+      <div class="ep">
+        <div class="ep-head" onclick="toggleEp(this)">
+          <span class="method">GET</span><span class="ep-path">/data/prices</span>
           <span class="ep-desc">Listing-level price data with filters</span>
-          <span class="ep-chevron">▶</span>
+          <span class="ep-chev">▶</span>
         </div>
         <div class="ep-body">
-          <table class="param-table">
+          <table class="ptable">
             <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter by product category (e.g. Electronics)</td></tr>
-            <tr><td><span class="param-name">product_group</span></td><td><span class="param-type">string</span></td><td>Product type within category (e.g. Smartphone)</td></tr>
-            <tr><td><span class="param-name">brand</span></td><td><span class="param-type">string</span></td><td>Brand name (e.g. Samsung, Apple)</td></tr>
-            <tr><td><span class="param-name">condition</span></td><td><span class="param-type">new | used</span></td><td>Listing condition</td></tr>
-            <tr><td><span class="param-name">date_from</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
-            <tr><td><span class="param-name">date_to</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>End of date range</td></tr>
-            <tr><td><span class="param-name">location</span></td><td><span class="param-type">string</span></td><td>Partial location match (e.g. Accra)</td></tr>
-            <tr><td><span class="param-name">min_price</span></td><td><span class="param-type">number</span></td><td>Minimum price in GHS</td></tr>
-            <tr><td><span class="param-name">max_price</span></td><td><span class="param-type">number</span></td><td>Maximum price in GHS</td></tr>
-            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>Max rows (capped by your tier)</td></tr>
-            <tr><td><span class="param-name">offset</span></td><td><span class="param-type">integer</span></td><td>Pagination offset</td></tr>
-            <tr><td><span class="param-name">format</span></td><td><span class="param-type">csv</span></td><td>Return downloadable CSV file</td></tr>
+            <tr><td><span class="pname">category</span></td><td><span class="ptype">string</span></td><td>Filter by category (e.g. Electronics)</td></tr>
+            <tr><td><span class="pname">product_group</span></td><td><span class="ptype">string</span></td><td>Product type within category (e.g. Smartphone)</td></tr>
+            <tr><td><span class="pname">brand</span></td><td><span class="ptype">string</span></td><td>Brand name (e.g. Samsung)</td></tr>
+            <tr><td><span class="pname">condition</span></td><td><span class="ptype">new | used</span></td><td>Listing condition</td></tr>
+            <tr><td><span class="pname">date_from</span></td><td><span class="ptype">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
+            <tr><td><span class="pname">date_to</span></td><td><span class="ptype">YYYY-MM-DD</span></td><td>End of date range</td></tr>
+            <tr><td><span class="pname">location</span></td><td><span class="ptype">string</span></td><td>Partial location match (e.g. Accra)</td></tr>
+            <tr><td><span class="pname">min_price</span></td><td><span class="ptype">number</span></td><td>Minimum price in GHS</td></tr>
+            <tr><td><span class="pname">max_price</span></td><td><span class="ptype">number</span></td><td>Maximum price in GHS</td></tr>
+            <tr><td><span class="pname">limit</span></td><td><span class="ptype">integer</span></td><td>Max rows returned (capped by your tier)</td></tr>
+            <tr><td><span class="pname">offset</span></td><td><span class="ptype">integer</span></td><td>Pagination offset</td></tr>
+            <tr><td><span class="pname">format</span></td><td><span class="ptype">csv</span></td><td>Return a downloadable CSV file</td></tr>
           </table>
-          <div class="code-block-wrap">
-            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyPre(this)">Copy</button>
             <pre id="ex-prices"></pre>
           </div>
         </div>
       </div>
 
-      <!-- /data/summary -->
-      <div class="endpoint">
-        <div class="endpoint-header" onclick="toggleEp(this)">
-          <span class="method get">GET</span>
-          <span class="ep-path">/data/summary</span>
+      <div class="ep">
+        <div class="ep-head" onclick="toggleEp(this)">
+          <span class="method">GET</span><span class="ep-path">/data/summary</span>
           <span class="ep-desc">Aggregated stats — median, min, max, count per product group</span>
-          <span class="ep-chevron">▶</span>
+          <span class="ep-chev">▶</span>
         </div>
         <div class="ep-body">
-          <table class="param-table">
+          <table class="ptable">
             <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category</td></tr>
-            <tr><td><span class="param-name">date_from</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
-            <tr><td><span class="param-name">date_to</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>End of date range</td></tr>
+            <tr><td><span class="pname">category</span></td><td><span class="ptype">string</span></td><td>Filter to one category</td></tr>
+            <tr><td><span class="pname">date_from</span></td><td><span class="ptype">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
+            <tr><td><span class="pname">date_to</span></td><td><span class="ptype">YYYY-MM-DD</span></td><td>End of date range</td></tr>
           </table>
-          <div class="code-block-wrap">
-            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyPre(this)">Copy</button>
             <pre id="ex-summary"></pre>
           </div>
         </div>
       </div>
 
-      <!-- /data/categories -->
-      <div class="endpoint">
-        <div class="endpoint-header" onclick="toggleEp(this)">
-          <span class="method get">GET</span>
-          <span class="ep-path">/data/categories</span>
-          <span class="ep-desc">Categories available on your plan, with listing counts</span>
-          <span class="ep-chevron">▶</span>
+      <div class="ep">
+        <div class="ep-head" onclick="toggleEp(this)">
+          <span class="method">GET</span><span class="ep-path">/data/categories</span>
+          <span class="ep-desc">Available categories for your plan, with listing counts</span>
+          <span class="ep-chev">▶</span>
         </div>
         <div class="ep-body">
-          <div class="code-block-wrap">
-            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyPre(this)">Copy</button>
             <pre id="ex-categories"></pre>
           </div>
         </div>
       </div>
 
-      <!-- /data/usage -->
-      <div class="endpoint">
-        <div class="endpoint-header" onclick="toggleEp(this)">
-          <span class="method get">GET</span>
-          <span class="ep-path">/data/usage</span>
+      <div class="ep">
+        <div class="ep-head" onclick="toggleEp(this)">
+          <span class="method">GET</span><span class="ep-path">/data/usage</span>
           <span class="ep-desc">Your quota status and remaining rows this month</span>
-          <span class="ep-chevron">▶</span>
+          <span class="ep-chev">▶</span>
         </div>
         <div class="ep-body">
-          <div class="code-block-wrap">
-            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyPre(this)">Copy</button>
             <pre id="ex-usage"></pre>
           </div>
         </div>
       </div>
 
-      <div class="contact-card">
+      <div class="contact-row">
         <div>
-          <div class="contact-text">Need a higher quota, more categories, or enterprise access?</div>
+          <div class="contact-label">Need a higher quota, more categories, or enterprise access?</div>
           <div class="contact-email">mark@sgdatalytics.com</div>
         </div>
-        <a href="mailto:mark@sgdatalytics.com" class="btn btn-secondary">Contact us →</a>
+        <a href="mailto:mark@sgdatalytics.com" class="btn btn-secondary btn-sm">Contact us →</a>
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <script>
-  let API_KEY  = '';
-  let CLIENT   = {};
-  let BASE_URL = window.location.origin;
+  let API_KEY = '', CLIENT = {}, SD_DATA = {};
+  const BASE  = window.location.origin;
+  const RATES = { trial: '30/min', starter: '60/min', pro: '200/min', enterprise: '600/min' };
 
-  // ── Auth ──────────────────────────────────────────────────
-  function toggleKeyVis() {
-    const inp = document.getElementById('key-input');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
+  /* ── Auth ─────────────────────────────────────── */
+  function toggleEye() {
+    const i = document.getElementById('key-input');
+    i.type = i.type === 'password' ? 'text' : 'password';
   }
 
   async function login() {
-    const key   = document.getElementById('key-input').value.trim();
+    const key = document.getElementById('key-input').value.trim();
     if (!key) return;
-    const errEl = document.getElementById('login-error');
+    const errEl = document.getElementById('login-err');
     const btn   = document.getElementById('login-btn');
     errEl.style.display = 'none';
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner" style="border-top-color:#000"></span> Verifying…';
+    document.getElementById('login-spin').style.display = 'inline-block';
+    btn.lastChild.textContent = ' Verifying…';
 
     try {
-      const res = await fetch(`${BASE_URL}/data/usage`, { headers: { 'X-API-Key': key } });
-      if (!res.ok) { errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = 'Access Portal'; return; }
+      const res = await fetch(`${BASE}/data/usage`, { headers: { 'X-API-Key': key } });
+      if (!res.ok) throw new Error();
       API_KEY = key;
       CLIENT  = await res.json();
       sessionStorage.setItem('sgd_key', key);
       bootApp();
-    } catch(e) {
+    } catch {
       errEl.style.display = 'block';
       btn.disabled = false;
-      btn.innerHTML = 'Access Portal';
+      document.getElementById('login-spin').style.display = 'none';
+      btn.lastChild.textContent = ' Access Portal';
     }
   }
 
@@ -669,148 +724,293 @@
     API_KEY = ''; CLIENT = {};
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
+    const btn = document.getElementById('login-btn');
+    btn.disabled = false;
+    document.getElementById('login-spin').style.display = 'none';
+    btn.lastChild.textContent = ' Access Portal';
     document.getElementById('key-input').value = '';
-    document.getElementById('login-btn').disabled = false;
-    document.getElementById('login-btn').innerHTML = 'Access Portal';
   }
 
-  // ── Boot ──────────────────────────────────────────────────
+  /* ── Boot ─────────────────────────────────────── */
   function bootApp() {
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    document.getElementById('topbar-client').textContent = CLIENT.client;
-    const tierEl = document.getElementById('topbar-tier');
-    tierEl.textContent = CLIENT.tier.toUpperCase();
-    tierEl.className = `topbar-tier tier-${CLIENT.tier}`;
-    renderDashboard();
-    populateCategoryDropdown();
+    document.getElementById('app').style.display          = 'flex';
+    document.getElementById('sb-tier-name').textContent   = CLIENT.tier;
+    document.getElementById('sb-tier-client').textContent = CLIENT.client;
+    const te = document.getElementById('topbar-tier');
+    te.textContent = CLIENT.tier.toUpperCase();
+    te.className   = `topbar-tier tier-${CLIENT.tier}`;
+    loadDashboard();
+    loadQueryDropdowns();
     renderDocs();
-    const to   = new Date().toISOString().split('T')[0];
-    const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
-    document.getElementById('q-from').value = from;
-    document.getElementById('q-to').value   = to;
+    const today = new Date().toISOString().split('T')[0];
+    const ago30 = new Date(Date.now() - 30*864e5).toISOString().split('T')[0];
+    document.getElementById('q-from').value = ago30;
+    document.getElementById('q-to').value   = today;
   }
 
-  // ── Dashboard ─────────────────────────────────────────────
-  async function renderDashboard() {
-    const limit     = CLIENT.row_limit_monthly;
-    const used      = CLIENT.rows_used_this_month;
-    const rem       = CLIENT.rows_remaining;
-    const unlimited = limit === 'unlimited';
-    const pct       = unlimited ? 0 : Math.min(1, used / limit);
-
-    document.getElementById('dash-welcome').textContent =
-      `Welcome, ${CLIENT.client} · ${CLIENT.tier.charAt(0).toUpperCase() + CLIENT.tier.slice(1)} Plan`;
-
-    const bar = document.getElementById('quota-bar');
-    setTimeout(() => { bar.style.width = (unlimited ? 3 : pct * 100) + '%'; }, 100);
-    bar.className = 'bar-fill' + (pct >= .9 ? ' danger' : pct >= .8 ? ' warn' : '');
-
-    document.getElementById('quota-nums').textContent =
-      unlimited ? `${used.toLocaleString()} rows used (Unlimited)` :
-                  `${used.toLocaleString()} / ${limit.toLocaleString()} rows`;
-    document.getElementById('quota-pct').textContent =
-      unlimited ? 'No limit' : `${Math.round(pct * 100)}% used`;
-    document.getElementById('quota-reset').textContent = `Resets ${CLIENT.quota_resets_at}`;
-
-    document.getElementById('stat-rows').textContent      = used.toLocaleString();
-    document.getElementById('stat-rows-sub').textContent  = unlimited ? 'unlimited plan' : `of ${limit.toLocaleString()} limit`;
-    document.getElementById('stat-reqs').textContent      = CLIENT.requests_this_month.toLocaleString();
-    document.getElementById('stat-rem').textContent       = unlimited ? '∞' : rem.toLocaleString();
-    document.getElementById('stat-reset').textContent     = CLIENT.quota_resets_at;
-
+  /* ── Dashboard ────────────────────────────────── */
+  async function loadDashboard() {
     const catRes = await apiFetch('/data/categories');
-    const grid   = document.getElementById('categories-grid');
-    grid.innerHTML = '';
-    if (catRes && catRes.data) {
-      catRes.data.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'cat-card';
-        card.innerHTML = `
-          <div class="cat-name">${c.product_category}</div>
-          <div class="cat-count">${parseInt(c.total_listings).toLocaleString()}</div>
-          <div class="cat-meta">listings · updated ${c.last_updated ? c.last_updated.split('T')[0] : '—'}</div>
-        `;
-        card.onclick = () => {
-          showTab('query', document.querySelectorAll('.tab')[1]);
-          setTimeout(() => selectSd('category', c.product_category, c.product_category), 200);
-        };
-        grid.appendChild(card);
-      });
+    if (!catRes) return;
+
+    const cats     = catRes.data || [];
+    const total    = cats.reduce((s, c) => s + parseInt(c.total_listings || 0), 0);
+    const limit    = CLIENT.row_limit_monthly;
+    const used     = CLIENT.rows_used_this_month;
+    const rem      = CLIENT.rows_remaining;
+    const unlimited = limit === 'unlimited';
+    const pct      = unlimited ? 0 : Math.min(1, used / limit);
+
+    document.getElementById('kpi-total').textContent    = total.toLocaleString();
+    document.getElementById('kpi-cats').textContent     = cats.length;
+    document.getElementById('kpi-used').textContent     = used.toLocaleString();
+    document.getElementById('kpi-used-sub').textContent = unlimited ? 'unlimited plan' : `of ${limit.toLocaleString()} limit`;
+    document.getElementById('kpi-rem').textContent      = unlimited ? '∞' : rem.toLocaleString();
+    document.getElementById('kpi-rem-sub').textContent  = 'available to query';
+
+    const lastDate = cats.map(c => c.last_updated || '').filter(Boolean).sort().pop();
+    document.getElementById('dash-date-range').textContent = lastDate ? `Updated ${lastDate.split('T')[0]}` : '';
+
+    drawBarChart(cats);
+    drawGauge(pct, used, unlimited);
+    drawCatGrid(cats, total);
+
+    // Usage page
+    document.getElementById('u-used-label').textContent  = `${used.toLocaleString()} rows used`;
+    document.getElementById('u-limit-label').textContent = unlimited ? 'Unlimited plan' : `${limit.toLocaleString()} row limit`;
+    const ubar = document.getElementById('u-bar');
+    setTimeout(() => { ubar.style.width = (unlimited ? 4 : pct * 100) + '%'; }, 100);
+    ubar.style.background = pct >= .9 ? 'var(--danger)' : pct >= .75 ? 'var(--warn)' : 'var(--accent)';
+    document.getElementById('u-pct').textContent   = unlimited ? 'Unlimited' : `${Math.round(pct * 100)}% used`;
+    document.getElementById('u-reset').textContent = CLIENT.quota_resets_at;
+    document.getElementById('u-reqs').textContent  = CLIENT.requests_this_month.toLocaleString();
+    document.getElementById('u-last').textContent  = CLIENT.last_request_at ? CLIENT.last_request_at.split('T')[0] : '—';
+  }
+
+  function drawBarChart(cats) {
+    const canvas = document.getElementById('bar-chart');
+    const ctx    = canvas.getContext('2d');
+    const dpr    = window.devicePixelRatio || 1;
+    const W      = canvas.parentElement.clientWidth - 44;
+    const H      = 200;
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width  = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    const sorted = [...cats].sort((a,b) => parseInt(b.total_listings) - parseInt(a.total_listings)).slice(0, 8);
+    const max    = Math.max(...sorted.map(c => parseInt(c.total_listings)));
+    const pad    = { t: 10, r: 10, b: 50, l: 50 };
+    const cW     = (W - pad.l - pad.r) / sorted.length;
+    const barW   = Math.min(cW * 0.55, 40);
+
+    // Grid lines
+    ctx.strokeStyle = '#252839'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + ((H - pad.t - pad.b) / 4) * i;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      const val = Math.round(max * (1 - i / 4));
+      ctx.fillStyle = '#525c6e'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(val >= 1000 ? (val/1000).toFixed(0)+'k' : val, pad.l - 6, y + 4);
     }
+
+    // Bars
+    sorted.forEach((cat, i) => {
+      const x     = pad.l + i * cW + (cW - barW) / 2;
+      const count = parseInt(cat.total_listings);
+      const barH  = ((H - pad.t - pad.b) * count) / max;
+      const y     = H - pad.b - barH;
+
+      // gradient
+      const grad = ctx.createLinearGradient(0, y, 0, H - pad.b);
+      grad.addColorStop(0, '#00d4a0cc');
+      grad.addColorStop(1, '#00d4a044');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
+      ctx.fill();
+
+      // label
+      ctx.fillStyle = '#8892a4'; ctx.font = '10px -apple-system, sans-serif'; ctx.textAlign = 'center';
+      const label = cat.product_category.length > 9 ? cat.product_category.substring(0, 8) + '…' : cat.product_category;
+      ctx.fillText(label, x + barW / 2, H - pad.b + 14);
+      ctx.fillStyle = '#525c6e';
+      ctx.fillText(count >= 1000 ? (count/1000).toFixed(1)+'k' : count, x + barW/2, y - 5);
+    });
   }
 
-  // ── Searchable Dropdowns ──────────────────────────────────
-  const SD = {};
+  function drawGauge(pct, used, unlimited) {
+    const canvas = document.getElementById('gauge-chart');
+    const ctx    = canvas.getContext('2d');
+    const dpr    = window.devicePixelRatio || 1;
+    const W      = canvas.parentElement.clientWidth - 44;
+    const H      = 160;
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width  = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
 
-  function buildSdDropdown(key, items, placeholder) {
-    const dropdown = document.getElementById(`sd-${key}-dropdown`);
-    const search = document.createElement('div');
-    search.className = 'sd-search';
-    search.innerHTML = `<input type="text" placeholder="Search ${placeholder}…" id="sd-${key}-search">`;
-    const list = document.createElement('div');
-    list.id = `sd-${key}-list`;
-    dropdown.innerHTML = '';
-    dropdown.appendChild(search);
-    dropdown.appendChild(list);
-    SD[key] = { value: SD[key]?.value || '', items };
-    renderSdList(key, '');
-    document.getElementById(`sd-${key}-search`).addEventListener('input', e => renderSdList(key, e.target.value));
+    const cx = W / 2, cy = H * 0.78, r = Math.min(W / 2, H) * 0.72;
+    const startA = Math.PI, endA = 2 * Math.PI;
+
+    // Background arc
+    ctx.beginPath(); ctx.arc(cx, cy, r, startA, endA);
+    ctx.strokeStyle = '#252839'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+
+    // Fill arc
+    const fillEnd = startA + (unlimited ? 0.05 : pct) * Math.PI;
+    const color   = pct >= .9 ? '#f43f5e' : pct >= .75 ? '#f59e0b' : '#00d4a0';
+    const grad    = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+    grad.addColorStop(0, color + '88'); grad.addColorStop(1, color);
+    ctx.beginPath(); ctx.arc(cx, cy, r, startA, fillEnd);
+    ctx.strokeStyle = grad; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+
+    // Tick marks
+    for (let i = 0; i <= 10; i++) {
+      const a = Math.PI + (i / 10) * Math.PI;
+      const x1 = cx + (r - 20) * Math.cos(a), y1 = cy + (r - 20) * Math.sin(a);
+      const x2 = cx + (r - 26) * Math.cos(a), y2 = cy + (r - 26) * Math.sin(a);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+      ctx.strokeStyle = '#2e324a'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    document.getElementById('gauge-pct').textContent  = unlimited ? '∞' : `${Math.round(pct * 100)}%`;
+    document.getElementById('gauge-label').textContent = unlimited ? 'Unlimited plan' : 'of monthly quota used';
   }
 
-  function renderSdList(key, filter) {
-    const list     = document.getElementById(`sd-${key}-list`);
-    const items    = SD[key]?.items || [];
-    const f        = filter.toLowerCase();
-    const filtered = filter ? items.filter(v => v.toLowerCase().includes(f)) : items;
+  function drawCatGrid(cats, total) {
+    const grid = document.getElementById('cat-grid');
+    grid.innerHTML = '';
+    const sorted = [...cats].sort((a,b) => parseInt(b.total_listings) - parseInt(a.total_listings));
+    sorted.forEach(c => {
+      const count = parseInt(c.total_listings);
+      const pct   = total ? Math.round(count / total * 100) : 0;
+      const div   = document.createElement('div');
+      div.className = 'cat-card';
+      div.innerHTML = `
+        <div class="cat-name">${c.product_category}</div>
+        <div class="cat-count">${count.toLocaleString()}</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+        <div class="cat-groups">${c.product_group_count} product groups · ${pct}% of data</div>
+      `;
+      div.onclick = () => {
+        showPage('query', document.querySelector('.sb-link[onclick*="query"]'));
+        setTimeout(() => selectSd('category', c.product_category), 200);
+      };
+      grid.appendChild(div);
+    });
+  }
+
+  /* ── Searchable dropdowns ─────────────────────── */
+  function openSd(key) {
+    ['category','group','brand'].forEach(k => { if (k !== key) closeSd(k); });
+    const drop  = document.getElementById(`sd-${key}-drop`);
+    const arrow = document.getElementById(`sd-${key}-arrow`);
+    const disp  = document.getElementById(`sd-${key}-display`);
+    const isOpen = drop.classList.contains('open');
+    if (!isOpen) {
+      drop.classList.add('open'); arrow.classList.add('open'); disp.classList.add('open');
+      setTimeout(() => { const s = document.getElementById(`sd-${key}-search`); if (s) s.focus(); }, 30);
+    } else { closeSd(key); }
+  }
+
+  function closeSd(key) {
+    document.getElementById(`sd-${key}-drop`).classList.remove('open');
+    document.getElementById(`sd-${key}-arrow`).classList.remove('open');
+    document.getElementById(`sd-${key}-display`).classList.remove('open');
+    const s = document.getElementById(`sd-${key}-search`);
+    if (s) { s.value = ''; filterSd(key, ''); }
+  }
+
+  function buildSdList(key, items) {
+    SD_DATA[key] = items;
+    const list = document.getElementById(`sd-${key}-list`);
     list.innerHTML = '';
     const allOpt = document.createElement('div');
-    allOpt.className = 'sd-option' + (!SD[key]?.value ? ' selected' : '');
-    allOpt.textContent = `All ${key === 'category' ? 'categories' : key === 'group' ? 'product groups' : 'brands'}`;
-    allOpt.onclick = () => selectSd(key, '', allOpt.textContent);
+    allOpt.className = 'sd-opt' + (!document.getElementById(`q-${key}`).value ? ' sel' : '');
+    allOpt.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+    allOpt.onclick = () => selectSd(key, '');
     list.appendChild(allOpt);
-    if (!filtered.length) { list.innerHTML += `<div class="sd-empty">No matches found</div>`; return; }
-    filtered.forEach(v => {
+    items.forEach(v => {
       const opt = document.createElement('div');
-      opt.className = 'sd-option' + (SD[key]?.value === v ? ' selected' : '');
+      opt.className = 'sd-opt' + (document.getElementById(`q-${key}`).value === v ? ' sel' : '');
       opt.textContent = v;
-      opt.onclick = () => selectSd(key, v, v);
+      opt.onclick = () => selectSd(key, v);
+      list.appendChild(opt);
+    });
+    if (!items.length) list.innerHTML += `<div class="sd-empty">No options available</div>`;
+  }
+
+  function filterSd(key, q) {
+    const items = (SD_DATA[key] || []).filter(v => v.toLowerCase().includes(q.toLowerCase()));
+    const list  = document.getElementById(`sd-${key}-list`);
+    list.innerHTML = '';
+    const allOpt = document.createElement('div');
+    allOpt.className = 'sd-opt';
+    allOpt.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+    allOpt.onclick = () => selectSd(key, '');
+    list.appendChild(allOpt);
+    if (!items.length) { list.innerHTML += `<div class="sd-empty">No matches</div>`; return; }
+    items.forEach(v => {
+      const opt = document.createElement('div');
+      opt.className = 'sd-opt' + (document.getElementById(`q-${key}`).value === v ? ' sel' : '');
+      opt.textContent = v;
+      opt.onclick = () => selectSd(key, v);
       list.appendChild(opt);
     });
   }
 
-  function selectSd(key, value, label) {
-    SD[key] = { ...SD[key], value };
+  async function selectSd(key, value) {
     document.getElementById(`q-${key}`).value = value;
-    document.getElementById(`sd-${key}-display`).value = value ? label : '';
-    document.getElementById(`sd-${key}-clear`).style.display = value ? 'block' : 'none';
+    const disp  = document.getElementById(`sd-${key}-display`);
+    const clear = document.getElementById(`sd-${key}-clear`);
+    if (value) {
+      disp.textContent = value; disp.classList.remove('sd-placeholder');
+      clear.style.display = 'block';
+    } else {
+      disp.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+      disp.classList.add('sd-placeholder'); clear.style.display = 'none';
+    }
     closeSd(key);
-    if (key === 'category') loadOptions();
-    if (key === 'group')    loadBrandsOnly();
+    if (key === 'category') {
+      clearSd('group'); clearSd('brand');
+      await reloadOptions();
+    }
+    if (key === 'group') { clearSd('brand'); await reloadBrands(); }
   }
 
   function clearSd(key) {
-    selectSd(key, '', '');
-    if (key === 'category') { clearSd('group'); clearSd('brand'); }
-    if (key === 'group')    { clearSd('brand'); }
+    document.getElementById(`q-${key}`).value = '';
+    const disp  = document.getElementById(`sd-${key}-display`);
+    const clear = document.getElementById(`sd-${key}-clear`);
+    disp.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+    disp.classList.add('sd-placeholder'); clear.style.display = 'none';
+    closeSd(key);
   }
 
-  function closeSd(key) {
-    document.getElementById(`sd-${key}-dropdown`).classList.remove('open');
-    const search = document.getElementById(`sd-${key}-search`);
-    if (search) { search.value = ''; renderSdList(key, ''); }
+  async function loadQueryDropdowns() {
+    const catRes = await apiFetch('/data/categories');
+    if (!catRes) return;
+    buildSdList('category', catRes.data.map(c => c.product_category));
+    await reloadOptions();
   }
 
-  function openSd(key) {
-    ['category','group','brand'].forEach(k => { if (k !== key) closeSd(k); });
-    document.getElementById(`sd-${key}-dropdown`).classList.toggle('open');
-    setTimeout(() => { const s = document.getElementById(`sd-${key}-search`); if (s) s.focus(); }, 50);
+  async function reloadOptions() {
+    const cat = document.getElementById('q-category').value;
+    const p   = cat ? `?category=${encodeURIComponent(cat)}` : '';
+    const res = await apiFetch(`/data/options${p}`);
+    if (!res) return;
+    buildSdList('group', res.product_groups);
+    buildSdList('brand', res.brands);
   }
 
-  function wireSdInputs() {
-    ['category','group','brand'].forEach(key => {
-      document.getElementById(`sd-${key}-display`).addEventListener('click', () => openSd(key));
-    });
+  async function reloadBrands() {
+    const cat   = document.getElementById('q-category').value;
+    const group = document.getElementById('q-group').value;
+    const p     = new URLSearchParams();
+    if (cat)   p.set('category', cat);
+    if (group) p.set('product_group', group);
+    const res = await apiFetch(`/data/options?${p}`);
+    if (res) buildSdList('brand', res.brands);
   }
 
   document.addEventListener('click', e => {
@@ -820,44 +1020,10 @@
     });
   });
 
-  async function loadOptions() {
-    const cat    = document.getElementById('q-category').value;
-    const params = cat ? `?category=${encodeURIComponent(cat)}` : '';
-    const res    = await apiFetch(`/data/options${params}`);
-    if (!res) return;
-    buildSdDropdown('group', res.product_groups, 'product group');
-    buildSdDropdown('brand', res.brands, 'brand');
-    if (!SD['group']?.value) { document.getElementById('q-group').value = ''; document.getElementById('sd-group-display').value = ''; }
-    if (!SD['brand']?.value) { document.getElementById('q-brand').value = ''; document.getElementById('sd-brand-display').value = ''; }
-  }
-
-  async function loadBrandsOnly() {
-    const cat   = document.getElementById('q-category').value;
-    const group = document.getElementById('q-group').value;
-    const params = new URLSearchParams();
-    if (cat)   params.set('category', cat);
-    if (group) params.set('product_group', group);
-    const res = await apiFetch(`/data/options?${params}`);
-    if (!res) return;
-    buildSdDropdown('brand', res.brands, 'brand');
-    document.getElementById('q-brand').value = '';
-    document.getElementById('sd-brand-display').value = '';
-    document.getElementById('sd-brand-clear').style.display = 'none';
-    SD['brand'] = { ...SD['brand'], value: '' };
-  }
-
-  async function populateCategoryDropdown() {
-    const res = await apiFetch('/data/categories');
-    if (!res || !res.data) return;
-    buildSdDropdown('category', res.data.map(c => c.product_category), 'category');
-    wireSdInputs();
-    await loadOptions();
-  }
-
-  // ── Query builder ─────────────────────────────────────────
-  function buildQueryParams(forDownload = false) {
+  /* ── Query ────────────────────────────────────── */
+  function buildParams(csv = false) {
     const p = new URLSearchParams();
-    const v = id => document.getElementById(id).value.trim();
+    const v = id => document.getElementById(id)?.value.trim() || '';
     if (v('q-category'))  p.set('category',     v('q-category'));
     if (v('q-group'))     p.set('product_group', v('q-group'));
     if (v('q-brand'))     p.set('brand',         v('q-brand'));
@@ -867,90 +1033,79 @@
     if (v('q-location'))  p.set('location',       v('q-location'));
     if (v('q-minprice'))  p.set('min_price',      v('q-minprice'));
     if (v('q-maxprice'))  p.set('max_price',      v('q-maxprice'));
-    if (forDownload) p.set('format', 'csv'); else p.set('limit', '20');
+    if (csv) p.set('format', 'csv'); else p.set('limit', '20');
     return p;
   }
 
-  async function runQuery(download = false) {
-    if (download) {
-      const params = buildQueryParams(true);
-      window.location.href = `${BASE_URL}/data/prices?${params}&api_key=${encodeURIComponent(API_KEY)}`;
-      return;
-    }
-    const spinner = document.getElementById('preview-spinner');
-    spinner.style.display = 'inline-block';
-    const params = buildQueryParams(false);
-    const res    = await apiFetch(`/data/prices?${params}`);
-    spinner.style.display = 'none';
+  async function runQuery(csv = false) {
+    if (csv) { window.location.href = `${BASE}/data/prices?${buildParams(true)}&api_key=${encodeURIComponent(API_KEY)}`; return; }
+    document.getElementById('q-spin').style.display = 'inline-block';
+    const res = await apiFetch(`/data/prices?${buildParams()}`);
+    document.getElementById('q-spin').style.display = 'none';
     if (!res) return;
-
-    document.getElementById('preview-box').style.display = 'block';
-    document.getElementById('preview-count').textContent =
-      `${res.count.toLocaleString()} row${res.count !== 1 ? 's' : ''} returned  ·  ${res.response_ms}ms`;
-
-    const tbody = document.getElementById('preview-body');
+    const card = document.getElementById('results-card');
+    card.style.display = 'block';
+    document.getElementById('res-count').textContent = `${res.count.toLocaleString()} row${res.count !== 1 ? 's' : ''} · ${res.response_ms}ms`;
+    const tbody = document.getElementById('results-body');
     tbody.innerHTML = '';
-
-    if (!res.data || !res.data.length) {
-      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No results for these filters. Try widening your search.</div></div></td></tr>`;
+    if (!res.data?.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔍</div>No results. Try broadening your filters.</div></td></tr>`;
       return;
     }
-
-    res.data.forEach((row, i) => {
-      const cond = (row.condition || '').toLowerCase();
-      const condTag = cond.includes('new') ? `<span class="tag tag-new">New</span>`
-        : cond.includes('refurb') ? `<span class="tag tag-refurb">Refurb</span>`
-        : cond ? `<span class="tag tag-used">Used</span>` : '<span style="color:var(--text3)">—</span>';
+    res.data.forEach(r => {
+      const cond = (r.condition || '').toLowerCase();
+      const tag  = cond.includes('new') ? `<span class="cond-tag cond-new">New</span>`
+                 : cond.includes('refurb') ? `<span class="cond-tag cond-refurb">Refurb</span>`
+                 : cond ? `<span class="cond-tag cond-used">Used</span>` : '—';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td style="color:var(--text3); white-space:nowrap">${row.collected_date ? row.collected_date.split('T')[0] : '—'}</td>
-        <td>${row.product_category || '—'}</td>
-        <td>${row.product_group || '—'}</td>
-        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${(row.title||'').replace(/"/g,'')}">${row.title || '—'}</td>
-        <td>${row.brand || '<span style="color:var(--text3)">—</span>'}</td>
-        <td>${condTag}</td>
-        <td class="price-cell">${row.price_ghs ? 'GHS&nbsp;' + parseFloat(row.price_ghs).toLocaleString('en-GH', {minimumFractionDigits:0}) : '—'}</td>
-        <td style="color:var(--text2)">${row.location || '—'}</td>
+        <td style="color:var(--text3); white-space:nowrap">${(r.collected_date||'—').split('T')[0]}</td>
+        <td>${r.product_category||'—'}</td>
+        <td>${r.product_group||'—'}</td>
+        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||'—'}</td>
+        <td>${r.brand||'<span style="color:var(--text3)">—</span>'}</td>
+        <td>${tag}</td>
+        <td class="price-val">${r.price_ghs ? 'GHS '+parseFloat(r.price_ghs).toLocaleString('en-GH',{minimumFractionDigits:0}) : '—'}</td>
+        <td style="color:var(--text2)">${r.location||'—'}</td>
       `;
       tbody.appendChild(tr);
     });
   }
 
   function clearFilters() {
-    clearSd('category');
-    ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('preview-box').style.display = 'none';
+    clearSd('category'); clearSd('group'); clearSd('brand');
+    ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    document.getElementById('results-card').style.display = 'none';
   }
 
-  // ── API docs ──────────────────────────────────────────────
+  /* ── Docs ─────────────────────────────────────── */
   function renderDocs() {
-    const base  = BASE_URL;
-    const tiers = { trial: '30/min', starter: '60/min', pro: '200/min', enterprise: '600/min' };
-    document.getElementById('docs-base-url').textContent = base;
-    document.getElementById('docs-rate').textContent = tiers[CLIENT.tier] || '—';
-
+    document.getElementById('docs-url').textContent  = BASE;
+    document.getElementById('docs-rate').textContent = RATES[CLIENT.tier] || '—';
     document.getElementById('ex-prices').textContent =
 `curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/prices?category=Electronics&product_group=Smartphone&condition=new&date_from=2026-09-01"
+  "${BASE}/data/prices?category=Electronics&product_group=Smartphone&condition=new"
 
-# Download as CSV
+# Download CSV
 curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/prices?category=Vehicles&format=csv" -o vehicles.csv`;
-
+  "${BASE}/data/prices?category=Vehicles&format=csv" -o vehicles.csv`;
     document.getElementById('ex-summary').textContent =
 `curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/summary?category=Electronics&date_from=2026-09-01"`;
-
+  "${BASE}/data/summary?category=Electronics&date_from=2026-09-01"`;
     document.getElementById('ex-categories').textContent =
-`curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/categories"`;
-
+`curl -H "X-API-Key: ${API_KEY}" "${BASE}/data/categories"`;
     document.getElementById('ex-usage').textContent =
-`curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/usage"`;
+`curl -H "X-API-Key: ${API_KEY}" "${BASE}/data/usage"`;
   }
 
-  function copyCode(btn) {
+  function toggleEp(head) {
+    const body  = head.nextElementSibling;
+    const chev  = head.querySelector('.ep-chev');
+    const open  = body.classList.toggle('open');
+    chev.classList.toggle('open', open);
+  }
+
+  function copyPre(btn) {
     const pre = btn.nextElementSibling;
     navigator.clipboard.writeText(pre.textContent).then(() => {
       btn.textContent = '✓ Copied'; btn.classList.add('copied');
@@ -958,28 +1113,24 @@ curl -H "X-API-Key: ${API_KEY}" \\
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────
+  /* ── Navigation ───────────────────────────────── */
+  const PAGE_TITLES = { dashboard: 'Dashboard', query: 'Query Builder', usage: 'Usage & Quota', docs: 'API Reference' };
+
+  function showPage(name, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(`page-${name}`).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('topbar-title').textContent = PAGE_TITLES[name] || name;
+  }
+
+  /* ── Helpers ──────────────────────────────────── */
   async function apiFetch(path) {
     try {
-      const res = await fetch(`${BASE_URL}${path}`, { headers: { 'X-API-Key': API_KEY } });
-      if (res.status === 429) { const d = await res.json(); alert(d.error || 'Rate limit exceeded.'); return null; }
+      const res = await fetch(`${BASE}${path}`, { headers: { 'X-API-Key': API_KEY } });
       if (!res.ok) return null;
       return res.json();
-    } catch(e) { console.error(e); return null; }
-  }
-
-  function showTab(name, el) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById(`pane-${name}`).classList.add('active');
-  }
-
-  function toggleEp(header) {
-    const body    = header.nextElementSibling;
-    const chevron = header.querySelector('.ep-chevron');
-    const open    = body.classList.toggle('open');
-    chevron.classList.toggle('open', open);
+    } catch { return null; }
   }
 
   window.addEventListener('DOMContentLoaded', async () => {
@@ -989,6 +1140,10 @@ curl -H "X-API-Key: ${API_KEY}" \\
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
+  });
+
+  window.addEventListener('resize', () => {
+    if (CLIENT.tier) loadDashboard();
   });
 </script>
 </body>
