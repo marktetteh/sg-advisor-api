@@ -331,6 +331,42 @@
     .hw-stats { grid-template-columns: 1fr 1fr; }
   }
 
+  /* ── PRICING PAGE ─────────────────────────────────── */
+  .pricing-body { padding: 20px 24px 40px; max-width: 1000px; }
+  .pr-hero { text-align: center; margin-bottom: 28px; padding: 20px 0 10px; }
+  .pr-hero-tag { display: inline-block; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; background: var(--acc-dim); border: 1px solid #009d7230; border-radius: 20px; padding: 4px 14px; margin-bottom: 12px; }
+  .pr-hero-title { font-size: 26px; font-weight: 900; color: var(--text); letter-spacing: -.8px; margin-bottom: 8px; }
+  .pr-hero-sub { font-size: 13px; color: var(--text2); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+  .pr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .pr-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 20px; display: flex; flex-direction: column; position: relative; }
+  .pr-card-featured { background: #0d1a2e; border-color: #0d1a2e; box-shadow: 0 8px 32px #0d1a2e28; }
+  .pr-featured-badge { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 12px; border-radius: 20px; white-space: nowrap; letter-spacing: .05em; }
+  .pr-card-top { margin-bottom: 18px; }
+  .pr-tier-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text2); margin-bottom: 10px; }
+  .pr-price { display: flex; align-items: baseline; gap: 3px; margin-bottom: 3px; }
+  .pr-currency { font-size: 14px; font-weight: 700; color: var(--text2); margin-top: 6px; }
+  .pr-amount { font-size: 34px; font-weight: 900; color: var(--text); letter-spacing: -2px; }
+  .pr-period { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .pr-desc { font-size: 12px; color: var(--text2); line-height: 1.55; }
+  .pr-features { list-style: none; margin-bottom: 20px; flex: 1; }
+  .pr-feat { font-size: 12px; color: var(--text2); padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .pr-feat:last-child { border-bottom: none; }
+  .pr-feat-off { color: var(--text3); }
+  .pr-cta { margin-top: auto; }
+  .pr-current-wrap { margin-bottom: 24px; }
+  .pr-current { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .pr-current-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+  .pr-current-tier { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -.5px; }
+  .pr-current-right { display: flex; align-items: center; gap: 14px; }
+  .pr-current-rows { font-size: 13px; color: var(--text2); }
+  .pr-faq { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; }
+  .pr-faq-title { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 18px; }
+  .pr-faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .pr-faq-q { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .pr-faq-a { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  @media (max-width: 860px) { .pr-grid { grid-template-columns: 1fr 1fr; } .pr-faq-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 500px) { .pr-grid { grid-template-columns: 1fr; } }
+
   /* ── HERO CATEGORY CAROUSEL (light theme) ─────────── */
   .hw-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
   .hw-body { padding: 16px 18px 12px; flex: 1; display: flex; flex-direction: column; }
@@ -410,6 +446,7 @@
       <div class="sb-item" onclick="nav('docs',this)"><span class="sb-icon">📖</span> API Reference</div>
       <div class="sb-group">Account</div>
       <div class="sb-item" onclick="nav('usage',this)"><span class="sb-icon">📈</span> Usage & Quota</div>
+      <div class="sb-item" onclick="nav('pricing',this)"><span class="sb-icon">💳</span> Plans & Pricing</div>
     </div>
     <div class="sb-foot">
       <div class="sb-plan">
@@ -747,6 +784,138 @@
       </div>
     </div>
 
+    <!-- ══ PRICING ══ -->
+    <div class="page" id="page-pricing">
+      <div class="pricing-body">
+
+        <div class="pr-hero">
+          <div class="pr-hero-tag">Plans &amp; Pricing</div>
+          <h2 class="pr-hero-title">Simple, transparent pricing</h2>
+          <p class="pr-hero-sub">Access Ghana's most comprehensive market price database. Choose a plan that fits your data needs — upgrade anytime.</p>
+        </div>
+
+        <!-- Tier cards -->
+        <div class="pr-grid">
+
+          <!-- Trial -->
+          <div class="pr-card">
+            <div class="pr-card-top">
+              <div class="pr-tier-label">Trial</div>
+              <div class="pr-price"><span class="pr-currency">GHS</span><span class="pr-amount">0</span></div>
+              <div class="pr-period">Free · 30 days</div>
+              <div class="pr-desc">Perfect for evaluating the data before committing to a plan.</div>
+            </div>
+            <ul class="pr-features">
+              <li class="pr-feat">✓ 100 rows / month</li>
+              <li class="pr-feat">✓ 2 categories</li>
+              <li class="pr-feat">✓ JSON + CSV export</li>
+              <li class="pr-feat">✓ Query Builder access</li>
+              <li class="pr-feat pr-feat-off">✗ Full category access</li>
+              <li class="pr-feat pr-feat-off">✗ Priority support</li>
+            </ul>
+            <a href="mailto:info@sgdatalytics.org?subject=Trial Access Request" class="btn btn-ghost btn-full pr-cta">Request Trial</a>
+          </div>
+
+          <!-- Starter -->
+          <div class="pr-card">
+            <div class="pr-card-top">
+              <div class="pr-tier-label">Starter</div>
+              <div class="pr-price"><span class="pr-currency">GHS</span><span class="pr-amount">200</span></div>
+              <div class="pr-period">per month</div>
+              <div class="pr-desc">For small businesses and independent researchers needing regular price data.</div>
+            </div>
+            <ul class="pr-features">
+              <li class="pr-feat">✓ 1,000 rows / month</li>
+              <li class="pr-feat">✓ 5 categories of your choice</li>
+              <li class="pr-feat">✓ JSON + CSV export</li>
+              <li class="pr-feat">✓ Query Builder + Insights</li>
+              <li class="pr-feat">✓ Email support</li>
+              <li class="pr-feat pr-feat-off">✗ Full category access</li>
+            </ul>
+            <a href="mailto:info@sgdatalytics.org?subject=Starter Plan Enquiry" class="btn btn-secondary btn-full pr-cta">Get Started</a>
+          </div>
+
+          <!-- Pro (highlighted) -->
+          <div class="pr-card pr-card-featured">
+            <div class="pr-featured-badge">Most Popular</div>
+            <div class="pr-card-top">
+              <div class="pr-tier-label" style="color:#fff">Pro</div>
+              <div class="pr-price" style="color:#fff"><span class="pr-currency">GHS</span><span class="pr-amount">500</span></div>
+              <div class="pr-period" style="color:#ffffff99">per month</div>
+              <div class="pr-desc" style="color:#ffffffbb">For analytics teams, financial institutions, and serious market researchers.</div>
+            </div>
+            <ul class="pr-features">
+              <li class="pr-feat" style="color:#fff">✓ 20,000 rows / month</li>
+              <li class="pr-feat" style="color:#fff">✓ All categories</li>
+              <li class="pr-feat" style="color:#fff">✓ JSON + CSV export</li>
+              <li class="pr-feat" style="color:#fff">✓ Full Query Builder + Insights</li>
+              <li class="pr-feat" style="color:#fff">✓ Priority email support</li>
+              <li class="pr-feat" style="color:#fff">✓ Monthly data briefing</li>
+            </ul>
+            <a href="mailto:info@sgdatalytics.org?subject=Pro Plan Enquiry" class="btn btn-primary btn-full pr-cta">Get Pro Access</a>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="pr-card">
+            <div class="pr-card-top">
+              <div class="pr-tier-label">Enterprise</div>
+              <div class="pr-price"><span class="pr-amount" style="font-size:26px;letter-spacing:-.5px">Custom</span></div>
+              <div class="pr-period">tailored to your needs</div>
+              <div class="pr-desc">For banks, government agencies, and large organisations needing unlimited data.</div>
+            </div>
+            <ul class="pr-features">
+              <li class="pr-feat">✓ Unlimited rows</li>
+              <li class="pr-feat">✓ All categories</li>
+              <li class="pr-feat">✓ JSON + CSV export</li>
+              <li class="pr-feat">✓ Dedicated account manager</li>
+              <li class="pr-feat">✓ SLA guarantee</li>
+              <li class="pr-feat">✓ Custom data reports</li>
+            </ul>
+            <a href="mailto:info@sgdatalytics.org?subject=Enterprise Access Enquiry" class="btn btn-secondary btn-full pr-cta">Contact Sales</a>
+          </div>
+
+        </div><!-- /pr-grid -->
+
+        <!-- Current plan banner -->
+        <div class="pr-current-wrap">
+          <div class="pr-current">
+            <div>
+              <div class="pr-current-label">Your current plan</div>
+              <div class="pr-current-tier" id="pr-current-tier">—</div>
+            </div>
+            <div class="pr-current-right">
+              <div class="pr-current-rows" id="pr-current-rows">—</div>
+              <a href="mailto:info@sgdatalytics.org?subject=Plan Upgrade Request" class="btn btn-primary btn-sm">Upgrade →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="pr-faq">
+          <div class="pr-faq-title">Frequently asked questions</div>
+          <div class="pr-faq-grid">
+            <div class="pr-faq-item">
+              <div class="pr-faq-q">How is billing handled?</div>
+              <div class="pr-faq-a">We invoice monthly via email. Payment is accepted via bank transfer or mobile money (MTN MoMo, Telecel Cash). Contact us to set up your payment method.</div>
+            </div>
+            <div class="pr-faq-item">
+              <div class="pr-faq-q">Can I change plans mid-month?</div>
+              <div class="pr-faq-a">Yes. Upgrades take effect immediately — your row limit increases right away. Downgrades apply from the next billing cycle.</div>
+            </div>
+            <div class="pr-faq-item">
+              <div class="pr-faq-q">What happens if I exceed my row limit?</div>
+              <div class="pr-faq-a">Your API key will return a 429 Quota Exceeded response. We'll email you at 80% usage to give you time to upgrade before hitting the cap.</div>
+            </div>
+            <div class="pr-faq-item">
+              <div class="pr-faq-q">How often is the data updated?</div>
+              <div class="pr-faq-a">Price data is collected Monday, Wednesday, and Friday from verified field collectors across Ghana. Most records are no more than 3 days old.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div><!-- /main-area -->
 </div><!-- /app -->
 
@@ -788,6 +957,12 @@ function bootApp() {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('sb-tier').textContent = CLIENT.tier;
   document.getElementById('sb-name').textContent = CLIENT.client;
+  // Pricing page — current plan
+  const ptEl = document.getElementById('pr-current-tier'), prEl = document.getElementById('pr-current-rows');
+  if(ptEl) ptEl.textContent = CLIENT.tier.charAt(0).toUpperCase()+CLIENT.tier.slice(1);
+  if(prEl) prEl.textContent = CLIENT.row_limit_monthly === 'unlimited'
+    ? 'Unlimited rows'
+    : `${CLIENT.rows_used_this_month.toLocaleString()} / ${parseInt(CLIENT.row_limit_monthly).toLocaleString()} rows used this month`;
   const te = document.getElementById('tb-tier');
   te.textContent = CLIENT.tier.toUpperCase(); te.className = `tier-badge tier-${CLIENT.tier}`;
   loadDashboard(); loadQueryDropdowns(); renderDocs();
@@ -1271,7 +1446,7 @@ function copyPre(btn) {
 }
 
 /* ── NAV ────────────────────────────────────────────── */
-const PAGE_TITLES = {dashboard:'Dashboard',query:'Query Builder',usage:'Usage & Quota',docs:'API Reference'};
+const PAGE_TITLES = {dashboard:'Dashboard',query:'Query Builder',usage:'Usage & Quota',docs:'API Reference',pricing:'Plans & Pricing'};
 function nav(name, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(l=>l.classList.remove('active'));
