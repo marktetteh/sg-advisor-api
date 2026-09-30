@@ -3,291 +3,401 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SG Datalytics — Data Portal</title>
+<title>SG Datalytics — Client Portal</title>
 <style>
   :root {
-    --bg:       #0f1117;
-    --surface:  #1a1d27;
-    --border:   #2a2d3e;
-    --accent:   #00c896;
-    --accent2:  #0084ff;
-    --danger:   #ff4d6d;
-    --warn:     #f59e0b;
-    --text:     #e2e8f0;
-    --muted:    #8892a4;
-    --radius:   8px;
+    --bg:        #0b0d14;
+    --surface:   #13151f;
+    --surface2:  #1a1d2b;
+    --border:    #252838;
+    --border2:   #2e3347;
+    --accent:    #00d4a0;
+    --accent-dim:#00d4a022;
+    --blue:      #3b82f6;
+    --blue-dim:  #3b82f622;
+    --danger:    #f43f5e;
+    --warn:      #f59e0b;
+    --text:      #e2e8f0;
+    --text2:     #94a3b8;
+    --text3:     #64748b;
+    --radius:    10px;
+    --radius-sm: 6px;
+    --shadow:    0 4px 24px #00000040;
+    --shadow-sm: 0 2px 8px #00000030;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-  /* ── Login ── */
+  /* ── Login ────────────────────────────────────────────────── */
   #login-screen {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(ellipse at 30% 40%, #0084ff11 0%, transparent 60%),
-                radial-gradient(ellipse at 70% 70%, #00c89611 0%, transparent 60%), var(--bg);
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, #3b82f614 0%, transparent 100%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, #00d4a014 0%, transparent 100%),
+      var(--bg);
   }
+  .login-wrap { width: 100%; max-width: 400px; padding: 20px; }
+  .login-brand { text-align: center; margin-bottom: 32px; }
+  .login-brand-logo { font-size: 26px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+  .login-brand-sub  { font-size: 13px; color: var(--text3); margin-top: 4px; }
   .login-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-    padding: 40px; width: 100%; max-width: 420px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 36px; box-shadow: var(--shadow);
   }
-  .login-logo { font-size: 22px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
-  .login-sub  { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
-  label       { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+  .login-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .login-hint  { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .field { margin-bottom: 18px; }
+  label { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 7px; }
   input[type=text], input[type=password], select, input[type=date], input[type=number] {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-size: 14px; padding: 10px 12px; outline: none;
-    transition: border-color .15s;
+    width: 100%; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+    padding: 10px 14px; outline: none; transition: border-color .2s, box-shadow .2s;
+    appearance: none; -webkit-appearance: none;
   }
-  input:focus, select:focus { border-color: var(--accent); }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .key-field { position: relative; }
+  .key-field input { padding-right: 44px; font-family: 'SF Mono', monospace; font-size: 13px; letter-spacing: .03em; }
+  .key-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text3); font-size: 16px; background: none; border: none; }
+  .key-eye:hover { color: var(--text); }
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    border: none; border-radius: var(--radius); cursor: pointer; font-size: 14px;
-    font-weight: 600; padding: 10px 20px; transition: opacity .15s;
+    border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px;
+    font-weight: 600; padding: 11px 20px; transition: all .15s; letter-spacing: .01em;
   }
-  .btn:hover { opacity: .85; }
-  .btn-primary   { background: var(--accent);  color: #000; }
-  .btn-secondary { background: var(--border);  color: var(--text); }
-  .btn-outline   { background: transparent; border: 1px solid var(--border); color: var(--text); }
-  .btn-danger    { background: var(--danger); color: #fff; }
-  .btn-full      { width: 100%; }
-  .error-msg  { background: #ff4d6d22; border: 1px solid var(--danger); border-radius: var(--radius); color: var(--danger); font-size: 13px; padding: 10px 14px; margin-top: 12px; display: none; }
-  .field      { margin-bottom: 20px; }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00e8b0; box-shadow: 0 0 20px #00d4a040; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+  .btn-secondary:hover { border-color: var(--text3); }
+  .btn-outline { background: transparent; border: 1px solid var(--border2); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--text3); color: var(--text); }
+  .btn-full { width: 100%; }
+  .error-msg { background: #f43f5e18; border: 1px solid #f43f5e44; border-radius: var(--radius-sm); color: var(--danger); font-size: 13px; padding: 10px 14px; margin-top: 14px; display: none; }
+  .login-footer { text-align: center; font-size: 12px; color: var(--text3); margin-top: 20px; }
 
-  /* ── App shell ── */
+  /* ── App shell ────────────────────────────────────────────── */
   #app { display: none; flex-direction: column; min-height: 100vh; }
   .topbar {
     background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; height: 56px; gap: 24px;
+    display: flex; align-items: center; padding: 0 24px; height: 58px; gap: 16px;
+    position: sticky; top: 0; z-index: 50; backdrop-filter: blur(8px);
   }
-  .topbar-logo { font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
-  .topbar-client { font-size: 13px; color: var(--muted); flex: 1; }
+  .topbar-logo { font-size: 16px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; white-space: nowrap; }
+  .topbar-sep  { width: 1px; height: 20px; background: var(--border2); }
+  .topbar-client { font-size: 13px; color: var(--text2); flex: 1; }
   .topbar-tier {
-    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-    padding: 3px 10px; border-radius: 20px; border: 1px solid;
+    font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 20px; border: 1px solid;
   }
-  .tier-trial      { color: var(--muted); border-color: var(--muted); }
-  .tier-starter    { color: var(--accent2); border-color: var(--accent2); }
-  .tier-pro        { color: var(--accent);  border-color: var(--accent); }
-  .tier-enterprise { color: var(--warn);    border-color: var(--warn); }
-  .logout-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: none; }
-  .logout-btn:hover { color: var(--danger); }
+  .tier-trial      { color: var(--text3);   border-color: var(--text3); }
+  .tier-starter    { color: var(--blue);    border-color: var(--blue);  background: var(--blue-dim); }
+  .tier-pro        { color: var(--accent);  border-color: var(--accent); background: var(--accent-dim); }
+  .tier-enterprise { color: var(--warn);    border-color: var(--warn);  background: #f59e0b18; }
+  .logout-btn { font-size: 13px; color: var(--text3); cursor: pointer; background: none; border: none; padding: 6px 10px; border-radius: var(--radius-sm); transition: all .15s; }
+  .logout-btn:hover { color: var(--danger); background: #f43f5e12; }
 
-  /* ── Tabs ── */
-  .tabs { display: flex; gap: 2px; padding: 16px 24px 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+  /* ── Tabs ─────────────────────────────────────────────────── */
+  .tabs-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; }
+  .tabs { display: flex; gap: 4px; }
   .tab {
-    padding: 10px 20px; font-size: 14px; font-weight: 500; color: var(--muted);
+    padding: 14px 18px; font-size: 13px; font-weight: 500; color: var(--text3);
     cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: color .15s, border-color .15s;
+    transition: color .15s, border-color .15s; white-space: nowrap;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
-  /* ── Content ── */
-  .content { padding: 28px 24px; max-width: 1000px; flex: 1; }
+  /* ── Content ──────────────────────────────────────────────── */
+  .content { padding: 28px 24px; max-width: 1100px; flex: 1; }
   .pane { display: none; }
   .pane.active { display: block; }
-  h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
-  h3 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 14px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; letter-spacing: -.3px; }
+  .page-sub   { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* ── Cards ── */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-  .card-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-  .card-value { font-size: 26px; font-weight: 700; }
-  .card-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  /* ── Stat cards ───────────────────────────────────────────── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; transition: border-color .2s;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-icon { font-size: 20px; margin-bottom: 12px; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; font-weight: 500; }
+  .stat-value { font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -1px; }
+  .stat-value.accent { color: var(--accent); }
+  .stat-sub   { font-size: 12px; color: var(--text3); margin-top: 6px; }
 
-  /* ── Quota bar ── */
-  .quota-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 28px; }
-  .quota-row  { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-  .quota-title { font-size: 14px; font-weight: 600; }
-  .quota-nums  { font-size: 13px; color: var(--muted); }
-  .bar-track  { background: var(--bg); border-radius: 4px; height: 10px; overflow: hidden; }
-  .bar-fill   { height: 100%; border-radius: 4px; transition: width .4s; background: var(--accent); }
+  /* ── Quota bar ────────────────────────────────────────────── */
+  .quota-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 24px;
+  }
+  .quota-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .quota-title  { font-size: 14px; font-weight: 600; }
+  .quota-nums   { font-size: 13px; color: var(--text2); }
+  .bar-track    { background: var(--bg); border-radius: 6px; height: 8px; overflow: hidden; }
+  .bar-fill     { height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.4,0,.2,1); background: var(--accent); }
   .bar-fill.warn   { background: var(--warn); }
   .bar-fill.danger { background: var(--danger); }
-  .quota-reset { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .quota-footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; color: var(--text3); }
 
-  /* ── Query builder ── */
-  .filter-section { margin-bottom: 24px; }
-  .filter-section-title {
-    font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;
-    letter-spacing: .08em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-  .filter-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .step-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 700;
-    background: var(--accent); color: #000; flex-shrink: 0;
-  }
-  .cascade-row {
-    display: grid; grid-template-columns: 1fr 24px 1fr 24px 1fr; gap: 0; align-items: end; margin-bottom: 0;
-  }
-  .cascade-arrow {
-    display: flex; align-items: center; justify-content: center; padding-bottom: 10px;
-    color: var(--muted); font-size: 16px;
-  }
-  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 0; }
-  .filter-grid .field { margin-bottom: 0; }
-  .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  .preview-box {
+  /* ── Category cards ───────────────────────────────────────── */
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .cat-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    margin-top: 20px; overflow: hidden;
+    padding: 16px 18px; cursor: pointer; transition: all .2s;
   }
-  .preview-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .preview-count  { font-size: 13px; font-weight: 600; }
-  .preview-muted  { font-size: 12px; color: var(--muted); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
-  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #ffffff06; }
-  .tag { display: inline-block; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
-  .tag-new  { background: #00c89622; color: var(--accent); }
-  .tag-used { background: #f59e0b22; color: var(--warn); }
+  .cat-card:hover { border-color: var(--accent); background: var(--surface2); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .cat-name  { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .cat-count { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: -1px; }
+  .cat-meta  { font-size: 11px; color: var(--text3); margin-top: 4px; }
 
-  /* ── API docs ── */
-  .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
-  .endpoint-header { padding: 14px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
-  .method  { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
-  .get     { background: #00c89633; color: var(--accent); }
-  .ep-path { font-size: 14px; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; }
-  .ep-desc { font-size: 13px; color: var(--muted); flex: 1; }
-  .ep-body { padding: 0 18px 18px; display: none; }
-  .ep-body.open { display: block; }
-  pre {
-    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 14px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
-    overflow-x: auto; white-space: pre-wrap; color: #a8d8b8; margin-top: 10px;
-  }
-  .param-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-  .param-table th { background: var(--bg); padding: 8px 12px; text-align: left; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); }
-  .param-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  .param-table tr:last-child td { border-bottom: none; }
-  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--bg); padding: 1px 5px; border-radius: 3px; color: var(--accent); }
-
-  /* ── Searchable dropdown ── */
+  /* ── Searchable dropdown ──────────────────────────────────── */
   .sd-wrap { position: relative; }
   .sd-input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-size: 14px; padding: 10px 32px 10px 12px; outline: none;
-    transition: border-color .15s; cursor: pointer;
+    width: 100%; background: var(--bg); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 14px;
+    padding: 10px 36px 10px 14px; outline: none; cursor: pointer;
+    transition: border-color .2s, box-shadow .2s;
   }
-  .sd-input:focus { border-color: var(--accent); }
-  .sd-input.has-value { color: var(--text); }
-  .sd-arrow {
-    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); pointer-events: none; font-size: 11px;
-  }
-  .sd-clear {
-    position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); cursor: pointer; font-size: 14px; display: none;
-    background: none; border: none; padding: 2px;
-  }
+  .sd-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  .sd-arrow { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; font-size: 10px; }
+  .sd-clear { position: absolute; right: 28px; top: 50%; transform: translateY(-50%); color: var(--text3); cursor: pointer; background: none; border: none; font-size: 13px; display: none; padding: 2px; line-height: 1; }
   .sd-clear:hover { color: var(--danger); }
   .sd-dropdown {
-    position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    max-height: 240px; overflow-y: auto; display: none; box-shadow: 0 8px 24px #00000044;
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
+    background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius);
+    max-height: 260px; overflow-y: auto; display: none; box-shadow: var(--shadow);
   }
   .sd-dropdown.open { display: block; }
-  .sd-search {
-    padding: 8px 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0;
-    background: var(--surface);
-  }
+  .sd-search { padding: 10px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface2); }
   .sd-search input {
-    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text); font-size: 13px; padding: 7px 10px; outline: none;
+    width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    color: var(--text); font-size: 13px; padding: 8px 12px; outline: none;
   }
   .sd-search input:focus { border-color: var(--accent); }
-  .sd-option {
-    padding: 9px 12px; font-size: 13px; cursor: pointer;
-    transition: background .1s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .sd-option:hover, .sd-option.focused { background: #ffffff0d; }
+  .sd-option { padding: 10px 14px; font-size: 13px; cursor: pointer; transition: background .1s; }
+  .sd-option:hover { background: #ffffff08; }
   .sd-option.selected { color: var(--accent); font-weight: 600; }
-  .sd-empty { padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
-  .sd-loading { padding: 12px; font-size: 13px; color: var(--muted); text-align: center; }
+  .sd-empty, .sd-loading { padding: 14px; font-size: 13px; color: var(--text3); text-align: center; }
 
-  /* ── Spinner ── */
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  /* ── Filter sections ──────────────────────────────────────── */
+  .filter-section { margin-bottom: 24px; }
+  .step-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .step-num.green { background: var(--accent); color: #000; }
+  .step-num.blue  { background: var(--blue);   color: #fff; }
+  .step-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--text2); }
+  .step-line  { flex: 1; height: 1px; background: var(--border); }
+  .cascade-row { display: grid; grid-template-columns: 1fr 20px 1fr 20px 1fr; gap: 0; align-items: end; }
+  .cascade-arrow { display: flex; align-items: center; justify-content: center; padding-bottom: 12px; color: var(--border2); font-size: 14px; }
+  .field-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; padding-top: 4px; }
+
+  /* ── Results table ────────────────────────────────────────── */
+  .preview-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 24px; overflow: hidden; }
+  .preview-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .preview-count { font-size: 13px; font-weight: 600; }
+  .preview-note  { font-size: 12px; color: var(--text3); }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #ffffff04; }
+  .price-cell { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+  .tag-new  { background: var(--accent-dim); color: var(--accent); }
+  .tag-used { background: #f59e0b18; color: var(--warn); }
+  .tag-refurb { background: var(--blue-dim); color: var(--blue); }
+  .empty-state { padding: 48px; text-align: center; color: var(--text3); }
+  .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
+  .empty-state-text { font-size: 14px; }
+
+  /* ── Spinner ──────────────────────────────────────────────── */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #00000030; border-top-color: #000; border-radius: 50%; animation: spin .6s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Empty state ── */
-  .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
+  /* ── API docs ─────────────────────────────────────────────── */
+  .api-intro {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .api-intro-item { display: flex; flex-direction: column; gap: 4px; }
+  .api-intro-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+  .api-intro-val { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: var(--accent); }
+  .api-sep { width: 1px; height: 36px; background: var(--border); }
+  .endpoint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; transition: border-color .2s; }
+  .endpoint:hover { border-color: var(--border2); }
+  .endpoint-header { padding: 16px 18px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+  .method  { font-size: 10px; font-weight: 800; padding: 4px 9px; border-radius: 5px; letter-spacing: .06em; }
+  .get     { background: var(--accent-dim); color: var(--accent); border: 1px solid #00d4a040; }
+  .ep-path { font-size: 14px; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; color: var(--text); }
+  .ep-desc { font-size: 13px; color: var(--text2); flex: 1; }
+  .ep-chevron { color: var(--text3); font-size: 11px; transition: transform .2s; }
+  .ep-chevron.open { transform: rotate(90deg); }
+  .ep-body { padding: 0 18px 18px; display: none; border-top: 1px solid var(--border); padding-top: 18px; }
+  .ep-body.open { display: block; }
+  .param-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+  .param-table th { background: var(--bg); padding: 9px 12px; text-align: left; font-size: 11px; color: var(--text3); border-bottom: 1px solid var(--border); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .param-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .param-table tr:last-child td { border-bottom: none; }
+  .param-name { font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent); }
+  .param-type { font-size: 12px; color: var(--blue); font-family: monospace; }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: var(--surface2); padding: 2px 6px; border-radius: 4px; color: var(--accent); border: 1px solid var(--border); }
+  .code-block-wrap { position: relative; }
+  pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 16px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace;
+    overflow-x: auto; white-space: pre; color: #a8d8b8; line-height: 1.6;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text3); font-size: 11px; padding: 4px 10px; cursor: pointer;
+    transition: all .15s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--text3); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  /* ── Contact card ─────────────────────────────────────────── */
+  .contact-card {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 1px solid var(--border2); border-radius: var(--radius); padding: 22px 24px;
+    margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .contact-text { font-size: 13px; color: var(--text2); }
+  .contact-email { font-size: 15px; font-weight: 700; color: var(--text); margin-top: 4px; }
 
   @media (max-width: 700px) {
-    .filter-grid { grid-template-columns: 1fr; }
-    .cards { grid-template-columns: 1fr 1fr; }
     .cascade-row { grid-template-columns: 1fr; }
     .cascade-arrow { display: none; }
+    .filter-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: 20px 16px; }
+    .topbar { padding: 0 16px; }
+    .api-sep { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- ── LOGIN ── -->
+<!-- ── LOGIN ──────────────────────────────────────────────────── -->
 <div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">SG Datalytics</div>
-    <div class="login-sub">Ghana Market Intelligence — Client Portal</div>
-    <div class="field">
-      <label>Your API Key</label>
-      <input type="password" id="key-input" placeholder="sgd_xxxxxxxxxxxxxxxx" autocomplete="off">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-brand-logo">SG Datalytics</div>
+      <div class="login-brand-sub">Ghana Market Intelligence Platform</div>
     </div>
-    <button class="btn btn-primary btn-full" onclick="login()">Access Portal</button>
-    <div class="error-msg" id="login-error">Invalid or revoked API key. Contact mark@sgdatalytics.com</div>
+    <div class="login-card">
+      <div class="login-title">Welcome back</div>
+      <div class="login-hint">Enter your API key to access the data portal</div>
+      <div class="field">
+        <label>API Key</label>
+        <div class="key-field">
+          <input type="password" id="key-input" placeholder="sgd_xxxxxxxxxxxxxxxx" autocomplete="off">
+          <button class="key-eye" onclick="toggleKeyVis()" id="key-eye-btn">👁</button>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="login()" id="login-btn">
+        <span id="login-spinner" style="display:none" class="spinner" style="border-top-color:#000"></span>
+        Access Portal
+      </button>
+      <div class="error-msg" id="login-error">Invalid or revoked API key. Please contact mark@sgdatalytics.com</div>
+    </div>
+    <div class="login-footer">Secure · Encrypted · Your data stays private</div>
   </div>
 </div>
 
-<!-- ── APP ── -->
+<!-- ── APP ────────────────────────────────────────────────────── -->
 <div id="app">
   <div class="topbar">
     <div class="topbar-logo">SG Datalytics</div>
+    <div class="topbar-sep"></div>
     <div class="topbar-client" id="topbar-client"></div>
     <span class="topbar-tier" id="topbar-tier"></span>
     <button class="logout-btn" onclick="logout()">Sign out</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('dashboard', this)">Dashboard</div>
-    <div class="tab" onclick="showTab('query', this)">Query Builder</div>
-    <div class="tab" onclick="showTab('docs', this)">API Reference</div>
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('dashboard', this)">📊 Dashboard</div>
+      <div class="tab" onclick="showTab('query', this)">🔍 Query Builder</div>
+      <div class="tab" onclick="showTab('docs', this)">📖 API Reference</div>
+    </div>
   </div>
 
   <div class="content">
 
     <!-- ── DASHBOARD ── -->
     <div class="pane active" id="pane-dashboard">
-      <h2>Usage Overview</h2>
-      <div class="quota-wrap" id="quota-wrap">
-        <div class="quota-row">
+      <div class="page-title">Usage Overview</div>
+      <div class="page-sub" id="dash-welcome">Loading your account…</div>
+
+      <div class="quota-card">
+        <div class="quota-header">
           <span class="quota-title">Monthly Row Quota</span>
           <span class="quota-nums" id="quota-nums">—</span>
         </div>
         <div class="bar-track"><div class="bar-fill" id="quota-bar" style="width:0%"></div></div>
-        <div class="quota-reset" id="quota-reset"></div>
+        <div class="quota-footer">
+          <span id="quota-pct">—</span>
+          <span id="quota-reset">Resets —</span>
+        </div>
       </div>
-      <div class="cards" id="stat-cards">
-        <div class="card"><div class="card-label">Rows Used This Month</div><div class="card-value" id="stat-rows">—</div></div>
-        <div class="card"><div class="card-label">Requests This Month</div><div class="card-value" id="stat-reqs">—</div></div>
-        <div class="card"><div class="card-label">Rows Remaining</div><div class="card-value" id="stat-rem">—</div></div>
-        <div class="card"><div class="card-label">Quota Resets</div><div class="card-value" id="stat-reset" style="font-size:18px">—</div></div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📥</div>
+          <div class="stat-label">Rows Used This Month</div>
+          <div class="stat-value" id="stat-rows">—</div>
+          <div class="stat-sub" id="stat-rows-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔁</div>
+          <div class="stat-label">Requests This Month</div>
+          <div class="stat-value" id="stat-reqs">—</div>
+          <div class="stat-sub">API calls made</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-label">Rows Remaining</div>
+          <div class="stat-value accent" id="stat-rem">—</div>
+          <div class="stat-sub">available to query</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-label">Quota Resets</div>
+          <div class="stat-value" id="stat-reset" style="font-size:18px; letter-spacing:-.5px">—</div>
+          <div class="stat-sub">next billing cycle</div>
+        </div>
       </div>
-      <h3>Available Categories</h3>
-      <div id="categories-grid" class="cards"></div>
+
+      <div class="section-label">Available Data Categories</div>
+      <div class="cat-grid" id="categories-grid"></div>
     </div>
 
     <!-- ── QUERY BUILDER ── -->
     <div class="pane" id="pane-query">
-      <h2>Query Builder</h2>
+      <div class="page-title">Query Builder</div>
+      <div class="page-sub">Build your query step by step, then preview or download results</div>
 
-      <!-- Step 1: Product selection (cascading) -->
+      <!-- Step 1 -->
       <div class="filter-section">
-        <div class="filter-section-title">
-          <span class="step-badge">1</span> Select what you want to find
+        <div class="step-row">
+          <div class="step-num green">1</div>
+          <div class="step-title">Narrow your product</div>
+          <div class="step-line"></div>
         </div>
         <div class="cascade-row">
-          <!-- Category -->
           <div class="field" style="margin-bottom:0">
             <label>Category</label>
             <div class="sd-wrap" id="sd-category-wrap">
@@ -297,10 +407,9 @@
               <div class="sd-dropdown" id="sd-category-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
             <input type="hidden" id="q-category">
-            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Electronics, Vehicles</div>
+            <div class="field-hint">e.g. Electronics, Vehicles</div>
           </div>
           <div class="cascade-arrow">→</div>
-          <!-- Product Group -->
           <div class="field" style="margin-bottom:0">
             <label>Product Group</label>
             <div class="sd-wrap" id="sd-group-wrap">
@@ -310,10 +419,9 @@
               <div class="sd-dropdown" id="sd-group-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
             <input type="hidden" id="q-group">
-            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Smartphone, Toyota</div>
+            <div class="field-hint">e.g. Smartphone, Toyota</div>
           </div>
           <div class="cascade-arrow">→</div>
-          <!-- Brand -->
           <div class="field" style="margin-bottom:0">
             <label>Brand</label>
             <div class="sd-wrap" id="sd-brand-wrap">
@@ -323,15 +431,17 @@
               <div class="sd-dropdown" id="sd-brand-dropdown"><div class="sd-loading">Loading…</div></div>
             </div>
             <input type="hidden" id="q-brand">
-            <div style="font-size:11px; color:var(--muted); margin-top:5px">e.g. Apple, Samsung, Toyota</div>
+            <div class="field-hint">e.g. Apple, Samsung, Toyota</div>
           </div>
         </div>
       </div>
 
-      <!-- Step 2: Narrow filters -->
+      <!-- Step 2 -->
       <div class="filter-section">
-        <div class="filter-section-title">
-          <span class="step-badge" style="background:var(--accent2)">2</span> Narrow your results
+        <div class="step-row">
+          <div class="step-num blue">2</div>
+          <div class="step-title">Apply filters</div>
+          <div class="step-line"></div>
         </div>
         <div class="filter-grid">
           <div class="field">
@@ -340,6 +450,7 @@
               <option value="">Any condition</option>
               <option value="new">New</option>
               <option value="used">Used</option>
+              <option value="refurbished">Refurbished</option>
             </select>
           </div>
           <div class="field">
@@ -360,26 +471,28 @@
           </div>
           <div class="field">
             <label>Max Price (GHS)</label>
-            <input type="number" id="q-maxprice" placeholder="no limit" min="0">
+            <input type="number" id="q-maxprice" placeholder="No limit" min="0">
           </div>
         </div>
       </div>
+
+      <!-- Actions -->
       <div class="filter-actions">
         <button class="btn btn-primary" onclick="runQuery(false)">
           <span id="preview-spinner" style="display:none" class="spinner"></span>
           Preview Results
         </button>
-        <button class="btn btn-secondary" onclick="runQuery(true)" id="dl-btn">Download CSV</button>
-        <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+        <button class="btn btn-secondary" onclick="runQuery(true)">⬇ Download CSV</button>
+        <button class="btn btn-outline" onclick="clearFilters()">Clear Filters</button>
       </div>
 
       <div class="preview-box" id="preview-box" style="display:none">
         <div class="preview-header">
           <span class="preview-count" id="preview-count"></span>
-          <span class="preview-muted">Showing first 20 rows</span>
+          <span class="preview-note">Showing first 20 rows · Download CSV for full dataset</span>
         </div>
-        <div style="overflow-x:auto">
-          <table id="preview-table">
+        <div class="table-wrap">
+          <table>
             <thead>
               <tr>
                 <th>Date</th><th>Category</th><th>Product Group</th>
@@ -393,13 +506,32 @@
       </div>
     </div>
 
-    <!-- ── API DOCS ── -->
+    <!-- ── API REFERENCE ── -->
     <div class="pane" id="pane-docs">
-      <h2>API Reference</h2>
-      <p style="font-size:14px; color:var(--muted); margin-bottom:24px;">
-        Base URL: <code id="docs-base-url"></code> &nbsp;·&nbsp;
-        Pass your key as <code>X-API-Key</code> header on every request.
-      </p>
+      <div class="page-title">API Reference</div>
+      <div class="page-sub">Integrate SG Datalytics market data directly into your systems</div>
+
+      <div class="api-intro">
+        <div class="api-intro-item">
+          <span class="api-intro-label">Base URL</span>
+          <span class="api-intro-val" id="docs-base-url">—</span>
+        </div>
+        <div class="api-sep"></div>
+        <div class="api-intro-item">
+          <span class="api-intro-label">Authentication</span>
+          <span class="api-intro-val">X-API-Key header</span>
+        </div>
+        <div class="api-sep"></div>
+        <div class="api-intro-item">
+          <span class="api-intro-label">Response Format</span>
+          <span class="api-intro-val">JSON or CSV</span>
+        </div>
+        <div class="api-sep"></div>
+        <div class="api-intro-item">
+          <span class="api-intro-label">Rate Limit</span>
+          <span class="api-intro-val" id="docs-rate">—</span>
+        </div>
+      </div>
 
       <!-- /data/prices -->
       <div class="endpoint">
@@ -407,25 +539,28 @@
           <span class="method get">GET</span>
           <span class="ep-path">/data/prices</span>
           <span class="ep-desc">Listing-level price data with filters</span>
-          <span style="color:var(--muted); font-size:12px">▶</span>
+          <span class="ep-chevron">▶</span>
         </div>
         <div class="ep-body">
           <table class="param-table">
             <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>category</code></td><td>string</td><td>Filter by product category (e.g. Electronics)</td></tr>
-            <tr><td><code>product_group</code></td><td>string</td><td>Specific product type (e.g. Smartphone)</td></tr>
-            <tr><td><code>brand</code></td><td>string</td><td>Brand name (e.g. Samsung)</td></tr>
-            <tr><td><code>condition</code></td><td>new | used</td><td>Listing condition</td></tr>
-            <tr><td><code>date_from</code></td><td>YYYY-MM-DD</td><td>Start of date range</td></tr>
-            <tr><td><code>date_to</code></td><td>YYYY-MM-DD</td><td>End of date range</td></tr>
-            <tr><td><code>location</code></td><td>string</td><td>Partial location match (e.g. Accra)</td></tr>
-            <tr><td><code>min_price</code></td><td>number</td><td>Minimum price in GHS</td></tr>
-            <tr><td><code>max_price</code></td><td>number</td><td>Maximum price in GHS</td></tr>
-            <tr><td><code>limit</code></td><td>integer</td><td>Max rows to return (capped by your tier)</td></tr>
-            <tr><td><code>offset</code></td><td>integer</td><td>Pagination offset</td></tr>
-            <tr><td><code>format</code></td><td>csv</td><td>Return a downloadable CSV file</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter by product category (e.g. Electronics)</td></tr>
+            <tr><td><span class="param-name">product_group</span></td><td><span class="param-type">string</span></td><td>Product type within category (e.g. Smartphone)</td></tr>
+            <tr><td><span class="param-name">brand</span></td><td><span class="param-type">string</span></td><td>Brand name (e.g. Samsung, Apple)</td></tr>
+            <tr><td><span class="param-name">condition</span></td><td><span class="param-type">new | used</span></td><td>Listing condition</td></tr>
+            <tr><td><span class="param-name">date_from</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
+            <tr><td><span class="param-name">date_to</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>End of date range</td></tr>
+            <tr><td><span class="param-name">location</span></td><td><span class="param-type">string</span></td><td>Partial location match (e.g. Accra)</td></tr>
+            <tr><td><span class="param-name">min_price</span></td><td><span class="param-type">number</span></td><td>Minimum price in GHS</td></tr>
+            <tr><td><span class="param-name">max_price</span></td><td><span class="param-type">number</span></td><td>Maximum price in GHS</td></tr>
+            <tr><td><span class="param-name">limit</span></td><td><span class="param-type">integer</span></td><td>Max rows (capped by your tier)</td></tr>
+            <tr><td><span class="param-name">offset</span></td><td><span class="param-type">integer</span></td><td>Pagination offset</td></tr>
+            <tr><td><span class="param-name">format</span></td><td><span class="param-type">csv</span></td><td>Return downloadable CSV file</td></tr>
           </table>
-          <pre id="ex-prices"></pre>
+          <div class="code-block-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre id="ex-prices"></pre>
+          </div>
         </div>
       </div>
 
@@ -434,17 +569,20 @@
         <div class="endpoint-header" onclick="toggleEp(this)">
           <span class="method get">GET</span>
           <span class="ep-path">/data/summary</span>
-          <span class="ep-desc">Aggregated stats: median, min, max, count per product group</span>
-          <span style="color:var(--muted); font-size:12px">▶</span>
+          <span class="ep-desc">Aggregated stats — median, min, max, count per product group</span>
+          <span class="ep-chevron">▶</span>
         </div>
         <div class="ep-body">
           <table class="param-table">
             <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
-            <tr><td><code>category</code></td><td>string</td><td>Filter to one category</td></tr>
-            <tr><td><code>date_from</code></td><td>YYYY-MM-DD</td><td>Start of date range</td></tr>
-            <tr><td><code>date_to</code></td><td>YYYY-MM-DD</td><td>End of date range</td></tr>
+            <tr><td><span class="param-name">category</span></td><td><span class="param-type">string</span></td><td>Filter to one category</td></tr>
+            <tr><td><span class="param-name">date_from</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
+            <tr><td><span class="param-name">date_to</span></td><td><span class="param-type">YYYY-MM-DD</span></td><td>End of date range</td></tr>
           </table>
-          <pre id="ex-summary"></pre>
+          <div class="code-block-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre id="ex-summary"></pre>
+          </div>
         </div>
       </div>
 
@@ -454,10 +592,13 @@
           <span class="method get">GET</span>
           <span class="ep-path">/data/categories</span>
           <span class="ep-desc">Categories available on your plan, with listing counts</span>
-          <span style="color:var(--muted); font-size:12px">▶</span>
+          <span class="ep-chevron">▶</span>
         </div>
         <div class="ep-body">
-          <pre id="ex-categories"></pre>
+          <div class="code-block-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre id="ex-categories"></pre>
+          </div>
         </div>
       </div>
 
@@ -467,18 +608,22 @@
           <span class="method get">GET</span>
           <span class="ep-path">/data/usage</span>
           <span class="ep-desc">Your quota status and remaining rows this month</span>
-          <span style="color:var(--muted); font-size:12px">▶</span>
+          <span class="ep-chevron">▶</span>
         </div>
         <div class="ep-body">
-          <pre id="ex-usage"></pre>
+          <div class="code-block-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre id="ex-usage"></pre>
+          </div>
         </div>
       </div>
 
-      <div style="margin-top:28px; padding:18px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);">
-        <div style="font-size:13px; color:var(--muted); margin-bottom:10px;">
-          Need a higher limit or more categories? Contact us:
+      <div class="contact-card">
+        <div>
+          <div class="contact-text">Need a higher quota, more categories, or enterprise access?</div>
+          <div class="contact-email">mark@sgdatalytics.com</div>
         </div>
-        <strong>mark@sgdatalytics.com</strong>
+        <a href="mailto:mark@sgdatalytics.com" class="btn btn-secondary">Contact us →</a>
       </div>
     </div>
 
@@ -486,32 +631,36 @@
 </div>
 
 <script>
-  let API_KEY   = '';
-  let CLIENT    = {};
-  let BASE_URL  = window.location.origin;
+  let API_KEY  = '';
+  let CLIENT   = {};
+  let BASE_URL = window.location.origin;
 
   // ── Auth ──────────────────────────────────────────────────
-  async function login() {
-    const key = document.getElementById('key-input').value.trim();
-    if (!key) return;
+  function toggleKeyVis() {
+    const inp = document.getElementById('key-input');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
 
+  async function login() {
+    const key   = document.getElementById('key-input').value.trim();
+    if (!key) return;
     const errEl = document.getElementById('login-error');
+    const btn   = document.getElementById('login-btn');
     errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="border-top-color:#000"></span> Verifying…';
 
     try {
-      const res = await fetch(`${BASE_URL}/data/usage`, {
-        headers: { 'X-API-Key': key }
-      });
-      if (!res.ok) {
-        errEl.style.display = 'block';
-        return;
-      }
+      const res = await fetch(`${BASE_URL}/data/usage`, { headers: { 'X-API-Key': key } });
+      if (!res.ok) { errEl.style.display = 'block'; btn.disabled = false; btn.innerHTML = 'Access Portal'; return; }
       API_KEY = key;
       CLIENT  = await res.json();
       sessionStorage.setItem('sgd_key', key);
       bootApp();
     } catch(e) {
       errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = 'Access Portal';
     }
   }
 
@@ -521,25 +670,22 @@
     document.getElementById('app').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('key-input').value = '';
+    document.getElementById('login-btn').disabled = false;
+    document.getElementById('login-btn').innerHTML = 'Access Portal';
   }
 
   // ── Boot ──────────────────────────────────────────────────
   function bootApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
-
-    // Topbar
     document.getElementById('topbar-client').textContent = CLIENT.client;
     const tierEl = document.getElementById('topbar-tier');
     tierEl.textContent = CLIENT.tier.toUpperCase();
     tierEl.className = `topbar-tier tier-${CLIENT.tier}`;
-
     renderDashboard();
     populateCategoryDropdown();
     renderDocs();
-
-    // Default dates for query builder
-    const to = new Date().toISOString().split('T')[0];
+    const to   = new Date().toISOString().split('T')[0];
     const from = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
     document.getElementById('q-from').value = from;
     document.getElementById('q-to').value   = to;
@@ -547,89 +693,83 @@
 
   // ── Dashboard ─────────────────────────────────────────────
   async function renderDashboard() {
-    const limit    = CLIENT.row_limit_monthly;
-    const used     = CLIENT.rows_used_this_month;
-    const rem      = CLIENT.rows_remaining;
+    const limit     = CLIENT.row_limit_monthly;
+    const used      = CLIENT.rows_used_this_month;
+    const rem       = CLIENT.rows_remaining;
     const unlimited = limit === 'unlimited';
+    const pct       = unlimited ? 0 : Math.min(1, used / limit);
 
-    // Quota bar
-    const pct  = unlimited ? 0 : Math.min(1, used / limit);
-    const bar  = document.getElementById('quota-bar');
-    bar.style.width = (unlimited ? 0 : pct * 100) + '%';
-    bar.className   = 'bar-fill' + (pct >= .9 ? ' danger' : pct >= .8 ? ' warn' : '');
+    document.getElementById('dash-welcome').textContent =
+      `Welcome, ${CLIENT.client} · ${CLIENT.tier.charAt(0).toUpperCase() + CLIENT.tier.slice(1)} Plan`;
+
+    const bar = document.getElementById('quota-bar');
+    setTimeout(() => { bar.style.width = (unlimited ? 3 : pct * 100) + '%'; }, 100);
+    bar.className = 'bar-fill' + (pct >= .9 ? ' danger' : pct >= .8 ? ' warn' : '');
 
     document.getElementById('quota-nums').textContent =
-      unlimited ? `${used.toLocaleString()} rows used (unlimited plan)` :
+      unlimited ? `${used.toLocaleString()} rows used (Unlimited)` :
                   `${used.toLocaleString()} / ${limit.toLocaleString()} rows`;
-    document.getElementById('quota-reset').textContent = `Quota resets ${CLIENT.quota_resets_at}`;
+    document.getElementById('quota-pct').textContent =
+      unlimited ? 'No limit' : `${Math.round(pct * 100)}% used`;
+    document.getElementById('quota-reset').textContent = `Resets ${CLIENT.quota_resets_at}`;
 
-    // Stat cards
-    document.getElementById('stat-rows').textContent  = used.toLocaleString();
-    document.getElementById('stat-reqs').textContent  = CLIENT.requests_this_month.toLocaleString();
-    document.getElementById('stat-rem').textContent   = unlimited ? '∞' : rem.toLocaleString();
-    document.getElementById('stat-reset').textContent = CLIENT.quota_resets_at;
+    document.getElementById('stat-rows').textContent      = used.toLocaleString();
+    document.getElementById('stat-rows-sub').textContent  = unlimited ? 'unlimited plan' : `of ${limit.toLocaleString()} limit`;
+    document.getElementById('stat-reqs').textContent      = CLIENT.requests_this_month.toLocaleString();
+    document.getElementById('stat-rem').textContent       = unlimited ? '∞' : rem.toLocaleString();
+    document.getElementById('stat-reset').textContent     = CLIENT.quota_resets_at;
 
-    // Categories
-    const catRes  = await apiFetch('/data/categories');
-    const grid    = document.getElementById('categories-grid');
+    const catRes = await apiFetch('/data/categories');
+    const grid   = document.getElementById('categories-grid');
     grid.innerHTML = '';
     if (catRes && catRes.data) {
       catRes.data.forEach(c => {
         const card = document.createElement('div');
-        card.className = 'card';
+        card.className = 'cat-card';
         card.innerHTML = `
-          <div class="card-label">${c.product_category}</div>
-          <div class="card-value" style="font-size:20px">${parseInt(c.total_listings).toLocaleString()}</div>
-          <div class="card-sub">listings · updated ${c.last_updated ? c.last_updated.split('T')[0] : '—'}</div>
+          <div class="cat-name">${c.product_category}</div>
+          <div class="cat-count">${parseInt(c.total_listings).toLocaleString()}</div>
+          <div class="cat-meta">listings · updated ${c.last_updated ? c.last_updated.split('T')[0] : '—'}</div>
         `;
+        card.onclick = () => {
+          showTab('query', document.querySelectorAll('.tab')[1]);
+          setTimeout(() => selectSd('category', c.product_category, c.product_category), 200);
+        };
         grid.appendChild(card);
       });
     }
   }
 
   // ── Searchable Dropdowns ──────────────────────────────────
-  const SD = {}; // { key: { value, items } }
+  const SD = {};
 
   function buildSdDropdown(key, items, placeholder) {
     const dropdown = document.getElementById(`sd-${key}-dropdown`);
-    const search   = document.createElement('div');
+    const search = document.createElement('div');
     search.className = 'sd-search';
     search.innerHTML = `<input type="text" placeholder="Search ${placeholder}…" id="sd-${key}-search">`;
-
     const list = document.createElement('div');
     list.id = `sd-${key}-list`;
-
     dropdown.innerHTML = '';
     dropdown.appendChild(search);
     dropdown.appendChild(list);
-
     SD[key] = { value: SD[key]?.value || '', items };
     renderSdList(key, '');
-
-    document.getElementById(`sd-${key}-search`).addEventListener('input', e => {
-      renderSdList(key, e.target.value);
-    });
+    document.getElementById(`sd-${key}-search`).addEventListener('input', e => renderSdList(key, e.target.value));
   }
 
   function renderSdList(key, filter) {
-    const list  = document.getElementById(`sd-${key}-list`);
-    const items = SD[key]?.items || [];
-    const f     = filter.toLowerCase();
+    const list     = document.getElementById(`sd-${key}-list`);
+    const items    = SD[key]?.items || [];
+    const f        = filter.toLowerCase();
     const filtered = filter ? items.filter(v => v.toLowerCase().includes(f)) : items;
-
     list.innerHTML = '';
-
-    // "All" option
     const allOpt = document.createElement('div');
     allOpt.className = 'sd-option' + (!SD[key]?.value ? ' selected' : '');
     allOpt.textContent = `All ${key === 'category' ? 'categories' : key === 'group' ? 'product groups' : 'brands'}`;
     allOpt.onclick = () => selectSd(key, '', allOpt.textContent);
     list.appendChild(allOpt);
-
-    if (!filtered.length) {
-      list.innerHTML += `<div class="sd-empty">No matches</div>`;
-      return;
-    }
+    if (!filtered.length) { list.innerHTML += `<div class="sd-empty">No matches found</div>`; return; }
     filtered.forEach(v => {
       const opt = document.createElement('div');
       opt.className = 'sd-option' + (SD[key]?.value === v ? ' selected' : '');
@@ -643,15 +783,10 @@
     SD[key] = { ...SD[key], value };
     document.getElementById(`q-${key}`).value = value;
     document.getElementById(`sd-${key}-display`).value = value ? label : '';
-    document.getElementById(`sd-${key}-display`).placeholder =
-      key === 'category' ? 'All available categories' :
-      key === 'group'    ? 'All product groups' : 'All brands';
     document.getElementById(`sd-${key}-clear`).style.display = value ? 'block' : 'none';
     closeSd(key);
-
-    // Cascade: category change → reload groups + brands; group change → reload brands
-    if (key === 'category') { loadOptions(); }
-    if (key === 'group')    { loadBrandsOnly(); }
+    if (key === 'category') loadOptions();
+    if (key === 'group')    loadBrandsOnly();
   }
 
   function clearSd(key) {
@@ -667,24 +802,17 @@
   }
 
   function openSd(key) {
-    ['category','group','brand'].forEach(k => {
-      if (k !== key) closeSd(k);
-    });
+    ['category','group','brand'].forEach(k => { if (k !== key) closeSd(k); });
     document.getElementById(`sd-${key}-dropdown`).classList.toggle('open');
-    setTimeout(() => {
-      const s = document.getElementById(`sd-${key}-search`);
-      if (s) s.focus();
-    }, 50);
+    setTimeout(() => { const s = document.getElementById(`sd-${key}-search`); if (s) s.focus(); }, 50);
   }
 
-  // Wire up display inputs to open dropdowns
   function wireSdInputs() {
     ['category','group','brand'].forEach(key => {
       document.getElementById(`sd-${key}-display`).addEventListener('click', () => openSd(key));
     });
   }
 
-  // Close dropdowns on outside click
   document.addEventListener('click', e => {
     ['category','group','brand'].forEach(key => {
       const wrap = document.getElementById(`sd-${key}-wrap`);
@@ -693,28 +821,21 @@
   });
 
   async function loadOptions() {
-    const cat = document.getElementById('q-category').value;
+    const cat    = document.getElementById('q-category').value;
     const params = cat ? `?category=${encodeURIComponent(cat)}` : '';
-    const res = await apiFetch(`/data/options${params}`);
+    const res    = await apiFetch(`/data/options${params}`);
     if (!res) return;
     buildSdDropdown('group', res.product_groups, 'product group');
     buildSdDropdown('brand', res.brands, 'brand');
-    // Reset selections on cascade
-    if (!SD['group']?.value) {
-      document.getElementById('q-group').value = '';
-      document.getElementById('sd-group-display').value = '';
-    }
-    if (!SD['brand']?.value) {
-      document.getElementById('q-brand').value = '';
-      document.getElementById('sd-brand-display').value = '';
-    }
+    if (!SD['group']?.value) { document.getElementById('q-group').value = ''; document.getElementById('sd-group-display').value = ''; }
+    if (!SD['brand']?.value) { document.getElementById('q-brand').value = ''; document.getElementById('sd-brand-display').value = ''; }
   }
 
   async function loadBrandsOnly() {
     const cat   = document.getElementById('q-category').value;
     const group = document.getElementById('q-group').value;
     const params = new URLSearchParams();
-    if (cat)   params.set('category',      cat);
+    if (cat)   params.set('category', cat);
     if (group) params.set('product_group', group);
     const res = await apiFetch(`/data/options?${params}`);
     if (!res) return;
@@ -728,26 +849,25 @@
   async function populateCategoryDropdown() {
     const res = await apiFetch('/data/categories');
     if (!res || !res.data) return;
-    const cats = res.data.map(c => c.product_category);
-    buildSdDropdown('category', cats, 'category');
+    buildSdDropdown('category', res.data.map(c => c.product_category), 'category');
     wireSdInputs();
     await loadOptions();
   }
 
+  // ── Query builder ─────────────────────────────────────────
   function buildQueryParams(forDownload = false) {
     const p = new URLSearchParams();
     const v = id => document.getElementById(id).value.trim();
-    if (v('q-category'))  p.set('category',      v('q-category'));
-    if (v('q-group'))     p.set('product_group',  v('q-group'));
-    if (v('q-brand'))     p.set('brand',          v('q-brand'));
-    if (v('q-condition')) p.set('condition',       v('q-condition'));
-    if (v('q-from'))      p.set('date_from',       v('q-from'));
-    if (v('q-to'))        p.set('date_to',         v('q-to'));
-    if (v('q-location'))  p.set('location',        v('q-location'));
-    if (v('q-minprice'))  p.set('min_price',       v('q-minprice'));
-    if (v('q-maxprice'))  p.set('max_price',       v('q-maxprice'));
-    if (forDownload)      p.set('format', 'csv');
-    else                  p.set('limit', '20');
+    if (v('q-category'))  p.set('category',     v('q-category'));
+    if (v('q-group'))     p.set('product_group', v('q-group'));
+    if (v('q-brand'))     p.set('brand',         v('q-brand'));
+    if (v('q-condition')) p.set('condition',      v('q-condition'));
+    if (v('q-from'))      p.set('date_from',      v('q-from'));
+    if (v('q-to'))        p.set('date_to',        v('q-to'));
+    if (v('q-location'))  p.set('location',       v('q-location'));
+    if (v('q-minprice'))  p.set('min_price',      v('q-minprice'));
+    if (v('q-maxprice'))  p.set('max_price',      v('q-maxprice'));
+    if (forDownload) p.set('format', 'csv'); else p.set('limit', '20');
     return p;
   }
 
@@ -757,42 +877,40 @@
       window.location.href = `${BASE_URL}/data/prices?${params}&api_key=${encodeURIComponent(API_KEY)}`;
       return;
     }
-
     const spinner = document.getElementById('preview-spinner');
     spinner.style.display = 'inline-block';
-
     const params = buildQueryParams(false);
     const res    = await apiFetch(`/data/prices?${params}`);
     spinner.style.display = 'none';
-
     if (!res) return;
 
     document.getElementById('preview-box').style.display = 'block';
     document.getElementById('preview-count').textContent =
-      `${res.count} rows returned (${res.response_ms}ms)`;
+      `${res.count.toLocaleString()} row${res.count !== 1 ? 's' : ''} returned  ·  ${res.response_ms}ms`;
 
     const tbody = document.getElementById('preview-body');
     tbody.innerHTML = '';
+
     if (!res.data || !res.data.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty">No results for these filters.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No results for these filters. Try widening your search.</div></div></td></tr>`;
       return;
     }
 
-    res.data.forEach(row => {
-      const cond = row.condition || '';
-      const condTag = cond.toLowerCase().includes('new')
-        ? `<span class="tag tag-new">New</span>`
-        : cond ? `<span class="tag tag-used">Used</span>` : '—';
+    res.data.forEach((row, i) => {
+      const cond = (row.condition || '').toLowerCase();
+      const condTag = cond.includes('new') ? `<span class="tag tag-new">New</span>`
+        : cond.includes('refurb') ? `<span class="tag tag-refurb">Refurb</span>`
+        : cond ? `<span class="tag tag-used">Used</span>` : '<span style="color:var(--text3)">—</span>';
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${row.collected_date ? row.collected_date.split('T')[0] : '—'}</td>
+        <td style="color:var(--text3); white-space:nowrap">${row.collected_date ? row.collected_date.split('T')[0] : '—'}</td>
         <td>${row.product_category || '—'}</td>
         <td>${row.product_group || '—'}</td>
-        <td style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${row.title || '—'}</td>
-        <td>${row.brand || '—'}</td>
+        <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${(row.title||'').replace(/"/g,'')}">${row.title || '—'}</td>
+        <td>${row.brand || '<span style="color:var(--text3)">—</span>'}</td>
         <td>${condTag}</td>
-        <td style="font-weight:600">${row.price_ghs ? 'GHS ' + parseFloat(row.price_ghs).toLocaleString() : '—'}</td>
-        <td>${row.location || '—'}</td>
+        <td class="price-cell">${row.price_ghs ? 'GHS&nbsp;' + parseFloat(row.price_ghs).toLocaleString('en-GH', {minimumFractionDigits:0}) : '—'}</td>
+        <td style="color:var(--text2)">${row.location || '—'}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -800,19 +918,20 @@
 
   function clearFilters() {
     clearSd('category');
-    ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice']
-      .forEach(id => document.getElementById(id).value = '');
+    ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('preview-box').style.display = 'none';
   }
 
   // ── API docs ──────────────────────────────────────────────
   function renderDocs() {
-    const base = BASE_URL;
+    const base  = BASE_URL;
+    const tiers = { trial: '30/min', starter: '60/min', pro: '200/min', enterprise: '600/min' };
     document.getElementById('docs-base-url').textContent = base;
+    document.getElementById('docs-rate').textContent = tiers[CLIENT.tier] || '—';
 
     document.getElementById('ex-prices').textContent =
 `curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/prices?category=Electronics&condition=new&date_from=2026-09-01"
+  "${base}/data/prices?category=Electronics&product_group=Smartphone&condition=new&date_from=2026-09-01"
 
 # Download as CSV
 curl -H "X-API-Key: ${API_KEY}" \\
@@ -820,7 +939,7 @@ curl -H "X-API-Key: ${API_KEY}" \\
 
     document.getElementById('ex-summary').textContent =
 `curl -H "X-API-Key: ${API_KEY}" \\
-  "${base}/data/summary?category=Electronics"`;
+  "${base}/data/summary?category=Electronics&date_from=2026-09-01"`;
 
     document.getElementById('ex-categories').textContent =
 `curl -H "X-API-Key: ${API_KEY}" \\
@@ -831,23 +950,22 @@ curl -H "X-API-Key: ${API_KEY}" \\
   "${base}/data/usage"`;
   }
 
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.textContent).then(() => {
+      btn.textContent = '✓ Copied'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
   // ── Helpers ───────────────────────────────────────────────
   async function apiFetch(path) {
     try {
-      const res = await fetch(`${BASE_URL}${path}`, {
-        headers: { 'X-API-Key': API_KEY }
-      });
-      if (res.status === 429) {
-        const data = await res.json();
-        alert(data.error || 'Quota or rate limit exceeded.');
-        return null;
-      }
+      const res = await fetch(`${BASE_URL}${path}`, { headers: { 'X-API-Key': API_KEY } });
+      if (res.status === 429) { const d = await res.json(); alert(d.error || 'Rate limit exceeded.'); return null; }
       if (!res.ok) return null;
       return res.json();
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
+    } catch(e) { console.error(e); return null; }
   }
 
   function showTab(name, el) {
@@ -858,22 +976,17 @@ curl -H "X-API-Key: ${API_KEY}" \\
   }
 
   function toggleEp(header) {
-    const body  = header.nextElementSibling;
-    const arrow = header.querySelector('span:last-child');
-    const open  = body.classList.toggle('open');
-    arrow.textContent = open ? '▼' : '▶';
+    const body    = header.nextElementSibling;
+    const chevron = header.querySelector('.ep-chevron');
+    const open    = body.classList.toggle('open');
+    chevron.classList.toggle('open', open);
   }
 
-  // ── Auto-login from session ───────────────────────────────
   window.addEventListener('DOMContentLoaded', async () => {
     const saved = sessionStorage.getItem('sgd_key');
-    if (saved) {
-      document.getElementById('key-input').value = saved;
-      await login();
-    }
+    if (saved) { document.getElementById('key-input').value = saved; await login(); }
   });
 
-  // Allow Enter key on login
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') login();
   });
