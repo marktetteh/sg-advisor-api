@@ -63,7 +63,7 @@ function applyClientCategoryFilter(client, requestedCategory) {
 router.get('/prices', async (req, res) => {
   const t0 = Date.now();
   const {
-    category, product_group, brand, condition,
+    category, product_group, brand, model, condition,
     date_from, date_to, location,
     min_price, max_price,
     offset = 0,
@@ -99,6 +99,7 @@ router.get('/prices', async (req, res) => {
 
   if (product_group) { conditions.push(`LOWER(product_group) = LOWER($${p++})`); params.push(product_group); }
   if (brand)         { conditions.push(`LOWER(brand) = LOWER($${p++})`);          params.push(brand); }
+  if (model)         { conditions.push(`LOWER(model) = LOWER($${p++})`);           params.push(model); }
   if (condition)     { conditions.push(`LOWER(condition) = LOWER($${p++})`);       params.push(condition); }
   if (location)      { conditions.push(`LOWER(location) LIKE LOWER($${p++})`);     params.push(`%${location}%`); }
   if (date_from)     { conditions.push(`collected_date >= $${p++}`);               params.push(date_from); }
@@ -134,7 +135,7 @@ router.get('/prices', async (req, res) => {
     logUsage({
       clientId:    client.id,
       endpoint:    '/data/prices',
-      filters:     { category, product_group, brand, condition, date_from, date_to, location, min_price, max_price },
+      filters:     { category, product_group, brand, model, condition, date_from, date_to, location, min_price, max_price },
       rowsReturned: rows.length,
       responseMs,
     });
@@ -270,59 +271,55 @@ router.get('/categories', async (req, res) => {
 });
 
 // ── GET /data/options ─────────────────────────────────────────
-// Returns distinct product_groups and brands scoped to client's allowed categories.
-// Accepts optional ?category=&product_group= to narrow the lists.
+// Returns distinct product_groups, brands, and models scoped to client's
+// allowed categories. Accepts optional ?category=&product_group=&brand=
 router.get('/options', async (req, res) => {
-  const { category, product_group } = req.query;
+  const { category, product_group, brand } = req.query;
   const client  = req.client;
   const allowed = client.allowed_categories || [];
 
-  // Build base category filter
-  const catConditions = ['price_ghs > 0', 'is_flagged = FALSE'];
-  const catParams     = [];
-  let   cp            = 1;
+  // Base filter shared by all sub-queries
+  const base       = ['price_ghs > 0', 'is_flagged = FALSE'];
+  const baseParams = [];
+  let   p          = 1;
 
-  if (allowed.length > 0) {
-    catConditions.push(`product_category = ANY($${cp++})`);
-    catParams.push(allowed);
-  }
-  if (category) {
-    catConditions.push(`LOWER(product_category) = LOWER($${cp++})`);
-    catParams.push(category);
-  }
+  if (allowed.length > 0) { base.push(`product_category = ANY($${p++})`); baseParams.push(allowed); }
+  if (category)           { base.push(`LOWER(product_category) = LOWER($${p++})`); baseParams.push(category); }
 
-  // Product groups
-  const pgConditions = [...catConditions];
-  const pgParams     = [...catParams];
-  let   pp           = cp;
+  // ── Product groups (filtered by category only) ──
+  const pgResult = await pool.query(
+    `SELECT DISTINCT product_group FROM market_prices
+     WHERE ${base.join(' AND ')} AND product_group IS NOT NULL AND product_group != ''
+     ORDER BY product_group`,
+    baseParams
+  );
 
-  const pgResult = await pool.query(`
-    SELECT DISTINCT product_group
-    FROM market_prices
-    WHERE ${pgConditions.join(' AND ')} AND product_group IS NOT NULL AND product_group != ''
-    ORDER BY product_group
-  `, pgParams);
+  // ── Brands (also filtered by product_group if set) ──
+  const brBase = [...base]; const brParams = [...baseParams]; let bp = p;
+  if (product_group) { brBase.push(`LOWER(product_group) = LOWER($${bp++})`); brParams.push(product_group); }
+  const brResult = await pool.query(
+    `SELECT DISTINCT brand FROM market_prices
+     WHERE ${brBase.join(' AND ')} AND brand IS NOT NULL AND brand != ''
+     ORDER BY brand`,
+    brParams
+  );
 
-  // Brands (narrowed further by product_group if provided)
-  const brConditions = [...catConditions];
-  const brParams     = [...catParams];
-  let   bp           = cp;
-
-  if (product_group) {
-    brConditions.push(`LOWER(product_group) = LOWER($${bp++})`);
-    brParams.push(product_group);
-  }
-
-  const brResult = await pool.query(`
-    SELECT DISTINCT brand
-    FROM market_prices
-    WHERE ${brConditions.join(' AND ')} AND brand IS NOT NULL AND brand != ''
-    ORDER BY brand
-  `, brParams);
+  // ── Models (filtered by category + product_group + brand) ──
+  const mdBase = [...brBase]; const mdParams = [...brParams]; let mp = bp;
+  if (brand) { mdBase.push(`LOWER(brand) = LOWER($${mp++})`); mdParams.push(brand); }
+  // Use model column first; fall back to extracting common sub-phrases from title
+  const mdResult = await pool.query(
+    `SELECT DISTINCT model FROM market_prices
+     WHERE ${mdBase.join(' AND ')} AND model IS NOT NULL AND model != ''
+     ORDER BY model
+     LIMIT 200`,
+    mdParams
+  );
 
   res.json({
     product_groups: pgResult.rows.map(r => r.product_group),
     brands:         brResult.rows.map(r => r.brand),
+    models:         mdResult.rows.map(r => r.model),
   });
 });
 

@@ -164,6 +164,25 @@
   .cat-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
   .cat-groups { font-size: 11px; color: var(--text3); margin-top: 8px; }
 
+  /* ── 4-level cascade ───────────────────────────────────── */
+  .cascade4 { display: grid; grid-template-columns: 1fr 18px 1fr 18px 1fr 18px 1fr; align-items: end; gap: 0; }
+  .cascade4-item { min-width: 0; }
+  .cascade4-arrow { display: flex; align-items: center; justify-content: center; padding-bottom: 13px; color: var(--border2); font-size: 13px; font-weight: 700; }
+
+  /* ── Insights panel ─────────────────────────────────────── */
+  .insights-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 14px; }
+  .insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .insight-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 8px; }
+  .insight-val   { font-size: 22px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .insight-val.accent { color: var(--accent); }
+  .insight-sub   { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .insight-cond-row { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .cond-bar-row { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+  .cond-bar-label { width: 46px; color: var(--text2); text-transform: capitalize; }
+  .cond-bar-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .cond-bar-fill  { height: 100%; border-radius: 3px; }
+  .cond-bar-pct   { font-size: 11px; color: var(--text3); width: 28px; text-align: right; }
+
   /* ── Searchable dropdown ────────────────────────────────── */
   .sd-wrap { position: relative; }
   .sd-display { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--rsm); color: var(--text); font-size: 13px; padding: 10px 36px 10px 14px; cursor: pointer; outline: none; user-select: none; transition: border .15s, box-shadow .15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -255,16 +274,24 @@
   .contact-email { font-size: 15px; font-weight: 700; margin-top: 3px; }
 
   /* ── Responsive ─────────────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .cascade4 { grid-template-columns: 1fr 18px 1fr; grid-template-rows: auto auto; }
+    .cascade4-item:nth-child(5), .cascade4-item:nth-child(7) { grid-column: auto; }
+    .insights-grid { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: 1fr 1fr; }
     .chart-row { grid-template-columns: 1fr; }
     .filter-grid { grid-template-columns: 1fr 1fr; }
+    .cascade4 { grid-template-columns: 1fr 1fr; }
+    .cascade4-arrow { display: none; }
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 640px) {
     .sidebar { display: none; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
-    .cascade { grid-template-columns: 1fr; }
-    .cascade-sep { display: none; }
+    .cascade4 { grid-template-columns: 1fr; }
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
@@ -418,14 +445,16 @@
     <!-- ── QUERY BUILDER ── -->
     <div class="page" id="page-query">
 
-      <!-- Step 1 -->
+      <!-- Step 1: Product cascade -->
       <div class="filter-paper">
         <div class="filter-paper-title">
           <span class="step-pill">1</span>
-          Select Product
+          Identify the Product
+          <span style="font-size:11px; color:var(--text3); font-weight:400; text-transform:none; letter-spacing:0; margin-left:6px">Each selection narrows the next — start broad, drill down</span>
         </div>
-        <div class="cascade">
-          <div>
+        <div class="cascade4">
+          <!-- Category -->
+          <div class="cascade4-item">
             <label>Category</label>
             <div class="sd-wrap" id="sd-category-wrap">
               <div class="sd-display sd-placeholder" id="sd-category-display" tabindex="0" onclick="openSd('category')">All categories</div>
@@ -439,8 +468,9 @@
             <input type="hidden" id="q-category">
             <div class="field-hint">e.g. Electronics, Vehicles</div>
           </div>
-          <div class="cascade-sep">→</div>
-          <div>
+          <div class="cascade4-arrow">→</div>
+          <!-- Product Group -->
+          <div class="cascade4-item">
             <label>Product Group</label>
             <div class="sd-wrap" id="sd-group-wrap">
               <div class="sd-display sd-placeholder" id="sd-group-display" tabindex="0" onclick="openSd('group')">All product groups</div>
@@ -452,10 +482,11 @@
               </div>
             </div>
             <input type="hidden" id="q-group">
-            <div class="field-hint">e.g. Smartphone, Laptop</div>
+            <div class="field-hint">e.g. Smartphone, Laptop, Car</div>
           </div>
-          <div class="cascade-sep">→</div>
-          <div>
+          <div class="cascade4-arrow">→</div>
+          <!-- Brand -->
+          <div class="cascade4-item">
             <label>Brand</label>
             <div class="sd-wrap" id="sd-brand-wrap">
               <div class="sd-display sd-placeholder" id="sd-brand-display" tabindex="0" onclick="openSd('brand')">All brands</div>
@@ -467,21 +498,72 @@
               </div>
             </div>
             <input type="hidden" id="q-brand">
-            <div class="field-hint">e.g. Apple, Samsung</div>
+            <div class="field-hint">e.g. Apple, Samsung, Toyota</div>
+          </div>
+          <div class="cascade4-arrow">→</div>
+          <!-- Model / Product Name -->
+          <div class="cascade4-item">
+            <label>Model / Product Name</label>
+            <div class="sd-wrap" id="sd-model-wrap">
+              <div class="sd-display sd-placeholder" id="sd-model-display" tabindex="0" onclick="openSd('model')">All models</div>
+              <button class="sd-clear" id="sd-model-clear" onclick="clearSd('model')">✕</button>
+              <div class="sd-arrow" id="sd-model-arrow">▼</div>
+              <div class="sd-drop" id="sd-model-drop">
+                <div class="sd-search-row"><input class="sd-search-input" id="sd-model-search" placeholder="Search models…" oninput="filterSd('model',this.value)"></div>
+                <div class="sd-list" id="sd-model-list"><div class="sd-empty">Select a brand first</div></div>
+              </div>
+            </div>
+            <input type="hidden" id="q-model">
+            <div class="field-hint">e.g. iPhone 14, Galaxy S23, Corolla</div>
           </div>
         </div>
       </div>
 
-      <!-- Step 2 -->
+      <!-- Live Insights panel -->
+      <div id="insights-panel" style="display:none">
+        <div class="insights-grid">
+          <div class="insight-card">
+            <div class="insight-label">Matching Listings</div>
+            <div class="insight-val" id="ins-count">—</div>
+            <div class="insight-sub" id="ins-count-sub"></div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Median Price</div>
+            <div class="insight-val accent" id="ins-median">—</div>
+            <div class="insight-sub" id="ins-median-sub">GHS</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Price Range</div>
+            <div class="insight-val" id="ins-range" style="font-size:16px; letter-spacing:-.3px">—</div>
+            <div class="insight-sub">min → max (GHS)</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Avg Price</div>
+            <div class="insight-val" id="ins-avg">—</div>
+            <div class="insight-sub">GHS mean price</div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Condition Split</div>
+            <div id="ins-cond" class="insight-cond-row"></div>
+          </div>
+          <div class="insight-card">
+            <div class="insight-label">Data Coverage</div>
+            <div class="insight-val" id="ins-dates" style="font-size:13px; letter-spacing:0; font-weight:600">—</div>
+            <div class="insight-sub">date range in results</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Narrow filters -->
       <div class="filter-paper">
         <div class="filter-paper-title">
           <span class="step-pill blue">2</span>
-          Refine Filters
+          Narrow Your Results
         </div>
         <div class="filter-grid">
           <div>
             <label>Condition</label>
-            <select id="q-condition">
+            <select id="q-condition" onchange="refreshInsights()">
               <option value="">Any condition</option>
               <option value="new">New</option>
               <option value="used">Used</option>
@@ -490,47 +572,55 @@
           </div>
           <div>
             <label>Location</label>
-            <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi">
+            <input type="text" id="q-location" placeholder="e.g. Accra, Kumasi" onchange="refreshInsights()">
           </div>
           <div>
             <label>Date From</label>
-            <input type="date" id="q-from">
+            <input type="date" id="q-from" onchange="refreshInsights()">
           </div>
           <div>
             <label>Date To</label>
-            <input type="date" id="q-to">
+            <input type="date" id="q-to" onchange="refreshInsights()">
           </div>
           <div>
             <label>Min Price (GHS)</label>
-            <input type="number" id="q-minprice" placeholder="0" min="0">
+            <input type="number" id="q-minprice" placeholder="0" min="0" onchange="refreshInsights()">
           </div>
           <div>
             <label>Max Price (GHS)</label>
-            <input type="number" id="q-maxprice" placeholder="No limit" min="0">
+            <input type="number" id="q-maxprice" placeholder="No limit" min="0" onchange="refreshInsights()">
           </div>
         </div>
       </div>
 
-      <div class="action-row">
-        <button class="btn btn-primary" onclick="runQuery(false)">
-          <span id="q-spin" class="spin" style="display:none; border-top-color:#000"></span>
-          Preview Results
-        </button>
-        <button class="btn btn-secondary" onclick="runQuery(true)">⬇ Download CSV</button>
-        <button class="btn btn-ghost" onclick="clearFilters()">Clear All</button>
+      <!-- Step 3: Actions -->
+      <div class="filter-paper" style="padding:18px 24px">
+        <div class="filter-paper-title" style="margin-bottom:14px">
+          <span class="step-pill" style="background:var(--blue)">3</span>
+          Get Your Data
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary" onclick="runQuery(false)">
+            <span id="q-spin" class="spin" style="display:none; border-top-color:#000"></span>
+            Preview Results
+          </button>
+          <button class="btn btn-secondary" onclick="runQuery(true)">⬇ Download CSV</button>
+          <button class="btn btn-ghost" onclick="clearFilters()">Clear All</button>
+          <span id="q-hint" style="font-size:12px; color:var(--text3); margin-left:4px; align-self:center"></span>
+        </div>
       </div>
 
       <div class="results-card" id="results-card" style="display:none">
         <div class="res-header">
           <span class="res-count" id="res-count"></span>
-          <span class="res-meta">Showing first 20 rows · Download CSV for full dataset</span>
+          <span class="res-meta">Showing first 20 rows · Download CSV for the full dataset</span>
         </div>
         <div class="tbl-wrap">
           <table>
             <thead>
               <tr>
                 <th>Date</th><th>Category</th><th>Product Group</th>
-                <th>Title</th><th>Brand</th><th>Condition</th>
+                <th>Title</th><th>Brand</th><th>Model</th><th>Condition</th>
                 <th>Price (GHS)</th><th>Location</th>
               </tr>
             </thead>
@@ -894,21 +984,29 @@
       `;
       div.onclick = () => {
         showPage('query', document.querySelector('.sb-link[onclick*="query"]'));
-        setTimeout(() => selectSd('category', c.product_category), 200);
+        setTimeout(async () => { await selectSd('category', c.product_category); refreshInsights(); }, 200);
       };
       grid.appendChild(div);
     });
   }
 
   /* ── Searchable dropdowns ─────────────────────── */
+  const SD_LABELS = {
+    category: 'All categories',
+    group:    'All product groups',
+    brand:    'All brands',
+    model:    'All models',
+  };
+  const SD_KEYS = ['category','group','brand','model'];
+
   function openSd(key) {
-    ['category','group','brand'].forEach(k => { if (k !== key) closeSd(k); });
-    const drop  = document.getElementById(`sd-${key}-drop`);
-    const arrow = document.getElementById(`sd-${key}-arrow`);
-    const disp  = document.getElementById(`sd-${key}-display`);
+    SD_KEYS.forEach(k => { if (k !== key) closeSd(k); });
+    const drop = document.getElementById(`sd-${key}-drop`);
     const isOpen = drop.classList.contains('open');
     if (!isOpen) {
-      drop.classList.add('open'); arrow.classList.add('open'); disp.classList.add('open');
+      drop.classList.add('open');
+      document.getElementById(`sd-${key}-arrow`).classList.add('open');
+      document.getElementById(`sd-${key}-display`).classList.add('open');
       setTimeout(() => { const s = document.getElementById(`sd-${key}-search`); if (s) s.focus(); }, 30);
     } else { closeSd(key); }
   }
@@ -921,13 +1019,14 @@
     if (s) { s.value = ''; filterSd(key, ''); }
   }
 
-  function buildSdList(key, items) {
+  function buildSdList(key, items, emptyMsg) {
     SD_DATA[key] = items;
     const list = document.getElementById(`sd-${key}-list`);
     list.innerHTML = '';
+    if (!items.length && emptyMsg) { list.innerHTML = `<div class="sd-empty">${emptyMsg}</div>`; return; }
     const allOpt = document.createElement('div');
     allOpt.className = 'sd-opt' + (!document.getElementById(`q-${key}`).value ? ' sel' : '');
-    allOpt.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+    allOpt.textContent = SD_LABELS[key];
     allOpt.onclick = () => selectSd(key, '');
     list.appendChild(allOpt);
     items.forEach(v => {
@@ -941,18 +1040,19 @@
   }
 
   function filterSd(key, q) {
-    const items = (SD_DATA[key] || []).filter(v => v.toLowerCase().includes(q.toLowerCase()));
-    const list  = document.getElementById(`sd-${key}-list`);
+    const items    = (SD_DATA[key] || []).filter(v => v.toLowerCase().includes(q.toLowerCase()));
+    const curVal   = document.getElementById(`q-${key}`).value;
+    const list     = document.getElementById(`sd-${key}-list`);
     list.innerHTML = '';
-    const allOpt = document.createElement('div');
+    const allOpt   = document.createElement('div');
     allOpt.className = 'sd-opt';
-    allOpt.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+    allOpt.textContent = SD_LABELS[key];
     allOpt.onclick = () => selectSd(key, '');
     list.appendChild(allOpt);
-    if (!items.length) { list.innerHTML += `<div class="sd-empty">No matches</div>`; return; }
+    if (!items.length) { list.innerHTML += `<div class="sd-empty">No matches for "${q}"</div>`; return; }
     items.forEach(v => {
       const opt = document.createElement('div');
-      opt.className = 'sd-opt' + (document.getElementById(`q-${key}`).value === v ? ' sel' : '');
+      opt.className = 'sd-opt' + (curVal === v ? ' sel' : '');
       opt.textContent = v;
       opt.onclick = () => selectSd(key, v);
       list.appendChild(opt);
@@ -967,58 +1067,189 @@
       disp.textContent = value; disp.classList.remove('sd-placeholder');
       clear.style.display = 'block';
     } else {
-      disp.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
+      disp.textContent = SD_LABELS[key];
       disp.classList.add('sd-placeholder'); clear.style.display = 'none';
     }
     closeSd(key);
-    if (key === 'category') {
-      clearSd('group'); clearSd('brand');
-      await reloadOptions();
-    }
-    if (key === 'group') { clearSd('brand'); await reloadBrands(); }
+    // Cascade: each level reloads those below
+    if (key === 'category') { clearSdSilent('group'); clearSdSilent('brand'); clearSdSilent('model'); await reloadAllOptions(); }
+    if (key === 'group')    { clearSdSilent('brand'); clearSdSilent('model'); await reloadBrandsModels(); }
+    if (key === 'brand')    { clearSdSilent('model'); await reloadModels(); }
+    refreshInsights();
   }
 
-  function clearSd(key) {
+  function clearSdSilent(key) {
     document.getElementById(`q-${key}`).value = '';
     const disp  = document.getElementById(`sd-${key}-display`);
     const clear = document.getElementById(`sd-${key}-clear`);
-    disp.textContent = key === 'category' ? 'All categories' : key === 'group' ? 'All product groups' : 'All brands';
-    disp.classList.add('sd-placeholder'); clear.style.display = 'none';
+    if (disp)  { disp.textContent = SD_LABELS[key]; disp.classList.add('sd-placeholder'); }
+    if (clear) { clear.style.display = 'none'; }
+  }
+
+  function clearSd(key) {
+    clearSdSilent(key);
     closeSd(key);
+    if (key === 'category') { clearSdSilent('group'); clearSdSilent('brand'); clearSdSilent('model'); reloadAllOptions(); }
+    if (key === 'group')    { clearSdSilent('brand'); clearSdSilent('model'); reloadBrandsModels(); }
+    if (key === 'brand')    { clearSdSilent('model'); reloadModels(); }
+    refreshInsights();
   }
 
   async function loadQueryDropdowns() {
     const catRes = await apiFetch('/data/categories');
     if (!catRes) return;
     buildSdList('category', catRes.data.map(c => c.product_category));
-    await reloadOptions();
+    await reloadAllOptions();
   }
 
-  async function reloadOptions() {
+  async function reloadAllOptions() {
     const cat = document.getElementById('q-category').value;
     const p   = cat ? `?category=${encodeURIComponent(cat)}` : '';
     const res = await apiFetch(`/data/options${p}`);
     if (!res) return;
     buildSdList('group', res.product_groups);
     buildSdList('brand', res.brands);
+    buildSdList('model', res.models || [], 'Select a brand to see models');
   }
 
-  async function reloadBrands() {
+  async function reloadBrandsModels() {
     const cat   = document.getElementById('q-category').value;
     const group = document.getElementById('q-group').value;
     const p     = new URLSearchParams();
     if (cat)   p.set('category', cat);
     if (group) p.set('product_group', group);
     const res = await apiFetch(`/data/options?${p}`);
-    if (res) buildSdList('brand', res.brands);
+    if (!res) return;
+    buildSdList('brand', res.brands);
+    buildSdList('model', res.models || [], 'Select a brand to see models');
+  }
+
+  async function reloadModels() {
+    const cat   = document.getElementById('q-category').value;
+    const group = document.getElementById('q-group').value;
+    const brand = document.getElementById('q-brand').value;
+    const p     = new URLSearchParams();
+    if (cat)   p.set('category', cat);
+    if (group) p.set('product_group', group);
+    if (brand) p.set('brand', brand);
+    const res = await apiFetch(`/data/options?${p}`);
+    if (!res) return;
+    const models = res.models || [];
+    buildSdList('model', models, brand ? 'No specific models found — try "All models"' : 'Select a brand to see models');
+    // Show count hint
+    const hint = document.getElementById('q-hint');
+    if (hint && models.length) hint.textContent = `${models.length} model${models.length !== 1 ? 's' : ''} available`;
   }
 
   document.addEventListener('click', e => {
-    ['category','group','brand'].forEach(key => {
+    SD_KEYS.forEach(key => {
       const wrap = document.getElementById(`sd-${key}-wrap`);
       if (wrap && !wrap.contains(e.target)) closeSd(key);
     });
   });
+
+  /* ── Live Insights ────────────────────────────── */
+  let insightsTimer = null;
+  function refreshInsights() {
+    clearTimeout(insightsTimer);
+    insightsTimer = setTimeout(fetchInsights, 400);
+  }
+
+  async function fetchInsights() {
+    const cat   = document.getElementById('q-category').value;
+    const group = document.getElementById('q-group').value;
+    const brand = document.getElementById('q-brand').value;
+    const model = document.getElementById('q-model').value;
+    const cond  = document.getElementById('q-condition').value;
+    const from  = document.getElementById('q-from').value;
+    const to    = document.getElementById('q-to').value;
+    const minp  = document.getElementById('q-minprice').value;
+    const maxp  = document.getElementById('q-maxprice').value;
+    const loc   = document.getElementById('q-location').value;
+
+    // Only show insights if at least one product field is set
+    if (!cat && !group && !brand && !model) {
+      document.getElementById('insights-panel').style.display = 'none';
+      return;
+    }
+
+    // Fetch summary stats for the current selection
+    const p = new URLSearchParams();
+    if (cat)   p.set('category', cat);
+    if (from)  p.set('date_from', from);
+    if (to)    p.set('date_to', to);
+
+    const sumRes = await apiFetch(`/data/summary?${p}`);
+
+    // Also fetch a count via prices endpoint
+    const pp = new URLSearchParams();
+    if (cat)   pp.set('category', cat);
+    if (group) pp.set('product_group', group);
+    if (brand) pp.set('brand', brand);
+    if (model) pp.set('model', model);
+    if (cond)  pp.set('condition', cond);
+    if (from)  pp.set('date_from', from);
+    if (to)    pp.set('date_to', to);
+    if (minp)  pp.set('min_price', minp);
+    if (maxp)  pp.set('max_price', maxp);
+    if (loc)   pp.set('location', loc);
+    pp.set('limit', '1');
+
+    const countRes = await apiFetch(`/data/prices?${pp}`);
+
+    // Find matching row in summary
+    let stats = null;
+    if (sumRes && sumRes.data) {
+      if (group) {
+        stats = sumRes.data.find(r => r.product_group?.toLowerCase() === group.toLowerCase());
+      }
+      if (!stats && sumRes.data.length === 1) stats = sumRes.data[0];
+    }
+
+    const panel = document.getElementById('insights-panel');
+    panel.style.display = 'block';
+
+    const fmt = n => n ? parseFloat(n).toLocaleString('en-GH', {minimumFractionDigits:0, maximumFractionDigits:0}) : '—';
+
+    document.getElementById('ins-count').textContent    = countRes ? countRes.count.toLocaleString() : '—';
+    document.getElementById('ins-count-sub').textContent = (group || cat) ? `in ${model || brand || group || cat}` : '';
+    document.getElementById('ins-median').textContent   = stats ? `GHS ${fmt(stats.price_median)}` : '—';
+    document.getElementById('ins-median-sub').textContent = stats ? `median across ${parseInt(stats.listing_count).toLocaleString()} listings` : 'GHS';
+    document.getElementById('ins-avg').textContent      = stats ? `GHS ${fmt(stats.price_avg)}` : '—';
+    document.getElementById('ins-range').textContent    = stats ? `GHS ${fmt(stats.price_min)} → ${fmt(stats.price_max)}` : '—';
+
+    if (stats) {
+      const from_ = stats.data_from ? stats.data_from.split('T')[0] : '—';
+      const to_   = stats.data_to   ? stats.data_to.split('T')[0]   : '—';
+      document.getElementById('ins-dates').textContent = `${from_} → ${to_}`;
+    } else {
+      document.getElementById('ins-dates').textContent = '—';
+    }
+
+    // Condition split — fetch a small sample for condition breakdown
+    const condRes = await apiFetch(`/data/prices?${pp}&limit=100`);
+    const condEl  = document.getElementById('ins-cond');
+    condEl.innerHTML = '';
+    if (condRes && condRes.data?.length) {
+      const counts = {};
+      condRes.data.forEach(r => { const c = r.condition || 'unknown'; counts[c] = (counts[c]||0) + 1; });
+      const total  = condRes.data.length;
+      const colors = { new: '#7dc200', used: '#e07b00', refurbished: '#2b7fff', unknown: '#86a066' };
+      Object.entries(counts).sort((a,b) => b[1]-a[1]).forEach(([cond, cnt]) => {
+        const pct  = Math.round(cnt / total * 100);
+        const row  = document.createElement('div');
+        row.className = 'cond-bar-row';
+        row.innerHTML = `
+          <span class="cond-bar-label">${cond}</span>
+          <div class="cond-bar-track"><div class="cond-bar-fill" style="width:${pct}%; background:${colors[cond]||'#86a066'}"></div></div>
+          <span class="cond-bar-pct">${pct}%</span>
+        `;
+        condEl.appendChild(row);
+      });
+    } else {
+      condEl.innerHTML = '<span style="font-size:12px; color:var(--text3)">—</span>';
+    }
+  }
 
   /* ── Query ────────────────────────────────────── */
   function buildParams(csv = false) {
@@ -1027,6 +1258,7 @@
     if (v('q-category'))  p.set('category',     v('q-category'));
     if (v('q-group'))     p.set('product_group', v('q-group'));
     if (v('q-brand'))     p.set('brand',         v('q-brand'));
+    if (v('q-model'))     p.set('model',         v('q-model'));
     if (v('q-condition')) p.set('condition',      v('q-condition'));
     if (v('q-from'))      p.set('date_from',      v('q-from'));
     if (v('q-to'))        p.set('date_to',        v('q-to'));
@@ -1062,8 +1294,9 @@
         <td style="color:var(--text3); white-space:nowrap">${(r.collected_date||'—').split('T')[0]}</td>
         <td>${r.product_category||'—'}</td>
         <td>${r.product_group||'—'}</td>
-        <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||'—'}</td>
+        <td style="max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${(r.title||'').replace(/"/g,'&quot;')}">${r.title||'—'}</td>
         <td>${r.brand||'<span style="color:var(--text3)">—</span>'}</td>
+        <td style="font-size:12px; color:var(--text2)">${r.model||'<span style="color:var(--text3)">—</span>'}</td>
         <td>${tag}</td>
         <td class="price-val">${r.price_ghs ? 'GHS '+parseFloat(r.price_ghs).toLocaleString('en-GH',{minimumFractionDigits:0}) : '—'}</td>
         <td style="color:var(--text2)">${r.location||'—'}</td>
@@ -1073,9 +1306,11 @@
   }
 
   function clearFilters() {
-    clearSd('category'); clearSd('group'); clearSd('brand');
+    clearSd('category'); clearSd('group'); clearSd('brand'); clearSd('model');
     ['q-condition','q-from','q-to','q-location','q-minprice','q-maxprice'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('results-card').style.display = 'none';
+    document.getElementById('insights-panel').style.display = 'none';
+    const hint = document.getElementById('q-hint'); if (hint) hint.textContent = '';
   }
 
   /* ── Docs ─────────────────────────────────────── */
