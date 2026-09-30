@@ -164,6 +164,38 @@
   .cat-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .6s; }
   .cat-groups { font-size: 11px; color: var(--text3); margin-top: 8px; }
 
+  /* ── Highlights row ────────────────────────────────────── */
+  .highlights-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .hl-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .hl-loading { color: var(--text3); font-size: 13px; grid-column: 1/-1; padding: 20px; text-align: center; }
+  .hl-icon { font-size: 20px; margin-bottom: 10px; }
+  .hl-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+  .hl-value { font-size: 18px; font-weight: 800; letter-spacing: -.5px; color: var(--text); line-height: 1.1; }
+  .hl-value.accent { color: var(--accent); }
+  .hl-sub   { font-size: 11px; color: var(--text3); margin-top: 5px; }
+  .hl-tag   { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-top: 5px; }
+  .hl-tag.up   { background: var(--acc-dim); color: var(--accent); }
+  .hl-tag.info { background: var(--blue-dim); color: var(--blue); }
+
+  /* ── Donut legend ───────────────────────────────────────── */
+  .donut-legend { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item  { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Top products table ─────────────────────────────────── */
+  .tp-row { display: grid; grid-template-columns: 24px 1fr 90px 90px 80px; gap: 0; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; font-size: 13px; }
+  .tp-row:last-child { border-bottom: none; }
+  .tp-row:hover { background: var(--surface2); }
+  .tp-row.header { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; cursor: default; padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .tp-row.header:hover { background: var(--bg); }
+  .tp-rank { font-size: 11px; font-weight: 700; color: var(--text3); }
+  .tp-name { font-weight: 600; padding-right: 8px; }
+  .tp-cat  { font-size: 11px; color: var(--text3); }
+  .tp-median { font-weight: 700; color: var(--accent); text-align: right; }
+  .tp-count  { color: var(--text2); text-align: right; }
+  .tp-bar-wrap { padding-right: 4px; }
+  .tp-bar { height: 4px; background: var(--accent); border-radius: 2px; opacity: .6; }
+
   /* ── 4-level cascade ───────────────────────────────────── */
   .cascade4 { display: grid; grid-template-columns: 1fr 18px 1fr 18px 1fr 18px 1fr; align-items: end; gap: 0; }
   .cascade4-item { min-width: 0; }
@@ -278,6 +310,8 @@
     .cascade4 { grid-template-columns: 1fr 18px 1fr; grid-template-rows: auto auto; }
     .cascade4-item:nth-child(5), .cascade4-item:nth-child(7) { grid-column: auto; }
     .insights-grid { grid-template-columns: repeat(3, 1fr); }
+    .highlights-row { grid-template-columns: 1fr 1fr; }
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
   }
   @media (max-width: 900px) {
     .kpi-row { grid-template-columns: 1fr 1fr; }
@@ -286,12 +320,14 @@
     .cascade4 { grid-template-columns: 1fr 1fr; }
     .cascade4-arrow { display: none; }
     .insights-grid { grid-template-columns: repeat(2, 1fr); }
+    .highlights-row { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 640px) {
     .sidebar { display: none; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
     .cascade4 { grid-template-columns: 1fr; }
     .insights-grid { grid-template-columns: repeat(2, 1fr); }
+    .highlights-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -374,70 +410,93 @@
     <!-- ── DASHBOARD ── -->
     <div class="page active" id="page-dashboard">
 
+      <!-- KPI Row -->
       <div class="kpi-row">
         <div class="kpi">
-          <div class="kpi-top">
-            <span class="kpi-label">Total Listings</span>
-            <span class="kpi-icon green">📦</span>
-          </div>
+          <div class="kpi-top"><span class="kpi-label">Total Listings</span><span class="kpi-icon green">📦</span></div>
           <div class="kpi-value" id="kpi-total">—</div>
-          <div class="kpi-sub">active price records</div>
+          <div class="kpi-sub">verified price records</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top">
-            <span class="kpi-label">Categories</span>
-            <span class="kpi-icon blue">🗂</span>
-          </div>
+          <div class="kpi-top"><span class="kpi-label">Market Categories</span><span class="kpi-icon blue">🗂</span></div>
           <div class="kpi-value" id="kpi-cats">—</div>
-          <div class="kpi-sub">market segments</div>
+          <div class="kpi-sub">segments available to you</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top">
-            <span class="kpi-label">Rows Used</span>
-            <span class="kpi-icon purple">📥</span>
-          </div>
+          <div class="kpi-top"><span class="kpi-label">Product Groups</span><span class="kpi-icon purple">📊</span></div>
+          <div class="kpi-value" id="kpi-groups">—</div>
+          <div class="kpi-sub">distinct product types</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Data Freshness</span><span class="kpi-icon warn">🕐</span></div>
+          <div class="kpi-value" id="kpi-fresh" style="font-size:18px; letter-spacing:-.5px">—</div>
+          <div class="kpi-sub">most recent collection</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-top"><span class="kpi-label">Quota Used</span><span class="kpi-icon green">📥</span></div>
           <div class="kpi-value" id="kpi-used">—</div>
-          <div class="kpi-sub" id="kpi-used-sub">this month</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-top">
-            <span class="kpi-label">Rows Remaining</span>
-            <span class="kpi-icon warn">✅</span>
-          </div>
-          <div class="kpi-value" id="kpi-rem" style="color:var(--accent)">—</div>
-          <div class="kpi-sub" id="kpi-rem-sub">available to query</div>
+          <div class="kpi-sub" id="kpi-used-sub">rows this month</div>
         </div>
       </div>
 
-      <div class="chart-row">
+      <!-- Market Highlights -->
+      <div class="section-row" style="margin-bottom:12px">
+        <div class="section-title">Market Highlights</div>
+        <span style="font-size:12px;color:var(--text3)" id="dash-date-range">—</span>
+      </div>
+      <div class="highlights-row" id="highlights-row">
+        <div class="hl-card hl-loading">Loading market highlights…</div>
+      </div>
+
+      <!-- Chart row: listings bar + condition donut -->
+      <div class="chart-row" style="margin-top:20px">
         <div class="chart-card">
           <div class="chart-header">
             <div>
               <div class="chart-title">Listings by Category</div>
-              <div class="chart-sub">Number of verified price records per market segment</div>
+              <div class="chart-sub">Verified price records per market segment</div>
             </div>
-            <span class="chart-badge" id="dash-date-range">—</span>
           </div>
           <canvas class="chart" id="bar-chart" height="200"></canvas>
         </div>
         <div class="chart-card">
           <div class="chart-header">
             <div>
-              <div class="chart-title">Quota Usage</div>
-              <div class="chart-sub">Monthly row consumption</div>
+              <div class="chart-title">Condition Breakdown</div>
+              <div class="chart-sub">New vs Used vs Refurbished across all listings</div>
             </div>
           </div>
-          <canvas class="chart" id="gauge-chart" height="200"></canvas>
-          <div style="text-align:center; margin-top:8px">
-            <div style="font-size:28px; font-weight:800; letter-spacing:-1px" id="gauge-pct">—</div>
-            <div style="font-size:12px; color:var(--text3)" id="gauge-label">of monthly quota used</div>
-          </div>
+          <canvas class="chart" id="donut-chart" height="200"></canvas>
+          <div class="donut-legend" id="donut-legend"></div>
         </div>
       </div>
 
-      <div class="section-row">
-        <div class="section-title">Available Data Categories</div>
-        <span style="font-size:12px; color:var(--text3)">Click a category to query it →</span>
+      <!-- Top Products ranking + Price trends side by side -->
+      <div class="chart-row" style="margin-top:14px">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Top Product Groups by Median Price</div>
+              <div class="chart-sub">Ranked by median GHS — click a row to explore</div>
+            </div>
+          </div>
+          <div id="top-products-table"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Price Spread by Category</div>
+              <div class="chart-sub">Median · Average · Min–Max range</div>
+            </div>
+          </div>
+          <canvas class="chart" id="spread-chart" height="240"></canvas>
+        </div>
+      </div>
+
+      <!-- Category cards -->
+      <div class="section-row" style="margin-top:20px">
+        <div class="section-title">Browse by Category</div>
+        <span style="font-size:12px;color:var(--text3)">Click to query →</span>
       </div>
       <div class="cat-grid" id="cat-grid"></div>
     </div>
@@ -841,41 +900,103 @@
 
   /* ── Dashboard ────────────────────────────────── */
   async function loadDashboard() {
-    const catRes = await apiFetch('/data/categories');
+    // Fetch categories + summary in parallel
+    const [catRes, sumRes, condRes] = await Promise.all([
+      apiFetch('/data/categories'),
+      apiFetch('/data/summary'),
+      apiFetch('/data/prices?limit=500'),   // condition breakdown sample
+    ]);
+
     if (!catRes) return;
+    const cats    = catRes.data || [];
+    const summary = sumRes?.data || [];
+    const total   = cats.reduce((s, c) => s + parseInt(c.total_listings || 0), 0);
+    const groups  = summary.length;
 
-    const cats     = catRes.data || [];
-    const total    = cats.reduce((s, c) => s + parseInt(c.total_listings || 0), 0);
-    const limit    = CLIENT.row_limit_monthly;
-    const used     = CLIENT.rows_used_this_month;
-    const rem      = CLIENT.rows_remaining;
+    const limit     = CLIENT.row_limit_monthly;
+    const used      = CLIENT.rows_used_this_month;
     const unlimited = limit === 'unlimited';
-    const pct      = unlimited ? 0 : Math.min(1, used / limit);
-
-    document.getElementById('kpi-total').textContent    = total.toLocaleString();
-    document.getElementById('kpi-cats').textContent     = cats.length;
-    document.getElementById('kpi-used').textContent     = used.toLocaleString();
-    document.getElementById('kpi-used-sub').textContent = unlimited ? 'unlimited plan' : `of ${limit.toLocaleString()} limit`;
-    document.getElementById('kpi-rem').textContent      = unlimited ? '∞' : rem.toLocaleString();
-    document.getElementById('kpi-rem-sub').textContent  = 'available to query';
+    const pct       = unlimited ? 0 : Math.min(1, used / limit);
 
     const lastDate = cats.map(c => c.last_updated || '').filter(Boolean).sort().pop();
-    document.getElementById('dash-date-range').textContent = lastDate ? `Updated ${lastDate.split('T')[0]}` : '';
+    const freshLabel = lastDate ? lastDate.split('T')[0] : '—';
 
+    // KPIs
+    document.getElementById('kpi-total').textContent    = total.toLocaleString();
+    document.getElementById('kpi-cats').textContent     = cats.length;
+    document.getElementById('kpi-groups').textContent   = groups;
+    document.getElementById('kpi-fresh').textContent    = freshLabel;
+    document.getElementById('kpi-used').textContent     = used.toLocaleString();
+    document.getElementById('kpi-used-sub').textContent = unlimited ? 'unlimited plan' : `of ${(limit).toLocaleString()} limit`;
+    document.getElementById('dash-date-range').textContent = lastDate ? `Data updated ${freshLabel}` : '';
+
+    // Market Highlights
+    buildHighlights(summary, cats, total);
+
+    // Charts
     drawBarChart(cats);
-    drawGauge(pct, used, unlimited);
+    drawDonutChart(condRes?.data || []);
+    drawTopProducts(summary);
+    drawSpreadChart(summary);
     drawCatGrid(cats, total);
 
     // Usage page
+    const ubar = document.getElementById('u-bar');
     document.getElementById('u-used-label').textContent  = `${used.toLocaleString()} rows used`;
     document.getElementById('u-limit-label').textContent = unlimited ? 'Unlimited plan' : `${limit.toLocaleString()} row limit`;
-    const ubar = document.getElementById('u-bar');
     setTimeout(() => { ubar.style.width = (unlimited ? 4 : pct * 100) + '%'; }, 100);
     ubar.style.background = pct >= .9 ? '#e0284a' : pct >= .75 ? '#e07b00' : '#7dc200';
     document.getElementById('u-pct').textContent   = unlimited ? 'Unlimited' : `${Math.round(pct * 100)}% used`;
     document.getElementById('u-reset').textContent = CLIENT.quota_resets_at;
     document.getElementById('u-reqs').textContent  = CLIENT.requests_this_month.toLocaleString();
     document.getElementById('u-last').textContent  = CLIENT.last_request_at ? CLIENT.last_request_at.split('T')[0] : '—';
+  }
+
+  function buildHighlights(summary, cats, total) {
+    const row = document.getElementById('highlights-row');
+    if (!summary.length) { row.innerHTML = '<div class="hl-loading">No summary data yet.</div>'; return; }
+
+    const fmt = n => parseFloat(n).toLocaleString('en-GH', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+    // Most expensive (highest median)
+    const topPrice = [...summary].sort((a,b) => parseFloat(b.price_median||0) - parseFloat(a.price_median||0))[0];
+    // Most active (most listings)
+    const topCat   = [...cats].sort((a,b) => parseInt(b.total_listings) - parseInt(a.total_listings))[0];
+    // Widest range (max - min)
+    const widest   = [...summary].sort((a,b) => (parseFloat(b.price_max||0)-parseFloat(b.price_min||0)) - (parseFloat(a.price_max||0)-parseFloat(a.price_min||0)))[0];
+    // Best value (lowest median with most listings)
+    const affordable = [...summary].filter(r => parseInt(r.listing_count) > 50).sort((a,b) => parseFloat(a.price_median||Infinity) - parseFloat(b.price_median||Infinity))[0];
+
+    row.innerHTML = `
+      <div class="hl-card">
+        <div class="hl-icon">🏆</div>
+        <div class="hl-label">Highest Median Price</div>
+        <div class="hl-value accent">GHS ${fmt(topPrice.price_median)}</div>
+        <div class="hl-sub">${topPrice.product_group} · ${topPrice.product_category}</div>
+        <span class="hl-tag info">${parseInt(topPrice.listing_count).toLocaleString()} listings</span>
+      </div>
+      <div class="hl-card">
+        <div class="hl-icon">🔥</div>
+        <div class="hl-label">Most Active Category</div>
+        <div class="hl-value">${topCat.product_category}</div>
+        <div class="hl-sub">${parseInt(topCat.total_listings).toLocaleString()} verified listings</div>
+        <span class="hl-tag up">${topCat.product_group_count} product groups</span>
+      </div>
+      <div class="hl-card">
+        <div class="hl-icon">📐</div>
+        <div class="hl-label">Widest Price Range</div>
+        <div class="hl-value">${widest.product_group}</div>
+        <div class="hl-sub">GHS ${fmt(widest.price_min)} → ${fmt(widest.price_max)}</div>
+        <span class="hl-tag info">${widest.product_category}</span>
+      </div>
+      <div class="hl-card">
+        <div class="hl-icon">💡</div>
+        <div class="hl-label">Most Affordable (Active)</div>
+        <div class="hl-value accent">GHS ${affordable ? fmt(affordable.price_median) : '—'}</div>
+        <div class="hl-sub">${affordable ? affordable.product_group + ' · median' : 'Not enough data'}</div>
+        <span class="hl-tag up">${affordable ? parseInt(affordable.listing_count).toLocaleString() + ' listings' : ''}</span>
+      </div>
+    `;
   }
 
   function drawBarChart(cats) {
@@ -929,42 +1050,169 @@
     });
   }
 
-  function drawGauge(pct, used, unlimited) {
-    const canvas = document.getElementById('gauge-chart');
-    const ctx    = canvas.getContext('2d');
-    const dpr    = window.devicePixelRatio || 1;
-    const W      = canvas.parentElement.clientWidth - 44;
-    const H      = 160;
+  function drawDonutChart(rows) {
+    const canvas = document.getElementById('donut-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W   = canvas.parentElement.clientWidth - 44;
+    const H   = 200;
     canvas.width  = W * dpr; canvas.height = H * dpr;
-    canvas.style.width  = W + 'px'; canvas.style.height = H + 'px';
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.scale(dpr, dpr);
 
-    const cx = W / 2, cy = H * 0.78, r = Math.min(W / 2, H) * 0.72;
-    const startA = Math.PI, endA = 2 * Math.PI;
+    // Count conditions
+    const counts = {};
+    rows.forEach(r => { const c = (r.condition || 'unknown').toLowerCase(); counts[c] = (counts[c]||0) + 1; });
+    const total  = Object.values(counts).reduce((s,v)=>s+v,0);
+    if (!total) { ctx.fillStyle = '#86a066'; ctx.font = '13px sans-serif'; ctx.fillText('No data', W/2-25, H/2); return; }
 
-    // Background arc
-    ctx.beginPath(); ctx.arc(cx, cy, r, startA, endA);
-    ctx.strokeStyle = '#d8e8c4'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+    const COLORS = { new: '#7dc200', used: '#e07b00', refurbished: '#2b7fff', unknown: '#c6dba8' };
+    const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
 
-    // Fill arc
-    const fillEnd = startA + (unlimited ? 0.05 : pct) * Math.PI;
-    const color   = pct >= .9 ? '#e0284a' : pct >= .75 ? '#e07b00' : '#7dc200';
-    const grad    = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
-    grad.addColorStop(0, color + '88'); grad.addColorStop(1, color);
-    ctx.beginPath(); ctx.arc(cx, cy, r, startA, fillEnd);
-    ctx.strokeStyle = grad; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.stroke();
+    const cx = W / 2, cy = H / 2, r = Math.min(W, H) / 2 - 10, inner = r * 0.55;
+    let angle = -Math.PI / 2;
 
-    // Tick marks
-    for (let i = 0; i <= 10; i++) {
-      const a = Math.PI + (i / 10) * Math.PI;
-      const x1 = cx + (r - 20) * Math.cos(a), y1 = cy + (r - 20) * Math.sin(a);
-      const x2 = cx + (r - 26) * Math.cos(a), y2 = cy + (r - 26) * Math.sin(a);
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-      ctx.strokeStyle = '#c6dba8'; ctx.lineWidth = 1.5; ctx.stroke();
+    entries.forEach(([cond, cnt]) => {
+      const sweep = (cnt / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, angle, angle + sweep);
+      ctx.closePath();
+      ctx.fillStyle = COLORS[cond] || '#86a066';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      angle += sweep;
+    });
+
+    // Inner hole
+    ctx.beginPath(); ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+
+    // Centre label
+    const topEntry = entries[0];
+    ctx.fillStyle = '#1a2b0e'; ctx.textAlign = 'center';
+    ctx.font = 'bold 18px -apple-system, sans-serif';
+    ctx.fillText(`${Math.round(topEntry[1]/total*100)}%`, cx, cy - 4);
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillStyle = '#86a066';
+    ctx.fillText(topEntry[0], cx, cy + 14);
+
+    // Legend
+    const legend = document.getElementById('donut-legend');
+    if (legend) {
+      legend.innerHTML = entries.map(([c,n]) =>
+        `<div class="legend-item"><div class="legend-dot" style="background:${COLORS[c]||'#86a066'}"></div>${c} <strong>${Math.round(n/total*100)}%</strong></div>`
+      ).join('');
+    }
+  }
+
+  function drawTopProducts(summary) {
+    const container = document.getElementById('top-products-table');
+    if (!container || !summary.length) return;
+    const fmt = n => parseFloat(n).toLocaleString('en-GH', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+    const sorted = [...summary]
+      .filter(r => r.price_median && parseFloat(r.price_median) > 0)
+      .sort((a,b) => parseFloat(b.price_median) - parseFloat(a.price_median))
+      .slice(0, 10);
+
+    const maxMedian = parseFloat(sorted[0]?.price_median || 1);
+
+    container.innerHTML = `
+      <div class="tp-row header">
+        <div>#</div><div>Product Group</div>
+        <div style="text-align:right">Median</div>
+        <div style="text-align:right">Listings</div>
+        <div></div>
+      </div>
+      ${sorted.map((r, i) => {
+        const pct = Math.round(parseFloat(r.price_median) / maxMedian * 100);
+        return `<div class="tp-row" onclick="jumpToQuery('${r.product_category}','${r.product_group}')">
+          <div class="tp-rank">${i+1}</div>
+          <div><div class="tp-name">${r.product_group}</div><div class="tp-cat">${r.product_category}</div></div>
+          <div class="tp-median">GHS ${fmt(r.price_median)}</div>
+          <div class="tp-count">${parseInt(r.listing_count).toLocaleString()}</div>
+          <div class="tp-bar-wrap"><div class="tp-bar" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('')}
+    `;
+  }
+
+  function drawSpreadChart(summary) {
+    const canvas = document.getElementById('spread-chart');
+    if (!canvas || !summary.length) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const W   = canvas.parentElement.clientWidth - 44;
+    const H   = 240;
+    canvas.width  = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    // Top 6 by listing count
+    const top6 = [...summary].filter(r => r.price_median).sort((a,b) => parseInt(b.listing_count)-parseInt(a.listing_count)).slice(0, 6);
+    const pad  = { t: 10, r: 10, b: 60, l: 60 };
+    const maxVal = Math.max(...top6.map(r => parseFloat(r.price_max || 0)));
+    const cW     = (W - pad.l - pad.r) / top6.length;
+
+    // Grid
+    ctx.strokeStyle = '#d0e4b0'; ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad.t + ((H - pad.t - pad.b) / 4) * i;
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      const val = Math.round(maxVal * (1 - i / 4));
+      ctx.fillStyle = '#86a066'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(val >= 1000 ? (val/1000).toFixed(0)+'k' : val, pad.l - 6, y + 4);
     }
 
-    document.getElementById('gauge-pct').textContent  = unlimited ? '∞' : `${Math.round(pct * 100)}%`;
-    document.getElementById('gauge-label').textContent = unlimited ? 'Unlimited plan' : 'of monthly quota used';
+    top6.forEach((r, i) => {
+      const x   = pad.l + i * cW + cW * 0.1;
+      const bW  = cW * 0.8;
+      const toY = v => pad.t + (H - pad.t - pad.b) * (1 - parseFloat(v||0) / maxVal);
+
+      // Range bar (min to max)
+      const yMin = toY(r.price_min), yMax = toY(r.price_max);
+      ctx.fillStyle = '#7dc20022';
+      ctx.fillRect(x + bW * 0.3, yMax, bW * 0.4, yMin - yMax);
+
+      // Avg bar
+      const yAvg = toY(r.price_avg);
+      const grad = ctx.createLinearGradient(0, yAvg, 0, yMin);
+      grad.addColorStop(0, '#7dc200cc'); grad.addColorStop(1, '#7dc20044');
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.roundRect(x + bW * 0.15, yAvg, bW * 0.7, yMin - yAvg, [3,3,0,0]); ctx.fill();
+
+      // Median tick
+      const yMed = toY(r.price_median);
+      ctx.strokeStyle = '#1a2b0e'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x + bW * 0.05, yMed); ctx.lineTo(x + bW * 0.95, yMed); ctx.stroke();
+
+      // X label
+      ctx.fillStyle = '#86a066'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'center';
+      const lbl = r.product_group.length > 10 ? r.product_group.substring(0,9)+'…' : r.product_group;
+      ctx.fillText(lbl, x + bW/2, H - pad.b + 14);
+    });
+
+    // Legend
+    ctx.fillStyle = '#1a2b0e'; ctx.fillRect(pad.l, H - pad.b + 28, 10, 3);
+    ctx.fillStyle = '#86a066'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Median', pad.l + 14, H - pad.b + 32);
+    ctx.fillStyle = '#7dc200cc'; ctx.fillRect(pad.l + 65, H - pad.b + 24, 10, 8);
+    ctx.fillStyle = '#86a066'; ctx.fillText('Avg', pad.l + 79, H - pad.b + 32);
+    ctx.fillStyle = '#7dc20022'; ctx.fillRect(pad.l + 105, H - pad.b + 24, 10, 8);
+    ctx.fillStyle = '#86a066'; ctx.fillText('Range', pad.l + 119, H - pad.b + 32);
+  }
+
+  function jumpToQuery(category, group) {
+    showPage('query', document.querySelector('.sb-link[onclick*="query"]'));
+    setTimeout(async () => {
+      await selectSd('category', category);
+      await selectSd('group', group);
+      refreshInsights();
+    }, 200);
   }
 
   function drawCatGrid(cats, total) {
