@@ -328,7 +328,40 @@
     .f-grid { grid-template-columns: 1fr 1fr; }
     .insights-strip { grid-template-columns: repeat(2, 1fr); }
     .browse-grid { grid-template-columns: 1fr 1fr; }
+    .hc-inner { flex-direction: column; }
+    .hc-radar-col { border-left: none; border-top: 1px solid #1e3050; padding: 14px 16px; }
+    .hc-stats-row { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ── HERO CATEGORY WIDGET ──────────────────────────── */
+  .hero-widget { padding: 14px 24px 0; }
+  .hero-dark-card { background: #0d1a2e; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 40px #0d1a2e44; border: 1px solid #1e3050; }
+  .hc-inner { display: flex; min-height: 220px; }
+  .hc-left  { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; min-width: 0; }
+  .hc-radar-col { width: 320px; flex-shrink: 0; border-left: 1px solid #1e3050; display: flex; align-items: center; justify-content: center; padding: 10px 16px; }
+  .hc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .hc-dot-label { display: flex; align-items: center; gap: 7px; }
+  .hc-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 4px var(--accent)} 50%{box-shadow:0 0 12px var(--accent),0 0 20px var(--accent)44} }
+  .hc-cat-lbl { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+  .hc-date    { font-size: 11px; color: #3e5068; }
+  .hc-dots    { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+  .hc-d { width: 7px; height: 7px; border-radius: 50%; background: #1e3050; cursor: pointer; transition: all .2s; flex-shrink: 0; border: 1px solid #2e4570; }
+  .hc-d.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .hc-d:hover:not(.active) { background: #2e4570; }
+  .hc-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .hc-title { font-size: 16px; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hc-listing-count { font-size: 13px; font-weight: 700; color: #f0f4f8; white-space: nowrap; flex-shrink: 0; }
+  .hc-subtext { font-size: 11px; color: #3e5068; margin-bottom: auto; }
+  .hc-prog-wrap { margin-top: 14px; }
+  .hc-prog-label { display: flex; justify-content: space-between; font-size: 10px; color: #3e5068; margin-bottom: 5px; }
+  .hc-prog-track { height: 3px; background: #1a2a3e; border-radius: 2px; overflow: hidden; }
+  .hc-prog-fill  { height: 100%; background: var(--accent); border-radius: 2px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+  .hc-stats-row  { display: grid; grid-template-columns: repeat(4, 1fr); background: #060f1c; border-top: 1px solid #1e3050; }
+  .hc-stat       { padding: 13px 16px; border-right: 1px solid #1e3050; text-align: center; }
+  .hc-stat:last-child { border-right: none; }
+  .hc-stat-val   { font-size: 20px; font-weight: 900; color: var(--accent); letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+  .hc-stat-lbl   { font-size: 9px; font-weight: 700; color: #3e5068; text-transform: uppercase; letter-spacing: .1em; margin-top: 3px; }
 </style>
 </head>
 <body>
@@ -434,6 +467,48 @@
 
       <!-- Category index strip -->
       <div class="cat-index-strip" id="cat-strip"></div>
+
+      <!-- Hero Category Widget -->
+      <div class="hero-widget">
+        <div class="hero-dark-card">
+          <div class="hc-inner">
+            <!-- Left: info + dots + progress -->
+            <div class="hc-left">
+              <div class="hc-header">
+                <div class="hc-dot-label">
+                  <div class="hc-status-dot"></div>
+                  <span class="hc-cat-lbl" id="hc-cat-lbl">—</span>
+                </div>
+                <span class="hc-date" id="hc-date">—</span>
+              </div>
+              <div class="hc-dots" id="hc-dots"></div>
+              <div class="hc-title-row">
+                <span class="hc-title" id="hc-title">—</span>
+                <span class="hc-listing-count" id="hc-count">—</span>
+              </div>
+              <div class="hc-subtext" id="hc-subtext">—</div>
+              <div class="hc-prog-wrap">
+                <div class="hc-prog-label">
+                  <span id="hc-prog-lbl">Share of total listings</span>
+                  <span id="hc-prog-pct">—</span>
+                </div>
+                <div class="hc-prog-track"><div class="hc-prog-fill" id="hc-prog" style="width:0%"></div></div>
+              </div>
+            </div>
+            <!-- Right: radar chart -->
+            <div class="hc-radar-col">
+              <canvas id="hero-radar"></canvas>
+            </div>
+          </div>
+          <!-- Bottom stats bar -->
+          <div class="hc-stats-row">
+            <div class="hc-stat"><div class="hc-stat-val" id="hs-total">—</div><div class="hc-stat-lbl">Total Listings</div></div>
+            <div class="hc-stat"><div class="hc-stat-val" id="hs-cats">—</div><div class="hc-stat-lbl">Categories</div></div>
+            <div class="hc-stat"><div class="hc-stat-val" id="hs-groups">—</div><div class="hc-stat-lbl">Product Groups</div></div>
+            <div class="hc-stat"><div class="hc-stat-val" id="hs-idx">—</div><div class="hc-stat-lbl">Avg Median GHS</div></div>
+          </div>
+        </div>
+      </div>
 
       <!-- Body -->
       <div class="dash-body">
@@ -778,6 +853,9 @@ async function loadDashboard() {
     `<div class="ci-item"><span class="ci-name">${c.product_category}</span><span class="ci-count">${parseInt(c.total_listings).toLocaleString()}</span></div>`
   ).join('');
 
+  // Hero widget
+  buildHeroWidget(cats, sum, total);
+
   // Highlights
   buildHighlights(sum, cats);
 
@@ -797,6 +875,124 @@ async function loadDashboard() {
   document.getElementById('u-reset').textContent = CLIENT.quota_resets_at;
   document.getElementById('u-reqs').textContent  = CLIENT.requests_this_month.toLocaleString();
   document.getElementById('u-last').textContent  = CLIENT.last_request_at ? CLIENT.last_request_at.split('T')[0] : '—';
+}
+
+/* ── HERO CATEGORY WIDGET ───────────────────────────── */
+let heroTimer = null, heroCats = [], heroSum = {}, heroTotal = 0, heroIdx = 0;
+
+function buildHeroWidget(cats, sum, total) {
+  heroCats  = [...cats].sort((a,b) => parseInt(b.total_listings) - parseInt(a.total_listings));
+  heroTotal = total;
+  // Group summary by category
+  heroSum = {};
+  sum.forEach(r => {
+    if (!heroSum[r.product_category]) heroSum[r.product_category] = [];
+    heroSum[r.product_category].push(r);
+  });
+  // Bottom stats bar
+  const avgMed = sum.length ? Math.round(sum.reduce((s,r)=>s+parseFloat(r.price_median||0),0)/sum.length) : 0;
+  document.getElementById('hs-total').textContent  = total >= 1000 ? (total/1000).toFixed(0)+'k' : total;
+  document.getElementById('hs-cats').textContent   = cats.length;
+  document.getElementById('hs-groups').textContent = sum.length;
+  document.getElementById('hs-idx').textContent    = avgMed ? avgMed.toLocaleString() : '—';
+  // Dots
+  const dotsEl = document.getElementById('hc-dots');
+  dotsEl.innerHTML = heroCats.map((_,i) =>
+    `<div class="hc-d${i===0?' active':''}" onclick="heroGoTo(${i})"></div>`
+  ).join('');
+  // Date label
+  const now = new Date();
+  document.getElementById('hc-date').textContent = now.toLocaleString('en-GB',{month:'short', year:'numeric'});
+  // Show first
+  heroGoTo(0);
+  // Auto-rotate every 5s
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(() => { heroGoTo((heroIdx + 1) % heroCats.length); }, 5000);
+}
+
+function heroGoTo(idx) {
+  heroIdx = idx;
+  const cat = heroCats[idx]; if (!cat) return;
+  const catName = cat.product_category;
+  const cnt     = parseInt(cat.total_listings);
+  const pct     = heroTotal ? Math.round(cnt / heroTotal * 100) : 0;
+  const groups  = heroSum[catName] || [];
+
+  // Update dots
+  document.querySelectorAll('.hc-d').forEach((d,i) => d.classList.toggle('active', i===idx));
+  // Update text
+  document.getElementById('hc-cat-lbl').textContent  = catName;
+  document.getElementById('hc-title').textContent    = catName;
+  document.getElementById('hc-count').textContent    = cnt.toLocaleString() + ' listings';
+  document.getElementById('hc-subtext').textContent  = `${groups.length} product group${groups.length!==1?'s':''} · median GHS ${fmt(groups[0]?.price_median||0)}`;
+  document.getElementById('hc-prog-pct').textContent = pct + '%';
+  setTimeout(() => { const pf = document.getElementById('hc-prog'); if(pf) pf.style.width = pct + '%'; }, 30);
+
+  // Radar chart
+  const top5 = [...groups].sort((a,b)=>parseInt(b.listing_count)-parseInt(a.listing_count)).slice(0,6);
+  if (top5.length >= 3) {
+    const maxC = Math.max(...top5.map(r=>parseInt(r.listing_count)));
+    drawRadar('hero-radar', top5.map(r=>r.product_group), top5.map(r=>parseInt(r.listing_count)/maxC));
+  }
+}
+
+function drawRadar(canvasId, labels, values) {
+  const canvas = document.getElementById(canvasId); if (!canvas) return;
+  const wrap   = canvas.parentElement;
+  const size   = Math.min(wrap.clientWidth - 20, 280);
+  if (size < 80) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = size * dpr; canvas.height = size * dpr;
+  canvas.style.width  = size + 'px'; canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
+  const n   = labels.length; if (n < 3) return;
+  const cx  = size / 2, cy = size / 2;
+  const r   = Math.min(cx, cy) - 32;
+  const angles = labels.map((_, i) => (i / n) * Math.PI * 2 - Math.PI / 2);
+
+  // Grid rings
+  for (let ring = 1; ring <= 4; ring++) {
+    const rr = r * ring / 4;
+    ctx.beginPath();
+    angles.forEach((a, i) => {
+      const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = '#ffffff12'; ctx.lineWidth = 1; ctx.stroke();
+  }
+  // Axes
+  angles.forEach(a => {
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    ctx.strokeStyle = '#ffffff18'; ctx.lineWidth = 1; ctx.stroke();
+  });
+  // Data polygon
+  ctx.beginPath();
+  angles.forEach((a, i) => {
+    const v = Math.max(values[i] || 0, 0.08);
+    const x = cx + Math.cos(a) * r * v, y = cy + Math.sin(a) * r * v;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  const accent = '#009d72';
+  ctx.fillStyle   = accent + '28'; ctx.fill();
+  ctx.strokeStyle = accent;        ctx.lineWidth = 1.5; ctx.stroke();
+  // Vertex dots
+  angles.forEach((a, i) => {
+    const v = Math.max(values[i] || 0, 0.08);
+    const x = cx + Math.cos(a) * r * v, y = cy + Math.sin(a) * r * v;
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = accent; ctx.fill();
+    ctx.strokeStyle = '#0d1a2e'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+  // Labels
+  ctx.font = '9px -apple-system,sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#4a607a';
+  angles.forEach((a, i) => {
+    const lx = cx + Math.cos(a) * (r + 22), ly = cy + Math.sin(a) * (r + 22);
+    const lb = labels[i].length > 14 ? labels[i].substring(0, 13) + '…' : labels[i];
+    ctx.fillText(lb, lx, ly + 3);
+  });
 }
 
 function buildHighlights(sum, cats) {
