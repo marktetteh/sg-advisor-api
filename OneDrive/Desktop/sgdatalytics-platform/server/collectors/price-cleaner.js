@@ -19,22 +19,24 @@ const MIN_IQR_LISTINGS    = 8;    // min listings needed to apply IQR per produc
 const MEDIAN_PCT_THRESHOLD = 0.05; // flag if price < 5% of product median
 const JUMP_THRESHOLD       = 0.50; // flag if week-on-week median moves > 50%
 
-// ── LAYER 1a: Category price floors (fallback when product_group is NULL) ──
+// ── LAYER 1a: Category price floors + ceilings (fallback when product_group is NULL) ──
+// max values are conservative — set high enough to allow genuine expensive listings
+// while catching clear data errors (e.g. GHS 799,999 for a security sensor).
 const CATEGORY_BOUNDS = {
-  'Vehicles':           { min: 80_000 },
-  'Electronics':        { min: 50     },
-  'Appliances':         { min: 100    },
-  'Building Materials': { min: 50     },
-  'Health & Medical':   { min: 10     },
-  'Vehicle Parts':      { min: 50     },
-  'Home & Kitchen':     { min: 5      },
-  'Furniture':          { min: 200    },
-  'Sports & Fitness':   { min: 10     },
-  'Food & FMCG':        { min: 1      },
-  'Office & Education': { min: 100    },
-  'Real Estate':        { min: 200    },
-  'Security & Safety':  { min: 50     },
-  'default':            { min: 1      },
+  'Vehicles':           { min: 80_000,  max: 2_000_000  },
+  'Electronics':        { min: 50,      max: 100_000    },
+  'Appliances':         { min: 100,     max: 150_000    },
+  'Building Materials': { min: 50,      max: 500_000    },
+  'Health & Medical':   { min: 10,      max: 200_000    },
+  'Vehicle Parts':      { min: 50,      max: 100_000    },
+  'Home & Kitchen':     { min: 5,       max: 50_000     },
+  'Furniture':          { min: 200,     max: 100_000    },
+  'Sports & Fitness':   { min: 10,      max: 50_000     },
+  'Food & FMCG':        { min: 1,       max: 20_000     },
+  'Office & Education': { min: 100,     max: 50_000     },
+  'Real Estate':        { min: 200,     max: 5_000_000  },
+  'Security & Safety':  { min: 50,      max: 200_000    },
+  'default':            { min: 1,       max: null       },
 };
 
 // ── LAYER 1b: Load product_group_floors from Neon ────────────
@@ -46,11 +48,14 @@ const CATEGORY_BOUNDS = {
 async function loadGroupFloors(pool) {
   try {
     const { rows } = await pool.query(
-      'SELECT product_group, min_price_ghs FROM product_group_floors'
+      'SELECT product_group, min_price_ghs, max_price_ghs FROM product_group_floors'
     );
     const floors = {};
     for (const r of rows) {
-      floors[r.product_group] = parseFloat(r.min_price_ghs);
+      floors[r.product_group] = {
+        min: parseFloat(r.min_price_ghs) || 0,
+        max: r.max_price_ghs != null ? parseFloat(r.max_price_ghs) : null,
+      };
     }
     return floors;
   } catch (err) {
@@ -61,6 +66,9 @@ async function loadGroupFloors(pool) {
 
 // ── HELPERS ───────────────────────────────────────────────────
 
+// 3.0× IQR = extreme outlier threshold (right for skewed marketplace price data)
+const IQR_MULTIPLIER = 3.0;
+
 function computeIQR(prices) {
   const sorted = [...prices].sort((a, b) => a - b);
   const n      = sorted.length;
@@ -69,8 +77,8 @@ function computeIQR(prices) {
   const iqr    = q3 - q1;
   return {
     q1, q3, iqr,
-    lower: q1 - 1.5 * iqr,
-    upper: q3 + 1.5 * iqr,
+    lower: Math.max(0, q1 - IQR_MULTIPLIER * iqr),
+    upper: q3 + IQR_MULTIPLIER * iqr,
   };
 }
 
@@ -126,17 +134,23 @@ function cleanRows(rows, groupFloors = {}) {
       continue;
     }
 
-    // Prefer product_group floor; fall back to category floor
-    let minPrice;
+    // Prefer product_group floor/ceiling; fall back to category floor
+    let minPrice, maxPrice;
     if (row.product_group && groupFloors[row.product_group] != null) {
-      minPrice = groupFloors[row.product_group];
+      minPrice = groupFloors[row.product_group].min ?? groupFloors[row.product_group];
+      maxPrice = groupFloors[row.product_group].max ?? null;
     } else {
       const bounds = CATEGORY_BOUNDS[row.product_category] || CATEGORY_BOUNDS['default'];
       minPrice = bounds.min;
+      maxPrice = bounds.max ?? null;
     }
 
     if (price < minPrice) {
       rejected.push({ ...row, reject_reason: `below_floor_${minPrice}` });
+      continue;
+    }
+    if (maxPrice != null && price > maxPrice) {
+      rejected.push({ ...row, reject_reason: `above_ceiling_${maxPrice}` });
       continue;
     }
 
