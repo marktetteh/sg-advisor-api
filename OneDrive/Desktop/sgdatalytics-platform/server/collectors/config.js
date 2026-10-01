@@ -125,12 +125,12 @@ const MARKET_PRODUCTS = [
   { query: 'samsung tablet',         label: 'Samsung Tablet',         category: 'Electronics', group: 'Tablet',              jijiPath: '/mobile-phones-tablets' },
 
   // Laptops & Computers
-  { query: 'hp laptop',              label: 'HP Laptop',              category: 'Electronics', group: 'Laptop',              jijiPath: '/computers' },
-  { query: 'dell laptop',            label: 'Dell Laptop',            category: 'Electronics', group: 'Laptop',              jijiPath: '/computers' },
-  { query: 'lenovo laptop',          label: 'Lenovo Laptop',          category: 'Electronics', group: 'Laptop',              jijiPath: '/computers' },
-  { query: 'macbook',                label: 'MacBook',                category: 'Electronics', group: 'Laptop',              jijiPath: '/computers' },
-  { query: 'asus laptop',            label: 'Asus Laptop',            category: 'Electronics', group: 'Laptop',              jijiPath: '/computers' },
-  { query: 'desktop computer',       label: 'Desktop Computer',       category: 'Electronics', group: 'Desktop Computer',    jijiPath: '/computers' },
+  { query: 'hp laptop',              label: 'HP Laptop',              category: 'Electronics', group: 'Laptop',              jijiPath: '/electronics' },
+  { query: 'dell laptop',            label: 'Dell Laptop',            category: 'Electronics', group: 'Laptop',              jijiPath: '/electronics' },
+  { query: 'lenovo laptop',          label: 'Lenovo Laptop',          category: 'Electronics', group: 'Laptop',              jijiPath: '/electronics' },
+  { query: 'macbook',                label: 'MacBook',                category: 'Electronics', group: 'Laptop',              jijiPath: '/electronics' },
+  { query: 'asus laptop',            label: 'Asus Laptop',            category: 'Electronics', group: 'Laptop',              jijiPath: '/electronics' },
+  { query: 'desktop computer',       label: 'Desktop Computer',       category: 'Electronics', group: 'Desktop Computer',    jijiPath: '/electronics' },
 
   // TVs
   { query: 'samsung smart tv',       label: 'Samsung Smart TV',       category: 'Electronics', group: 'Television',          jijiPath: '/electronics' },
@@ -175,7 +175,7 @@ const MARKET_PRODUCTS = [
   { query: 'smartwatch',             label: 'Smartwatch',             category: 'Electronics', group: 'Smartwatch',          jijiPath: '/electronics' },
   { query: 'wireless router',        label: 'WiFi Router',            category: 'Electronics', group: 'Networking Equipment',jijiPath: '/electronics' },
   { query: 'drone',                  label: 'Drone',                  category: 'Electronics', group: 'Drone',               jijiPath: '/electronics' },
-  { query: 'projector',              label: 'Projector',              category: 'Electronics', group: 'Projector',           jijiPath: '/electronics' },
+  { query: 'projector',              label: 'Projector',              category: 'Office & Education', group: 'Projector',       jijiPath: '/electronics' },
 
   // Power & Security
   { query: 'power bank',             label: 'Power Bank',             category: 'Electronics', group: 'Power Bank',          jijiPath: '/electronics' },
@@ -253,51 +253,51 @@ const MARKET_PRODUCTS = [
   // VEHICLE PARTS
   // ═══════════════════════════════════════════════════════════
 
-  { query: 'air filter car',         label: 'Air Filter',             category: 'Vehicle Parts', group: 'Engine Filter',        jijiPath: '/vehicle-parts' },
-  { query: 'windscreen windshield',  label: 'Windscreen / Windshield',category: 'Vehicle Parts', group: 'Car Glass',            jijiPath: '/vehicle-parts' },
-  { query: 'shock absorber',         label: 'Shock Absorber',         category: 'Vehicle Parts', group: 'Suspension',           jijiPath: '/vehicle-parts' },
-  { query: 'tie rod end',            label: 'Tie Rod End',            category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/vehicle-parts' },
-  { query: 'android car radio',      label: 'Android Car Radio',      category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'ignition coil',          label: 'Ignition Coil',          category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'brake pads',             label: 'Brake Pads',             category: 'Vehicle Parts', group: 'Brake System',         jijiPath: '/vehicle-parts' },
-  { query: 'car radiator',           label: 'Car Radiator',           category: 'Vehicle Parts', group: 'Cooling System',       jijiPath: '/vehicle-parts' },
-  { query: 'transmission fluid',     label: 'Transmission Fluid',     category: 'Vehicle Parts', group: 'Transmission',         jijiPath: '/vehicle-parts' },
-  { query: 'steering rack',          label: 'Steering Rack',          category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/vehicle-parts' },
-  { query: 'fuel pump car',          label: 'Fuel Pump',              category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'brake disc rotor',       label: 'Brake Disc',             category: 'Vehicle Parts', group: 'Brake System',         jijiPath: '/vehicle-parts' },
-  { query: 'suspension arm',         label: 'Suspension Arm',         category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/vehicle-parts' },
-  { query: 'car cover dust',         label: 'Car Cover (Dust)',       category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/vehicle-parts' },
-  { query: 'oil filter car',         label: 'Oil Filter',             category: 'Vehicle Parts', group: 'Engine Filter',        jijiPath: '/vehicle-parts' },
-  { query: 'alternator car',         label: 'Alternator',             category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'reverse camera car',     label: 'Reverse Camera',         category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'alloy rim wheel',        label: 'Alloy Rim / Wheel',      category: 'Vehicle Parts', group: 'Wheels & Tyres',       jijiPath: '/vehicle-parts' },
-  { query: 'power steering pump',    label: 'Power Steering Pump',    category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/vehicle-parts' },
-  { query: 'wheel bearing',          label: 'Wheel Bearing',          category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/vehicle-parts' },
-  { query: 'dash camera dashcam',    label: 'Dash Camera',            category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'engine mount',           label: 'Engine Mount',           category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'car jack',               label: 'Car Jack',               category: 'Vehicle Parts', group: 'Car Tools',            jijiPath: '/vehicle-parts' },
-  { query: 'starter motor car',      label: 'Starter Motor',          category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'car seat cover',         label: 'Car Seat Cover',         category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/vehicle-parts' },
-  { query: 'gearbox transmission',   label: 'Gearbox',                category: 'Vehicle Parts', group: 'Transmission',         jijiPath: '/vehicle-parts' },
-  { query: 'mass airflow sensor',    label: 'Mass Airflow Sensor',    category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'motorcycle battery',     label: 'Motorcycle Battery',     category: 'Vehicle Parts', group: 'Motorcycle Parts',     jijiPath: '/vehicle-parts' },
-  { query: 'car charger inverter',   label: 'Car Charger / Inverter', category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'spark plug',             label: 'Spark Plug',             category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'car door panel',         label: 'Car Door Panel',         category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/vehicle-parts' },
-  { query: 'oxygen lambda sensor',   label: 'Oxygen / Lambda Sensor', category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'motorcycle engine',      label: 'Motorcycle Engine',      category: 'Vehicle Parts', group: 'Motorcycle Parts',     jijiPath: '/vehicle-parts' },
-  { query: 'car battery charger',    label: 'Car Battery Charger',    category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'exhaust pipe car',       label: 'Exhaust Pipe',           category: 'Vehicle Parts', group: 'Exhaust System',       jijiPath: '/vehicle-parts' },
-  { query: 'side mirror car',        label: 'Side Mirror',            category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/vehicle-parts' },
-  { query: 'catalytic converter',    label: 'Catalytic Converter',    category: 'Vehicle Parts', group: 'Exhaust System',       jijiPath: '/vehicle-parts' },
-  { query: 'car gps tracker',        label: 'Car GPS Tracker',        category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
-  { query: 'coolant antifreeze',     label: 'Coolant / Antifreeze',   category: 'Vehicle Parts', group: 'Cooling System',       jijiPath: '/vehicle-parts' },
-  { query: 'fan belt drive belt',    label: 'Fan Belt / Drive Belt',  category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/vehicle-parts' },
-  { query: 'car floor mat',          label: 'Car Floor Mat',          category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/vehicle-parts' },
-  { query: 'car headlight',          label: 'Car Headlight',          category: 'Vehicle Parts', group: 'Car Lighting',         jijiPath: '/vehicle-parts' },
-  { query: 'car bonnet hood',        label: 'Car Bonnet / Hood',      category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/vehicle-parts' },
-  { query: 'car tyre 235',           label: 'Car Tyre 235/55',        category: 'Vehicle Parts', group: 'Wheels & Tyres',       jijiPath: '/vehicle-parts' },
-  { query: 'car alarm system',       label: 'Car Alarm System',       category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/vehicle-parts' },
+  { query: 'air filter car',         label: 'Air Filter',             category: 'Vehicle Parts', group: 'Engine Filter',        jijiPath: '/search' },
+  { query: 'windscreen windshield',  label: 'Windscreen / Windshield',category: 'Vehicle Parts', group: 'Car Glass',            jijiPath: '/search' },
+  { query: 'shock absorber',         label: 'Shock Absorber',         category: 'Vehicle Parts', group: 'Suspension',           jijiPath: '/search' },
+  { query: 'tie rod end',            label: 'Tie Rod End',            category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/search' },
+  { query: 'android car radio',      label: 'Android Car Radio',      category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'ignition coil',          label: 'Ignition Coil',          category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'brake pads',             label: 'Brake Pads',             category: 'Vehicle Parts', group: 'Brake System',         jijiPath: '/search' },
+  { query: 'car radiator',           label: 'Car Radiator',           category: 'Vehicle Parts', group: 'Cooling System',       jijiPath: '/search' },
+  { query: 'transmission fluid',     label: 'Transmission Fluid',     category: 'Vehicle Parts', group: 'Transmission',         jijiPath: '/search' },
+  { query: 'steering rack',          label: 'Steering Rack',          category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/search' },
+  { query: 'fuel pump car',          label: 'Fuel Pump',              category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'brake disc rotor',       label: 'Brake Disc',             category: 'Vehicle Parts', group: 'Brake System',         jijiPath: '/search' },
+  { query: 'suspension arm',         label: 'Suspension Arm',         category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/search' },
+  { query: 'car cover dust',         label: 'Car Cover (Dust)',       category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/search' },
+  { query: 'oil filter car',         label: 'Oil Filter',             category: 'Vehicle Parts', group: 'Engine Filter',        jijiPath: '/search' },
+  { query: 'alternator car',         label: 'Alternator',             category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'reverse camera car',     label: 'Reverse Camera',         category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'alloy rim wheel',        label: 'Alloy Rim / Wheel',      category: 'Vehicle Parts', group: 'Wheels & Tyres',       jijiPath: '/search' },
+  { query: 'power steering pump',    label: 'Power Steering Pump',    category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/search' },
+  { query: 'wheel bearing',          label: 'Wheel Bearing',          category: 'Vehicle Parts', group: 'Steering & Suspension',jijiPath: '/search' },
+  { query: 'dash camera dashcam',    label: 'Dash Camera',            category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'engine mount',           label: 'Engine Mount',           category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'car jack',               label: 'Car Jack',               category: 'Vehicle Parts', group: 'Car Tools',            jijiPath: '/search' },
+  { query: 'starter motor car',      label: 'Starter Motor',          category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'car seat cover',         label: 'Car Seat Cover',         category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/search' },
+  { query: 'gearbox transmission',   label: 'Gearbox',                category: 'Vehicle Parts', group: 'Transmission',         jijiPath: '/search' },
+  { query: 'mass airflow sensor',    label: 'Mass Airflow Sensor',    category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'motorcycle battery',     label: 'Motorcycle Battery',     category: 'Vehicle Parts', group: 'Motorcycle Parts',     jijiPath: '/search' },
+  { query: 'car charger inverter',   label: 'Car Charger / Inverter', category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'spark plug',             label: 'Spark Plug',             category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'car door panel',         label: 'Car Door Panel',         category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/search' },
+  { query: 'oxygen sensor car',      label: 'Oxygen / Lambda Sensor', category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'motorcycle engine',      label: 'Motorcycle Engine',      category: 'Vehicle Parts', group: 'Motorcycle Parts',     jijiPath: '/search' },
+  { query: 'car battery charger',    label: 'Car Battery Charger',    category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'exhaust pipe car',       label: 'Exhaust Pipe',           category: 'Vehicle Parts', group: 'Exhaust System',       jijiPath: '/search' },
+  { query: 'side mirror car',        label: 'Side Mirror',            category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/search' },
+  { query: 'catalytic converter',    label: 'Catalytic Converter',    category: 'Vehicle Parts', group: 'Exhaust System',       jijiPath: '/search' },
+  { query: 'car gps tracker',        label: 'Car GPS Tracker',        category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
+  { query: 'coolant antifreeze',     label: 'Coolant / Antifreeze',   category: 'Vehicle Parts', group: 'Cooling System',       jijiPath: '/search' },
+  { query: 'drive belt timing belt', label: 'Fan Belt / Drive Belt',  category: 'Vehicle Parts', group: 'Engine Components',    jijiPath: '/search' },
+  { query: 'car floor mat',          label: 'Car Floor Mat',          category: 'Vehicle Parts', group: 'Car Accessories',      jijiPath: '/search' },
+  { query: 'car headlight',          label: 'Car Headlight',          category: 'Vehicle Parts', group: 'Car Lighting',         jijiPath: '/search' },
+  { query: 'car bonnet hood',        label: 'Car Bonnet / Hood',      category: 'Vehicle Parts', group: 'Car Body Parts',       jijiPath: '/search' },
+  { query: 'car tyre 235',           label: 'Car Tyre 235/55',        category: 'Vehicle Parts', group: 'Wheels & Tyres',       jijiPath: '/search' },
+  { query: 'car alarm system',       label: 'Car Alarm System',       category: 'Vehicle Parts', group: 'Car Electronics',      jijiPath: '/search' },
 
   // ═══════════════════════════════════════════════════════════
   // APPLIANCES
@@ -361,21 +361,21 @@ const MARKET_PRODUCTS = [
   // HEALTH & MEDICAL
   // ═══════════════════════════════════════════════════════════
 
-  { query: 'multivitamins',           label: 'Multivitamins',              category: 'Health & Medical', group: 'Supplements',         jijiPath: '/ghana' },
-  { query: 'wheelchair',              label: 'Wheelchair',                 category: 'Health & Medical', group: 'Mobility Aid',        jijiPath: '/ghana' },
-  { query: 'pulse oximeter',          label: 'Pulse Oximeter',             category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'oxygen concentrator',     label: 'Oxygen Concentrator',        category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'glucose test strips',     label: 'Glucose Test Strips',        category: 'Health & Medical', group: 'Medical Test Kit',    jijiPath: '/ghana' },
-  { query: 'glucometer',              label: 'Glucometer',                 category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'hearing aid',             label: 'Hearing Aid',                category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'face mask box',           label: 'Face Mask (Box)',            category: 'Health & Medical', group: 'Medical Consumables', jijiPath: '/ghana' },
-  { query: 'hair loss treatment',     label: 'Hair Loss Treatment',        category: 'Health & Medical', group: 'Personal Care',       jijiPath: '/ghana' },
-  { query: 'surgical gloves box',     label: 'Surgical Gloves (Box)',      category: 'Health & Medical', group: 'Medical Consumables', jijiPath: '/ghana' },
-  { query: 'digital thermometer',     label: 'Digital Thermometer',        category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'pregnancy test kit',      label: 'Pregnancy Test Kit',         category: 'Health & Medical', group: 'Medical Test Kit',    jijiPath: '/ghana' },
-  { query: 'protein supplement',      label: 'Protein Supplement',         category: 'Health & Medical', group: 'Supplements',         jijiPath: '/ghana' },
-  { query: 'dental equipment',        label: 'Dental Equipment',           category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
-  { query: 'blood pressure monitor',  label: 'Blood Pressure Monitor',     category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/ghana' },
+  { query: 'multivitamins',           label: 'Multivitamins',              category: 'Health & Medical', group: 'Supplements',         jijiPath: '/search' },
+  { query: 'wheelchair',              label: 'Wheelchair',                 category: 'Health & Medical', group: 'Mobility Aid',        jijiPath: '/search' },
+  { query: 'pulse oximeter',          label: 'Pulse Oximeter',             category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'oxygen concentrator',     label: 'Oxygen Concentrator',        category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'glucose test strips',     label: 'Glucose Test Strips',        category: 'Health & Medical', group: 'Medical Test Kit',    jijiPath: '/search' },
+  { query: 'glucometer',              label: 'Glucometer',                 category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'hearing aid',             label: 'Hearing Aid',                category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'face mask box',           label: 'Face Mask (Box)',            category: 'Health & Medical', group: 'Medical Consumables', jijiPath: '/search' },
+  { query: 'hair loss treatment',     label: 'Hair Loss Treatment',        category: 'Health & Medical', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'surgical gloves box',     label: 'Surgical Gloves (Box)',      category: 'Health & Medical', group: 'Medical Consumables', jijiPath: '/search' },
+  { query: 'digital thermometer',     label: 'Digital Thermometer',        category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'pregnancy test kit',      label: 'Pregnancy Test Kit',         category: 'Health & Medical', group: 'Medical Test Kit',    jijiPath: '/search' },
+  { query: 'protein supplement',      label: 'Protein Supplement',         category: 'Health & Medical', group: 'Supplements',         jijiPath: '/search' },
+  { query: 'dental equipment',        label: 'Dental Equipment',           category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
+  { query: 'blood pressure monitor',  label: 'Blood Pressure Monitor',     category: 'Health & Medical', group: 'Medical Device',      jijiPath: '/search' },
 
   // ═══════════════════════════════════════════════════════════
   // BUILDING MATERIALS
@@ -384,7 +384,7 @@ const MARKET_PRODUCTS = [
   { query: 'scaffolding',             label: 'Scaffolding',                category: 'Building Materials', group: 'Scaffolding',    jijiPath: '/building-materials' },
   { query: 'wall tiles',              label: 'Wall Tiles',                 category: 'Building Materials', group: 'Tiles',          jijiPath: '/building-materials' },
   { query: 'marble tiles',            label: 'Marble Tiles',               category: 'Building Materials', group: 'Tiles',          jijiPath: '/building-materials' },
-  { query: 'wall putty skimcoat',     label: 'Wall Putty / Skimcoat',      category: 'Building Materials', group: 'Wall Finishing', jijiPath: '/building-materials' },
+  { query: 'wall putty',              label: 'Wall Putty / Skimcoat',      category: 'Building Materials', group: 'Wall Finishing', jijiPath: '/building-materials' },
   { query: 'granite countertop',      label: 'Granite Countertop',         category: 'Building Materials', group: 'Countertop',     jijiPath: '/building-materials' },
   { query: 'polytank water tank',     label: 'Polytank / Water Tank',      category: 'Building Materials', group: 'Water Storage',  jijiPath: '/building-materials' },
   { query: 'stone coated roof tile',  label: 'Stone Coated Roof Tile',     category: 'Building Materials', group: 'Roofing',        jijiPath: '/building-materials' },
@@ -405,15 +405,165 @@ const MARKET_PRODUCTS = [
   // REAL ESTATE
   // ═══════════════════════════════════════════════════════════
 
-  { query: '3 bedroom house for sale accra',  label: '3-Bed House For Sale (Accra)',  category: 'Real Estate', group: 'Property For Sale', jijiPath: '/houses-apartments-for-sale' },
-  { query: '2 bedroom apartment for sale accra', label: '2-Bed Apartment For Sale (Accra)', category: 'Real Estate', group: 'Property For Sale', jijiPath: '/houses-apartments-for-sale' },
-  { query: '3 bedroom house rent accra',      label: '3-Bed House For Rent (Accra)',  category: 'Real Estate', group: 'Property For Rent', jijiPath: '/houses-apartments-for-rent' },
-  { query: '2 bedroom apartment rent accra',  label: '2-Bed Apartment For Rent (Accra)', category: 'Real Estate', group: 'Property For Rent', jijiPath: '/houses-apartments-for-rent' },
-  { query: 'chamber and hall rent accra',     label: 'Chamber & Hall For Rent (Accra)', category: 'Real Estate', group: 'Property For Rent', jijiPath: '/houses-apartments-for-rent' },
+  // For Rent — by property type
+  { query: '1 bedroom apartment for rent accra', label: '1-Bed Apartment For Rent (Accra)',    category: 'Real Estate', group: 'Apartment For Rent',  jijiPath: '/houses-apartments-for-rent' },
+  { query: '2 bedroom apartment rent accra',     label: '2-Bed Apartment For Rent (Accra)',    category: 'Real Estate', group: 'Apartment For Rent',  jijiPath: '/houses-apartments-for-rent' },
+  { query: '3 bedroom apartment rent accra',     label: '3-Bed Apartment For Rent (Accra)',    category: 'Real Estate', group: 'Apartment For Rent',  jijiPath: '/houses-apartments-for-rent' },
+  { query: '2 bedroom house rent accra',         label: '2-Bed House For Rent (Accra)',        category: 'Real Estate', group: 'House For Rent',      jijiPath: '/houses-apartments-for-rent' },
+  { query: '3 bedroom house rent accra',         label: '3-Bed House For Rent (Accra)',        category: 'Real Estate', group: 'House For Rent',      jijiPath: '/houses-apartments-for-rent' },
+  { query: 'chamber and hall rent accra',        label: 'Chamber & Hall For Rent (Accra)',     category: 'Real Estate', group: 'Chamber & Hall',      jijiPath: '/houses-apartments-for-rent' },
+  { query: 'single room self contained rent',    label: 'Single Room Self-Contained For Rent', category: 'Real Estate', group: 'Single Room',         jijiPath: '/houses-apartments-for-rent' },
+  { query: 'office space for rent accra',        label: 'Office Space For Rent (Accra)',       category: 'Real Estate', group: 'Office Space',        jijiPath: '/commercial-property-for-rent' },
+  { query: 'warehouse for rent accra',           label: 'Warehouse For Rent (Accra)',          category: 'Real Estate', group: 'Warehouse',           jijiPath: '/commercial-property-for-rent' },
+  { query: 'shop store for rent accra',          label: 'Shop / Store For Rent (Accra)',       category: 'Real Estate', group: 'Commercial Property', jijiPath: '/commercial-property-for-rent' },
 
-  // NOTE: Furniture → sourced from Melcom collector (MELCOM_CATEGORIES has Living Room & Bedroom)
-  // NOTE: Food & FMCG → sourced from commodity_prices (MOFA agricultural data)
-  // NOTE: Sports & Fitness → no reliable Ghana online source yet; data gap acknowledged
+  // For Sale — by property type
+  { query: '2 bedroom apartment for sale accra', label: '2-Bed Apartment For Sale (Accra)',    category: 'Real Estate', group: 'Apartment For Sale',  jijiPath: '/houses-apartments-for-sale' },
+  { query: '3 bedroom house for sale accra',     label: '3-Bed House For Sale (Accra)',        category: 'Real Estate', group: 'House For Sale',      jijiPath: '/houses-apartments-for-sale' },
+  { query: '4 bedroom house for sale accra',     label: '4-Bed House For Sale (Accra)',        category: 'Real Estate', group: 'House For Sale',      jijiPath: '/houses-apartments-for-sale' },
+  { query: 'land for sale accra kumasi',         label: 'Land For Sale (Accra/Kumasi)',        category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/land-for-sale' },
+  { query: 'commercial land for sale',           label: 'Commercial Land For Sale',            category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/land-for-sale' },
+
+  // ═══════════════════════════════════════════════════════════
+  // FURNITURE
+  // ═══════════════════════════════════════════════════════════
+
+  { query: 'mattress king size',         label: 'Mattress (King)',          category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'mattress queen size',        label: 'Mattress (Queen)',         category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'mattress single',            label: 'Mattress (Single)',        category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'sofa set 3 seater',          label: 'Sofa Set (3-Seater)',      category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+  { query: 'corner sofa set',            label: 'Corner Sofa Set',          category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+  { query: 'sofa chair',                 label: 'Sofa Chair',               category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+  { query: 'wardrobe 3 door',            label: 'Wardrobe (3-Door)',        category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'wardrobe 2 door',            label: 'Wardrobe (2-Door)',        category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'dining table set',           label: 'Dining Table Set',         category: 'Furniture', group: 'Dining Furniture',      jijiPath: '/search' },
+  { query: 'dining table 6 seater',      label: 'Dining Table (6-Seater)', category: 'Furniture', group: 'Dining Furniture',      jijiPath: '/search' },
+  { query: 'bunk bed',                   label: 'Bunk Bed',                 category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'double bed frame',           label: 'Double Bed Frame',         category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'office chair',               label: 'Office Chair',             category: 'Furniture', group: 'Office Furniture',      jijiPath: '/search' },
+  { query: 'office desk',                label: 'Office Desk',              category: 'Furniture', group: 'Office Furniture',      jijiPath: '/search' },
+  { query: 'tv stand unit',              label: 'TV Stand / Unit',          category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+  { query: 'bookshelf bookcase',         label: 'Bookshelf / Bookcase',     category: 'Furniture', group: 'Office Furniture',      jijiPath: '/search' },
+  { query: 'dressing table mirror',      label: 'Dressing Table & Mirror',  category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'center table coffee table',  label: 'Centre / Coffee Table',    category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+  { query: 'chest of drawers',           label: 'Chest of Drawers',         category: 'Furniture', group: 'Bedroom Furniture',     jijiPath: '/search' },
+  { query: 'recliner chair',             label: 'Recliner Chair',           category: 'Furniture', group: 'Living Room Furniture',  jijiPath: '/search' },
+
+  // ═══════════════════════════════════════════════════════════
+  // HOME & KITCHEN
+  // ═══════════════════════════════════════════════════════════
+
+  { query: 'non stick frying pan set',   label: 'Non-Stick Frying Pan Set', category: 'Home & Kitchen', group: 'Cookware',           jijiPath: '/search' },
+  { query: 'cookware set pots',          label: 'Cookware / Pot Set',        category: 'Home & Kitchen', group: 'Cookware',           jijiPath: '/search' },
+  { query: 'pressure cooker pot',        label: 'Pressure Cooker',           category: 'Home & Kitchen', group: 'Cookware',           jijiPath: '/search' },
+  { query: 'ceramic dinner set',         label: 'Ceramic Dinner Set',        category: 'Home & Kitchen', group: 'Dinnerware',         jijiPath: '/search' },
+  { query: 'cutlery set stainless steel',label: 'Cutlery / Silverware Set',  category: 'Home & Kitchen', group: 'Dinnerware',         jijiPath: '/search' },
+  { query: 'kitchen knife set',          label: 'Kitchen Knife Set',         category: 'Home & Kitchen', group: 'Kitchen Tools',      jijiPath: '/search' },
+  { query: 'food storage containers',    label: 'Food Storage Containers',   category: 'Home & Kitchen', group: 'Storage & Organiser',jijiPath: '/search' },
+  { query: 'water dispenser table',      label: 'Table Water Dispenser',     category: 'Home & Kitchen', group: 'Water Dispenser',    jijiPath: '/search' },
+  { query: 'dustbin waste bin',          label: 'Dustbin / Waste Bin',       category: 'Home & Kitchen', group: 'Storage & Organiser',jijiPath: '/search' },
+  { query: 'laundry basket',             label: 'Laundry Basket',            category: 'Home & Kitchen', group: 'Storage & Organiser',jijiPath: '/search' },
+  { query: 'curtains blinds',            label: 'Curtains / Blinds',         category: 'Home & Kitchen', group: 'Home Decor',         jijiPath: '/search' },
+  { query: 'bed sheets set',             label: 'Bed Sheets Set',            category: 'Home & Kitchen', group: 'Bedding',            jijiPath: '/search' },
+  { query: 'pillow set',                 label: 'Pillow Set',                category: 'Home & Kitchen', group: 'Bedding',            jijiPath: '/search' },
+  { query: 'duvet comforter',            label: 'Duvet / Comforter',         category: 'Home & Kitchen', group: 'Bedding',            jijiPath: '/search' },
+  { query: 'wall clock decor',           label: 'Wall Clock (Decor)',        category: 'Home & Kitchen', group: 'Home Decor',         jijiPath: '/search' },
+  { query: 'picture frame photo wall',   label: 'Picture / Photo Frame',     category: 'Home & Kitchen', group: 'Home Decor',         jijiPath: '/search' },
+  { query: 'thermos flask vacuum',       label: 'Thermos / Vacuum Flask',    category: 'Home & Kitchen', group: 'Kitchen Tools',      jijiPath: '/search' },
+  { query: 'bathroom accessories set',   label: 'Bathroom Accessories Set',  category: 'Home & Kitchen', group: 'Bathroom',           jijiPath: '/search' },
+
+  // ═══════════════════════════════════════════════════════════
+  // FOOD & FMCG
+  // ═══════════════════════════════════════════════════════════
+
+  // Beverages
+  { query: 'malt drink box',             label: 'Malt Drink (Box)',           category: 'Food & FMCG', group: 'Beverages',           jijiPath: '/search' },
+  { query: 'fruit juice drink',          label: 'Fruit Juice Drink',          category: 'Food & FMCG', group: 'Beverages',           jijiPath: '/search' },
+  { query: 'bottled water 500ml pack',   label: 'Bottled Water (500ml Pack)', category: 'Food & FMCG', group: 'Beverages',           jijiPath: '/search' },
+  { query: 'energy drink box',           label: 'Energy Drink (Box)',         category: 'Food & FMCG', group: 'Beverages',           jijiPath: '/search' },
+  { query: 'evaporated milk tin',        label: 'Evaporated Milk (Tin)',      category: 'Food & FMCG', group: 'Dairy & Milk',        jijiPath: '/search' },
+  { query: 'powdered milk peak',         label: 'Powdered Milk',              category: 'Food & FMCG', group: 'Dairy & Milk',        jijiPath: '/search' },
+
+  // Packaged Food
+  { query: 'instant noodles indomie',    label: 'Instant Noodles (Box)',      category: 'Food & FMCG', group: 'Packaged Food',       jijiPath: '/search' },
+  { query: 'tomato paste tin can',       label: 'Tomato Paste (Tin/Can)',     category: 'Food & FMCG', group: 'Packaged Food',       jijiPath: '/search' },
+  { query: 'vegetable cooking oil 5l',   label: 'Vegetable Cooking Oil (5L)', category: 'Food & FMCG', group: 'Cooking Oil',         jijiPath: '/search' },
+  { query: 'canned sardines tin fish',   label: 'Canned Sardines / Tin Fish', category: 'Food & FMCG', group: 'Packaged Food',       jijiPath: '/search' },
+  { query: 'biscuit cookies carton',     label: 'Biscuits / Cookies (Carton)',category: 'Food & FMCG', group: 'Packaged Food',       jijiPath: '/search' },
+  { query: 'baby food cerelac',          label: 'Baby Food / Cerelac',        category: 'Food & FMCG', group: 'Baby Products',       jijiPath: '/search' },
+  { query: 'baby diaper pampers',        label: 'Baby Diapers / Pampers',     category: 'Food & FMCG', group: 'Baby Products',       jijiPath: '/search' },
+
+  // Personal Care
+  { query: 'shampoo hair conditioner',   label: 'Shampoo & Conditioner',      category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'body lotion cream',          label: 'Body Lotion / Cream',        category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'bar soap bathing',           label: 'Bar Soap (Bathing)',         category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'toothpaste toothbrush',      label: 'Toothpaste & Toothbrush',    category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'deodorant roll on',          label: 'Deodorant / Roll-On',        category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+  { query: 'perfume cologne spray',      label: 'Perfume / Cologne',          category: 'Food & FMCG', group: 'Personal Care',       jijiPath: '/search' },
+
+  // Household
+  { query: 'washing powder detergent',   label: 'Washing Powder / Detergent', category: 'Food & FMCG', group: 'Household Cleaning',  jijiPath: '/search' },
+  { query: 'liquid hand wash soap',      label: 'Liquid Hand Wash / Soap',    category: 'Food & FMCG', group: 'Household Cleaning',  jijiPath: '/search' },
+  { query: 'disinfectant floor cleaner', label: 'Disinfectant / Floor Cleaner',category: 'Food & FMCG', group: 'Household Cleaning', jijiPath: '/search' },
+  { query: 'tissue paper toilet roll',   label: 'Tissue / Toilet Rolls',      category: 'Food & FMCG', group: 'Household Cleaning',  jijiPath: '/search' },
+
+  // ═══════════════════════════════════════════════════════════
+  // SPORTS & FITNESS
+  // ═══════════════════════════════════════════════════════════
+
+  { query: 'bicycle adult mountain bike', label: 'Bicycle (Adult / MTB)',     category: 'Sports & Fitness', group: 'Bicycle',            jijiPath: '/search' },
+  { query: 'bicycle kids',               label: 'Bicycle (Kids)',             category: 'Sports & Fitness', group: 'Bicycle',            jijiPath: '/search' },
+  { query: 'treadmill electric',         label: 'Treadmill (Electric)',       category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'exercise bike stationary',   label: 'Exercise Bike (Stationary)', category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'dumbbell set weight',        label: 'Dumbbell Set',               category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'weight bench press',         label: 'Weight Bench / Press',       category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'gym barbell weight plates',  label: 'Barbell & Weight Plates',    category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'rowing machine',             label: 'Rowing Machine',             category: 'Sports & Fitness', group: 'Gym Equipment',      jijiPath: '/search' },
+  { query: 'yoga mat',                   label: 'Yoga Mat',                   category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'football boots cleats',      label: 'Football Boots / Cleats',    category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'football soccer ball',       label: 'Football / Soccer Ball',     category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'boxing gloves punching bag', label: 'Boxing Gloves / Punching Bag',category: 'Sports & Fitness', group: 'Sports Accessories',jijiPath: '/search' },
+  { query: 'swimming goggles cap',       label: 'Swimming Goggles & Cap',     category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'cricket bat ball set',       label: 'Cricket Bat & Ball',         category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'badminton racket set',       label: 'Badminton Racket Set',       category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'table tennis ping pong',     label: 'Table Tennis / Ping Pong',   category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+  { query: 'skipping rope jump rope',    label: 'Skipping / Jump Rope',       category: 'Sports & Fitness', group: 'Sports Accessories', jijiPath: '/search' },
+
+  // ═══════════════════════════════════════════════════════════
+  // OFFICE & EDUCATION
+  // ═══════════════════════════════════════════════════════════
+
+  // Printing & Copying
+  { query: 'printer inkjet laser',       label: 'Printer (Inkjet/Laser)',     category: 'Office & Education', group: 'Printer',            jijiPath: '/electronics' },
+  { query: 'printer all in one scanner', label: 'All-in-One Printer Scanner', category: 'Office & Education', group: 'Printer',            jijiPath: '/electronics' },
+  { query: 'photocopier copier machine', label: 'Photocopier / Copier',       category: 'Office & Education', group: 'Photocopier',        jijiPath: '/electronics' },
+  { query: 'printer ink toner cartridge',label: 'Printer Ink / Toner',        category: 'Office & Education', group: 'Printer Supplies',   jijiPath: '/electronics' },
+
+  // Office Equipment
+  { query: 'whiteboard dry erase board', label: 'Whiteboard',                 category: 'Office & Education', group: 'Whiteboard',         jijiPath: '/electronics' },
+  { query: 'paper shredder office',      label: 'Paper Shredder',             category: 'Office & Education', group: 'Office Equipment',   jijiPath: '/electronics' },
+  { query: 'laminator laminating machine',label: 'Laminator',                 category: 'Office & Education', group: 'Office Equipment',   jijiPath: '/electronics' },
+  { query: 'binding machine comb binder',label: 'Binding Machine',            category: 'Office & Education', group: 'Office Equipment',   jijiPath: '/electronics' },
+  { query: 'cash register pos machine',  label: 'Cash Register / POS',        category: 'Office & Education', group: 'POS Machine',        jijiPath: '/electronics' },
+
+  // School & Stationery
+  { query: 'scientific calculator casio',label: 'Scientific Calculator',      category: 'Office & Education', group: 'Calculator',         jijiPath: '/electronics' },
+  { query: 'school bag backpack student',label: 'School Bag / Backpack',      category: 'Office & Education', group: 'School Supplies',    jijiPath: '/search' },
+  { query: 'textbooks exercise books ghana',label: 'Textbooks & Exercise Books',category: 'Office & Education',group: 'Books & Stationery', jijiPath: '/search' },
+  { query: 'office stationery supplies', label: 'Office Stationery',          category: 'Office & Education', group: 'Books & Stationery', jijiPath: '/search' },
+
+  // ═══════════════════════════════════════════════════════════
+  // SECURITY & SAFETY
+  // ═══════════════════════════════════════════════════════════
+
+  { query: 'cctv camera system',         label: 'CCTV Camera System',         category: 'Security & Safety', group: 'Security Camera',   jijiPath: '/electronics' },
+  { query: 'security camera outdoor',    label: 'Security Camera (Outdoor)',  category: 'Security & Safety', group: 'Security Camera',   jijiPath: '/electronics' },
+  { query: 'nvr dvr recorder cctv',      label: 'NVR / DVR Recorder',         category: 'Security & Safety', group: 'Security Camera',   jijiPath: '/electronics' },
+  { query: 'security alarm system',      label: 'Security Alarm System',      category: 'Security & Safety', group: 'Alarm System',      jijiPath: '/electronics' },
+  { query: 'electric fence energizer',   label: 'Electric Fence / Energizer', category: 'Security & Safety', group: 'Perimeter Security',jijiPath: '/electronics' },
+  { query: 'security door steel',        label: 'Security Door (Steel)',      category: 'Security & Safety', group: 'Security Door',     jijiPath: '/building-materials' },
+  { query: 'padlock heavy duty',         label: 'Heavy Duty Padlock',         category: 'Security & Safety', group: 'Locks & Keys',      jijiPath: '/building-materials' },
+  { query: 'fire extinguisher',          label: 'Fire Extinguisher',          category: 'Security & Safety', group: 'Fire Safety',       jijiPath: '/search' },
 
 ];
 
@@ -481,4 +631,37 @@ const COMMODITIES = [
   { code: 'COOKING_GAS_ACC',    name: 'LPG Cooking Gas',   market: 'Accra Retail',           region: 'Greater Accra', unit: '6kg cyl',   price: 110  },
 ];
 
-module.exports = { SECTORS, INDICATORS, MARKET_PRODUCTS, MELCOM_CATEGORIES, COMMODITIES };
+// ── JIJI / TONATON CATEGORIES — broad category-level collection ──────────────
+// Phase 2 architecture: instead of 240 specific product queries, we browse
+// entire Jiji/Tonaton categories and let the AI enricher classify each listing.
+//
+// Jiji:   jijiPath + query='' → browse full category page (no keyword filter)
+//          jijiPath + query   → search within that path (for categories without a dedicated page)
+// Tonaton: tonatonQuery used as the API search term (Tonaton has no category browse, only search)
+//          if tonatonQuery is empty, falls back to label as the search term
+const JIJI_CATEGORIES = [
+  // ── Categories with dedicated Jiji pages (browse all, no query filter) ──────
+  { label: 'Mobile Phones & Tablets', category: 'Electronics',       jijiPath: '/mobile-phones-tablets',      query: '',               tonatonQuery: 'phones tablets smartphones' },
+  { label: 'Electronics & Gadgets',   category: 'Electronics',       jijiPath: '/electronics',                query: '',               tonatonQuery: 'electronics laptops tv gadgets' },
+  { label: 'Cars & Vehicles',         category: 'Vehicles',          jijiPath: '/cars',                       query: '',               tonatonQuery: 'car vehicle toyota honda' },
+  { label: 'Home Appliances',         category: 'Appliances',        jijiPath: '/home-appliances',            query: '',               tonatonQuery: 'home appliances fridge washing machine ac' },
+  { label: 'Building & Construction', category: 'Building Materials',jijiPath: '/building-materials',         query: '',               tonatonQuery: 'building materials tiles cement roofing' },
+  { label: 'Houses For Sale',         category: 'Real Estate',       jijiPath: '/houses-apartments-for-sale', query: '',              tonatonQuery: 'house apartment for sale' },
+  { label: 'Houses For Rent',         category: 'Real Estate',       jijiPath: '/houses-apartments-for-rent', query: '',              tonatonQuery: 'house apartment for rent' },
+  // ── Formerly multi-word /search queries. Jiji ANDs every word, so those returned
+  //    2–5 listings (or 0). Switched to real category pages (verified 1 Oct 2026). ──
+  { label: 'Furniture & Home Decor',  category: 'Furniture',         jijiPath: '/furniture',                  query: '',  tonatonQuery: 'furniture sofa bed wardrobe mattress' },
+  { label: 'Vehicle Spare Parts',     category: 'Vehicle Parts',     jijiPath: '/car-parts-and-accessories',  query: '',  tonatonQuery: 'car spare parts shock brake' },
+  { label: 'Health & Medical',        category: 'Health & Medical',  jijiPath: '/medical-equipment',          query: '',  tonatonQuery: 'medical health equipment' },
+  { label: 'Sports & Fitness',        category: 'Sports & Fitness',  jijiPath: '/sports-bicycles-and-fitness', query: '', tonatonQuery: 'sports fitness gym bicycle' },
+  { label: 'Food & Household Goods',  category: 'Food & FMCG',       jijiPath: '/meals-and-drinks',           query: '',  tonatonQuery: 'food soap detergent milk' },
+  // Soap/detergent live in a separate Jiji category from food (added 1 Oct 2026)
+  { label: 'Household Chemicals',     category: 'Food & FMCG',       jijiPath: '/household-chemicals',        query: '',  tonatonQuery: 'detergent soap bleach' },
+  // Office & Education (added 1 Oct 2026)
+  { label: 'Office & Education',      category: 'Office & Education', jijiPath: '/office-space-commercial-property', query: '', tonatonQuery: 'printer projector office supplies stationery' },
+  // Real Estate sub-categories (added 1 Oct 2026)
+  { label: 'Commercial Property Rent',category: 'Real Estate',        jijiPath: '/commercial-property-for-rent',     query: '', tonatonQuery: 'office warehouse shop commercial rent' },
+  { label: 'Land For Sale',           category: 'Real Estate',        jijiPath: '/land-for-sale',                    query: '', tonatonQuery: 'land plot acres for sale' },
+];
+
+module.exports = { SECTORS, INDICATORS, MARKET_PRODUCTS, MELCOM_CATEGORIES, COMMODITIES, JIJI_CATEGORIES };

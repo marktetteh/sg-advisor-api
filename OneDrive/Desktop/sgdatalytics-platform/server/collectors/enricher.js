@@ -16,10 +16,15 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY  || '';
 const USE_GROQ    = process.env.USE_GROQ === '1' && !!GROQ_API_KEY;
 const GROQ_URL    = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL  = 'llama-3.1-8b-instant';
-const GEMINI_URL  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'; // paid standard tier — confirmed working
+// gemini-2.0-flash-lite: free tier, ~10x cheaper than 2.5-flash, sufficient for
+// simple field extraction (brand/model/storage). No thinking budget needed.
+// gemini-2.0-flash-lite was retired (HTTP 404, Sep 2026) — switched to 2.5-flash-lite,
+// the same model property-enricher.js uses successfully.
+const GEMINI_MODEL = 'gemini-2.5-flash-lite';
+const GEMINI_URL  = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-const BATCH_SIZE     = 10;   // 10 titles per batch — works well with Gemini 2.5-flash
-const BATCH_DELAY_MS = 3000; // 3s between batches
+const BATCH_SIZE     = 20;   // 20 titles per batch — flash-lite handles larger batches fine
+const BATCH_DELAY_MS = 1000; // 1s between batches — flash-lite is faster
 const MAX_RETRIES    = 3;
 const CIRCUIT_BREAKER_THRESHOLD = 3;
 const CIRCUIT_RESET_MS = 5 * 60 * 1000; // half-open after 5 min
@@ -77,14 +82,39 @@ async function enrichBatch(titles) {
     'Extract structured fields from each listing title below.\n' +
     'Return ONLY a valid JSON array - no explanation, no markdown.\n\n' +
     'For each title extract:\n' +
-    '- brand: manufacturer name (Samsung, Apple, Tecno, Infinix, Itel, Xiaomi, Oppo, Nokia, Huawei, HP, Dell, Lenovo, Toyota, Honda etc.) or null\n' +
+    '- brand: manufacturer name (Samsung, Apple, Tecno, Infinix, Itel, Xiaomi, Oppo, Nokia, Huawei, HP, Dell, Lenovo, Toyota, Honda, LG, Hisense, TCL, Midea, Haier etc.) or null\n' +
     '- model: specific model name/number or null\n' +
     '- storage: storage/RAM spec if present or null\n' +
     '- normalized_name: clean canonical product name (brand + model only)\n' +
-    '- condition: "New" if title suggests brand new/sealed/unopened, "Used" if title suggests second-hand/fairly used/tokunbo/pre-owned/refurbished, null if unclear\n\n' +
+    '- condition: "New" if title suggests brand new/sealed/unopened, "Used" if title suggests second-hand/fairly used/tokunbo/pre-owned/refurbished, null if unclear\n' +
+    '- product_group: specific product type in 1-3 words. Examples:\n' +
+    '  Electronics: Smartphone, Laptop, Tablet, Television, Audio Equipment, Gaming Console, Camera, Smartwatch, Power Bank, Solar Panel, Computer Monitor, Networking Equipment, Drone\n' +
+    '  Appliances: Air Conditioner, Washing Machine, Refrigerator, Freezer, Microwave, Electric Cooker, Blender, Air Fryer, Water Heater, Dishwasher\n' +
+    '  Vehicles: Toyota, Honda, BMW, Mercedes, Hyundai, Kia, Nissan, Ford, Pickup Truck, Electric Vehicle, Minibus, Truck\n' +
+    '  Vehicle Parts: Engine Components, Brake System, Steering & Suspension, Transmission, Car Electronics, Motorcycle Parts, Tyres & Wheels\n' +
+    '  Furniture: Bedroom Furniture, Living Room Furniture, Dining Furniture, Office Furniture, Mattress, Outdoor Furniture\n' +
+    '  Building Materials: Cement, Tiles, Roofing, Electrical, Scaffolding, Paint, Plumbing, Glass & Aluminium\n' +
+    '  Health & Medical: Medical Device, Supplements, Personal Care, Baby Products, Wheelchair, Optical\n' +
+    '  Sports & Fitness: Gym Equipment, Bicycle, Sports Accessories, Outdoor & Camping\n' +
+    '  Food & FMCG: Beverages, Packaged Food, Household Cleaning, Personal Care\n' +
+    '  Security & Safety: Security Camera, Security System, Fire Safety, Access Control\n' +
+    '  Home & Kitchen: Cookware, Kitchenware, Home Decor, Bedding & Linen\n' +
+    '  Office & Education: Printer, Photocopier, Printer Supplies, Projector, Whiteboard, Office Equipment, POS Machine, Calculator, School Supplies, Books & Stationery\n' +
+    '  Real Estate — IMPORTANT for property listings use these specific groups:\n' +
+    '    "Apartment For Rent" (flat/apartment/studio for rent)\n' +
+    '    "House For Rent" (house/townhouse/villa for rent)\n' +
+    '    "Chamber & Hall" (chamber & hall / single room self-contained for rent)\n' +
+    '    "Single Room" (single room, boys quarters for rent)\n' +
+    '    "Office Space" (office space/suites for rent)\n' +
+    '    "Warehouse" (warehouse/storage for rent)\n' +
+    '    "Commercial Property" (shop/store/showroom for rent or sale)\n' +
+    '    "Apartment For Sale" (flat/apartment for sale)\n' +
+    '    "House For Sale" (house/townhouse/villa for sale)\n' +
+    '    "Land For Sale" (land/plot/acres for sale)\n' +
+    '  Be specific — never use generic "Property For Sale" or "Property For Rent".\n\n' +
     'Titles:\n' + numbered + '\n\n' +
     'Return exactly ' + titles.length + ' objects:\n' +
-    '[{"brand":null,"model":null,"storage":null,"normalized_name":null,"condition":null}, ...]';
+    '[{"brand":null,"model":null,"storage":null,"normalized_name":null,"condition":null,"product_group":null}, ...]';
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -100,7 +130,7 @@ async function enrichBatch(titles) {
       } else {
         resp = await postJson(
           GEMINI_URL + '?key=' + GEMINI_API_KEY,
-          { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 8192 } }
+          { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 4096 } }
         );
       }
 
@@ -187,7 +217,7 @@ async function enrichListings(rows) {
   consecutiveFailures = 0;
   circuitOpen = false;
   circuitOpenedAt = null;
-  log('Using ' + (USE_GROQ ? 'Groq (llama-3.1-8b-instant)' : 'Gemini (gemini-2.5-flash)') + ' for enrichment', '🤖');
+  log('Using ' + (USE_GROQ ? 'Groq (llama-3.1-8b-instant)' : `Gemini (${GEMINI_MODEL})`) + ' for enrichment', '🤖');
   if (process.env.SKIP_ENRICHMENT === '1') {
     log('SKIP_ENRICHMENT=1 — skipping AI enrichment, saving raw rows', 'SKIP');
     return rows;
@@ -206,12 +236,15 @@ async function enrichListings(rows) {
       const row = batch[j];
       const res = results && results[j];
 
-      if (res && (res.brand || res.model || res.normalized_name)) {
+      if (res && (res.brand || res.model || res.normalized_name || res.product_group)) {
         row.brand           = res.brand           || row.brand  || '';
         row.model           = res.model           || row.model  || '';
         row.storage         = res.storage         || '';
         row.normalized_name = res.normalized_name || (row.brand + (row.model ? ' ' + row.model : ''));
         row.condition       = res.condition       || row.condition || '';
+        // product_group from enricher takes priority over config-set group
+        // (only overwrite if enricher returned something meaningful)
+        if (res.product_group) row.product_group  = res.product_group;
         enriched++;
       } else {
         row.storage         = row.storage         || '';
