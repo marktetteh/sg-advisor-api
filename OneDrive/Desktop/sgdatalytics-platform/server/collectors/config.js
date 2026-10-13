@@ -421,8 +421,8 @@ const MARKET_PRODUCTS = [
   { query: '2 bedroom apartment for sale accra', label: '2-Bed Apartment For Sale (Accra)',    category: 'Real Estate', group: 'Apartment For Sale',  jijiPath: '/houses-apartments-for-sale' },
   { query: '3 bedroom house for sale accra',     label: '3-Bed House For Sale (Accra)',        category: 'Real Estate', group: 'House For Sale',      jijiPath: '/houses-apartments-for-sale' },
   { query: '4 bedroom house for sale accra',     label: '4-Bed House For Sale (Accra)',        category: 'Real Estate', group: 'House For Sale',      jijiPath: '/houses-apartments-for-sale' },
-  { query: 'land for sale accra kumasi',         label: 'Land For Sale (Accra/Kumasi)',        category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/land-for-sale' },
-  { query: 'commercial land for sale',           label: 'Commercial Land For Sale',            category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/land-for-sale' },
+  { query: 'land for sale accra kumasi',         label: 'Land For Sale (Accra/Kumasi)',        category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/houses-apartments-for-sale' },
+  { query: 'commercial land for sale',           label: 'Commercial Land For Sale',            category: 'Real Estate', group: 'Land For Sale',       jijiPath: '/houses-apartments-for-sale' },
 
   // ═══════════════════════════════════════════════════════════
   // FURNITURE
@@ -657,11 +657,10 @@ const JIJI_CATEGORIES = [
   { label: 'Food & Household Goods',  category: 'Food & FMCG',       jijiPath: '/meals-and-drinks',           query: '',  tonatonQuery: 'food soap detergent milk' },
   // Soap/detergent live in a separate Jiji category from food (added 1 Oct 2026)
   { label: 'Household Chemicals',     category: 'Food & FMCG',       jijiPath: '/household-chemicals',        query: '',  tonatonQuery: 'detergent soap bleach' },
-  // Office & Education (added 1 Oct 2026)
-  { label: 'Office & Education',      category: 'Office & Education', jijiPath: '/office-space-commercial-property', query: '', tonatonQuery: 'printer projector office supplies stationery' },
   // Real Estate sub-categories (added 1 Oct 2026)
+  // Note: Office & Education removed — covered by product-level queries in MARKET_PRODUCTS (/electronics, /search)
+  // Note: Land For Sale removed — /land-for-sale returns 404; covered by land queries in MARKET_PRODUCTS
   { label: 'Commercial Property Rent',category: 'Real Estate',        jijiPath: '/commercial-property-for-rent',     query: '', tonatonQuery: 'office warehouse shop commercial rent' },
-  { label: 'Land For Sale',           category: 'Real Estate',        jijiPath: '/land-for-sale',                    query: '', tonatonQuery: 'land plot acres for sale' },
 ];
 
 module.exports = { SECTORS, INDICATORS, MARKET_PRODUCTS, MELCOM_CATEGORIES, COMMODITIES, JIJI_CATEGORIES };
