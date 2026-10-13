@@ -307,8 +307,12 @@ router.get('/options', async (req, res) => {
     baseParams
   );
 
-  // ── Brands (filtered by category + product_group) ──
-  const brBase = [...base]; const brParams = [...baseParams]; let bp = p;
+  // ── Brands: once a product_group is selected, filter by group only (not category)
+  //    so a group like "Air Conditioner" that spans categories shows all brands.
+  const brBase   = product_group ? ['price_ghs > 0'] : [...base];
+  const brParams = product_group ? [] : [...baseParams];
+  let bp = product_group ? 1 : p;
+  if (allowed.length > 0 && product_group) { brBase.push(`product_category = ANY($${bp++})`); brParams.push(allowed); }
   if (product_group) { brBase.push(`LOWER(product_group) = LOWER($${bp++})`); brParams.push(product_group); }
   const brResult = await pool.query(
     `SELECT DISTINCT brand FROM market_prices_clean
@@ -317,7 +321,7 @@ router.get('/options', async (req, res) => {
     brParams
   );
 
-  // ── Product names (filtered by category + product_group + brand) ──
+  // ── Product names (filtered by product_group + brand) ──
   const pnBase = [...brBase]; const pnParams = [...brParams]; let pp = bp;
   if (brand) { pnBase.push(`LOWER(brand) = LOWER($${pp++})`); pnParams.push(brand); }
   const pnResult = await pool.query(
@@ -328,7 +332,7 @@ router.get('/options', async (req, res) => {
     pnParams
   );
 
-  // ── Specs/models (filtered by category + product_group + brand + product_name) ──
+  // ── Specs/models (filtered by product_group + brand + product_name) ──
   const mdBase = [...pnBase]; const mdParams = [...pnParams]; let mp = pp;
   if (product_name) { mdBase.push(`LOWER(product_name) LIKE LOWER($${mp++})`); mdParams.push(product_name); }
   const mdResult = await pool.query(
