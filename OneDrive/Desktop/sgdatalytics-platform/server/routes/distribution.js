@@ -260,7 +260,7 @@ router.get('/categories', async (req, res) => {
         COUNT(DISTINCT product_group) FILTER (WHERE product_group IS NOT NULL) AS product_group_count,
         COUNT(*)                                                                AS total_listings,
         MAX(collected_date)                                                     AS last_updated
-      FROM market_prices
+      FROM market_prices_clean
       WHERE ${conditions.join(' AND ')}
       GROUP BY product_category
       ORDER BY total_listings DESC
