@@ -63,7 +63,7 @@ function applyClientCategoryFilter(client, requestedCategory) {
 router.get('/prices', async (req, res) => {
   const t0 = Date.now();
   const {
-    category, product_group, brand, model, condition,
+    category, product_group, brand, model, product_name, condition,
     date_from, date_to, location,
     min_price, max_price,
     offset = 0,
@@ -99,6 +99,7 @@ router.get('/prices', async (req, res) => {
 
   if (product_group) { conditions.push(`LOWER(product_group) = LOWER($${p++})`);              params.push(product_group); }
   if (brand)         { conditions.push(`LOWER(brand) = LOWER($${p++})`);                       params.push(brand); }
+  if (product_name)  { conditions.push(`LOWER(product_name) LIKE LOWER($${p++})`);            params.push(`%${product_name}%`); }
   if (model)         { conditions.push(`LOWER(specification) LIKE LOWER($${p++})`);            params.push(`%${model}%`); }
   if (condition)     { conditions.push(`LOWER(condition) = LOWER($${p++})`);                   params.push(condition); }
   if (location)      { conditions.push(`LOWER(location) LIKE LOWER($${p++})`);                 params.push(`%${location}%`); }
@@ -282,10 +283,11 @@ router.get('/categories', async (req, res) => {
 });
 
 // ── GET /data/options ─────────────────────────────────────────
-// Returns distinct product_groups, brands, and models scoped to client's
-// allowed categories. Accepts optional ?category=&product_group=&brand=
+// Returns distinct product_groups, brands, product_names, and models scoped to
+// client's allowed categories.
+// Accepts optional ?category=&product_group=&brand=&product_name=
 router.get('/options', async (req, res) => {
-  const { category, product_group, brand } = req.query;
+  const { category, product_group, brand, product_name } = req.query;
   const client  = req.client;
   const allowed = client.allowed_categories || [];
 
@@ -305,7 +307,7 @@ router.get('/options', async (req, res) => {
     baseParams
   );
 
-  // ── Brands (also filtered by product_group if set) ──
+  // ── Brands (filtered by category + product_group) ──
   const brBase = [...base]; const brParams = [...baseParams]; let bp = p;
   if (product_group) { brBase.push(`LOWER(product_group) = LOWER($${bp++})`); brParams.push(product_group); }
   const brResult = await pool.query(
@@ -315,9 +317,20 @@ router.get('/options', async (req, res) => {
     brParams
   );
 
-  // ── Specs/models (filtered by category + product_group + brand) ──
-  const mdBase = [...brBase]; const mdParams = [...brParams]; let mp = bp;
-  if (brand) { mdBase.push(`LOWER(brand) = LOWER($${mp++})`); mdParams.push(brand); }
+  // ── Product names (filtered by category + product_group + brand) ──
+  const pnBase = [...brBase]; const pnParams = [...brParams]; let pp = bp;
+  if (brand) { pnBase.push(`LOWER(brand) = LOWER($${pp++})`); pnParams.push(brand); }
+  const pnResult = await pool.query(
+    `SELECT DISTINCT product_name FROM market_prices_clean
+     WHERE ${pnBase.join(' AND ')} AND product_name IS NOT NULL AND product_name != ''
+     ORDER BY product_name
+     LIMIT 300`,
+    pnParams
+  );
+
+  // ── Specs/models (filtered by category + product_group + brand + product_name) ──
+  const mdBase = [...pnBase]; const mdParams = [...pnParams]; let mp = pp;
+  if (product_name) { mdBase.push(`LOWER(product_name) LIKE LOWER($${mp++})`); mdParams.push(product_name); }
   const mdResult = await pool.query(
     `SELECT DISTINCT specification AS model FROM market_prices_clean
      WHERE ${mdBase.join(' AND ')} AND specification IS NOT NULL AND specification != ''
@@ -329,6 +342,7 @@ router.get('/options', async (req, res) => {
   res.json({
     product_groups: pgResult.rows.map(r => r.product_group),
     brands:         brResult.rows.map(r => r.brand),
+    product_names:  pnResult.rows.map(r => r.product_name),
     models:         mdResult.rows.map(r => r.model),
   });
 });

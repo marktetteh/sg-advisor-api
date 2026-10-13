@@ -639,18 +639,33 @@
             </div>
             <div class="casc-arrow">→</div>
             <div>
-              <label>Model / Product Name</label>
+              <label>Product Name</label>
+              <div class="sd-wrap" id="sd-product_name-wrap">
+                <div class="sd-disp ph" id="sd-product_name-display" tabindex="0" onclick="openSd('product_name')">All products</div>
+                <button class="sd-clr" id="sd-product_name-clear" onclick="clearSd('product_name')">✕</button>
+                <div class="sd-arrow" id="sd-product_name-arrow">▼</div>
+                <div class="sd-drop" id="sd-product_name-drop">
+                  <div class="sd-search-box"><input class="sd-search-inp" id="sd-product_name-search" placeholder="Search…" oninput="filterSd('product_name',this.value)"></div>
+                  <div class="sd-list" id="sd-product_name-list"><div class="sd-empty">Select a brand first</div></div>
+                </div>
+              </div>
+              <input type="hidden" id="q-product_name">
+              <div class="field-hint">e.g. iPhone 14, Toyota Corolla</div>
+            </div>
+            <div class="casc-arrow">→</div>
+            <div>
+              <label>Specification</label>
               <div class="sd-wrap" id="sd-model-wrap">
-                <div class="sd-disp ph" id="sd-model-display" tabindex="0" onclick="openSd('model')">All models</div>
+                <div class="sd-disp ph" id="sd-model-display" tabindex="0" onclick="openSd('model')">All specs</div>
                 <button class="sd-clr" id="sd-model-clear" onclick="clearSd('model')">✕</button>
                 <div class="sd-arrow" id="sd-model-arrow">▼</div>
                 <div class="sd-drop" id="sd-model-drop">
                   <div class="sd-search-box"><input class="sd-search-inp" id="sd-model-search" placeholder="Search…" oninput="filterSd('model',this.value)"></div>
-                  <div class="sd-list" id="sd-model-list"><div class="sd-empty">Select a brand first</div></div>
+                  <div class="sd-list" id="sd-model-list"><div class="sd-empty">Select a product first</div></div>
                 </div>
               </div>
               <input type="hidden" id="q-model">
-              <div class="field-hint">e.g. iPhone 14, Corolla</div>
+              <div class="field-hint">e.g. 256GB Black, 1.5 ton</div>
             </div>
           </div>
         </div>
@@ -764,7 +779,8 @@
               <tr><td><span class="pn">category</span></td><td><span class="pt">string</span></td><td>Filter by category (e.g. Electronics)</td></tr>
               <tr><td><span class="pn">product_group</span></td><td><span class="pt">string</span></td><td>Product type (e.g. Smartphone)</td></tr>
               <tr><td><span class="pn">brand</span></td><td><span class="pt">string</span></td><td>Brand name (e.g. Samsung)</td></tr>
-              <tr><td><span class="pn">model</span></td><td><span class="pt">string</span></td><td>Specific model/product name</td></tr>
+              <tr><td><span class="pn">product_name</span></td><td><span class="pt">string</span></td><td>Product name (e.g. Samsung Galaxy S24)</td></tr>
+              <tr><td><span class="pn">model</span></td><td><span class="pt">string</span></td><td>Specification (e.g. 256GB Black)</td></tr>
               <tr><td><span class="pn">condition</span></td><td><span class="pt">new|used</span></td><td>Listing condition</td></tr>
               <tr><td><span class="pn">date_from</span></td><td><span class="pt">YYYY-MM-DD</span></td><td>Start of date range</td></tr>
               <tr><td><span class="pn">date_to</span></td><td><span class="pt">YYYY-MM-DD</span></td><td>End of date range</td></tr>
@@ -943,8 +959,8 @@
 let API_KEY = '', CLIENT = {}, SD_DATA = {};
 const BASE  = window.location.origin;
 const RATES = { trial:'30/min', starter:'60/min', pro:'200/min', enterprise:'600/min' };
-const SD_LABELS = { category:'All categories', group:'All product groups', brand:'All brands', model:'All models' };
-const SD_KEYS   = ['category','group','brand','model'];
+const SD_LABELS = { category:'All categories', group:'All product groups', brand:'All brands', product_name:'All products', model:'All specs' };
+const SD_KEYS   = ['category','group','brand','product_name','model'];
 
 /* ── AUTH ──────────────────────────────────────────── */
 function toggleEye() { const i = document.getElementById('key-input'); i.type = i.type==='password'?'text':'password'; }
@@ -1320,9 +1336,10 @@ async function selectSd(key, value) {
   if(value){ disp.textContent=value; disp.classList.remove('ph'); clr.style.display='block'; }
   else { disp.textContent=SD_LABELS[key]; disp.classList.add('ph'); clr.style.display='none'; }
   closeSd(key);
-  if(key==='category'){ clearSdQ('group'); clearSdQ('brand'); clearSdQ('model'); await reloadAllOpts(); }
-  if(key==='group')   { clearSdQ('brand'); clearSdQ('model'); await reloadBrandsMods(); }
-  if(key==='brand')   { clearSdQ('model'); await reloadMods(); }
+  if(key==='category')     { clearSdQ('group'); clearSdQ('brand'); clearSdQ('product_name'); clearSdQ('model'); await reloadAllOpts(); }
+  if(key==='group')        { clearSdQ('brand'); clearSdQ('product_name'); clearSdQ('model'); await reloadBrandsMods(); }
+  if(key==='brand')        { clearSdQ('product_name'); clearSdQ('model'); await reloadProductNames(); }
+  if(key==='product_name') { clearSdQ('model'); await reloadSpecs(); }
   refreshInsights();
 }
 function clearSdQ(key) {
@@ -1330,28 +1347,41 @@ function clearSdQ(key) {
   const d=document.getElementById(`sd-${key}-display`), c=document.getElementById(`sd-${key}-clear`);
   if(d){ d.textContent=SD_LABELS[key]; d.classList.add('ph'); } if(c) c.style.display='none';
 }
-function clearSd(key) { clearSdQ(key); closeSd(key); if(key==='category'){clearSdQ('group');clearSdQ('brand');clearSdQ('model');reloadAllOpts();} if(key==='group'){clearSdQ('brand');clearSdQ('model');reloadBrandsMods();} if(key==='brand'){clearSdQ('model');reloadMods();} refreshInsights(); }
+function clearSd(key) { clearSdQ(key); closeSd(key); if(key==='category'){clearSdQ('group');clearSdQ('brand');clearSdQ('product_name');clearSdQ('model');reloadAllOpts();} if(key==='group'){clearSdQ('brand');clearSdQ('product_name');clearSdQ('model');reloadBrandsMods();} if(key==='brand'){clearSdQ('product_name');clearSdQ('model');reloadProductNames();} if(key==='product_name'){clearSdQ('model');reloadSpecs();} refreshInsights(); }
 async function loadQueryDropdowns() {
   const r=await apiFetch('/data/categories'); if(!r) return;
   buildSdList('category', r.data.map(c=>c.product_category)); await reloadAllOpts();
 }
+function optParams(keys) {
+  const p=new URLSearchParams();
+  const map={category:'category',group:'product_group',brand:'brand',product_name:'product_name'};
+  keys.forEach(k=>{ const v=document.getElementById(`q-${k}`)?.value; if(v) p.set(map[k]||k,v); });
+  return p;
+}
 async function reloadAllOpts() {
-  const cat=document.getElementById('q-category').value;
-  const r=await apiFetch('/data/options'+(cat?`?category=${encodeURIComponent(cat)}`:'')); if(!r) return;
-  buildSdList('group',r.product_groups); buildSdList('brand',r.brands); buildSdList('model',r.models||[],'Select a brand to see models');
+  const r=await apiFetch(`/data/options?${optParams(['category'])}`); if(!r) return;
+  buildSdList('group',r.product_groups);
+  buildSdList('brand',r.brands);
+  buildSdList('product_name',r.product_names||[],'Select a brand to see products');
+  buildSdList('model',r.models||[],'Select a product to see specs');
 }
 async function reloadBrandsMods() {
-  const p=new URLSearchParams(); const cat=document.getElementById('q-category').value; const grp=document.getElementById('q-group').value;
-  if(cat) p.set('category',cat); if(grp) p.set('product_group',grp);
-  const r=await apiFetch(`/data/options?${p}`); if(!r) return;
-  buildSdList('brand',r.brands); buildSdList('model',r.models||[],'Select a brand to see models');
+  const r=await apiFetch(`/data/options?${optParams(['category','group'])}`); if(!r) return;
+  buildSdList('brand',r.brands);
+  buildSdList('product_name',r.product_names||[],'Select a brand to see products');
+  buildSdList('model',r.models||[],'Select a product to see specs');
 }
-async function reloadMods() {
-  const p=new URLSearchParams();
-  ['category','group','brand'].forEach(k=>{ const v=document.getElementById(`q-${k}`).value; if(v) p.set(k==='group'?'product_group':k,v); });
-  const r=await apiFetch(`/data/options?${p}`); if(!r) return;
-  const mods=r.models||[]; buildSdList('model',mods,document.getElementById('q-brand').value?'No models found':'Select a brand first');
-  const h=document.getElementById('q-hint'); if(h&&mods.length) h.textContent=`${mods.length} model${mods.length!==1?'s':''} available`;
+async function reloadProductNames() {
+  const r=await apiFetch(`/data/options?${optParams(['category','group','brand'])}`); if(!r) return;
+  const names=r.product_names||[];
+  buildSdList('product_name',names,document.getElementById('q-brand').value?'No products found':'Select a brand first');
+  buildSdList('model',r.models||[],'Select a product to see specs');
+}
+async function reloadSpecs() {
+  const r=await apiFetch(`/data/options?${optParams(['category','group','brand','product_name'])}`); if(!r) return;
+  const specs=r.models||[];
+  buildSdList('model',specs,document.getElementById('q-product_name').value?'No specs found':'Select a product first');
+  const h=document.getElementById('q-hint'); if(h&&specs.length) h.textContent=`${specs.length} spec${specs.length!==1?'s':''} available`;
 }
 document.addEventListener('click', e=>{
   SD_KEYS.forEach(k=>{ const w=document.getElementById(`sd-${k}-wrap`); if(w&&!w.contains(e.target)) closeSd(k); });
@@ -1362,9 +1392,9 @@ let insTimer=null;
 function refreshInsights() { clearTimeout(insTimer); insTimer=setTimeout(fetchInsights,400); }
 async function fetchInsights() {
   const cat=document.getElementById('q-category').value, grp=document.getElementById('q-group').value,
-        brd=document.getElementById('q-brand').value, mdl=document.getElementById('q-model').value;
-  if(!cat&&!grp&&!brd&&!mdl){ document.getElementById('insights-panel').style.display='none'; return; }
-  const p=new URLSearchParams(); if(cat) p.set('category',cat); if(grp) p.set('product_group',grp); if(brd) p.set('brand',brd); if(mdl) p.set('model',mdl);
+        brd=document.getElementById('q-brand').value, pn=document.getElementById('q-product_name').value, mdl=document.getElementById('q-model').value;
+  if(!cat&&!grp&&!brd&&!pn&&!mdl){ document.getElementById('insights-panel').style.display='none'; return; }
+  const p=new URLSearchParams(); if(cat) p.set('category',cat); if(grp) p.set('product_group',grp); if(brd) p.set('brand',brd); if(pn) p.set('product_name',pn); if(mdl) p.set('model',mdl);
   const [sumR, cntR, condR] = await Promise.all([
     apiFetch(`/data/summary?${new URLSearchParams(cat?{category:cat}:{})}`),
     apiFetch(`/data/prices?${p}&limit=1`),
@@ -1374,7 +1404,7 @@ async function fetchInsights() {
   let st=null;
   if(sumR?.data){ if(grp) st=sumR.data.find(r=>r.product_group?.toLowerCase()===grp.toLowerCase()); if(!st&&sumR.data.length===1) st=sumR.data[0]; }
   document.getElementById('ins-count').textContent     = cntR ? cntR.count.toLocaleString() : '—';
-  document.getElementById('ins-count-sub').textContent = (grp||cat) ? (mdl||brd||grp||cat) : '';
+  document.getElementById('ins-count-sub').textContent = (grp||cat) ? (mdl||pn||brd||grp||cat) : '';
   document.getElementById('ins-median').textContent    = st ? `GHS ${fmt(st.price_median)}` : '—';
   document.getElementById('ins-med-sub').textContent   = st ? `${parseInt(st.listing_count).toLocaleString()} listings` : 'GHS';
   document.getElementById('ins-avg').textContent       = st ? `GHS ${fmt(st.price_avg)}` : '—';
@@ -1398,10 +1428,11 @@ async function fetchInsights() {
 let qOffset = 0, qTotalRows = 0;
 function buildParams(csv=false) {
   const p=new URLSearchParams(), v=id=>document.getElementById(id)?.value.trim()||'';
-  if(v('q-category'))  p.set('category',     v('q-category'));
-  if(v('q-group'))     p.set('product_group', v('q-group'));
-  if(v('q-brand'))     p.set('brand',         v('q-brand'));
-  if(v('q-model'))     p.set('model',         v('q-model'));
+  if(v('q-category'))      p.set('category',      v('q-category'));
+  if(v('q-group'))         p.set('product_group', v('q-group'));
+  if(v('q-brand'))         p.set('brand',          v('q-brand'));
+  if(v('q-product_name'))  p.set('product_name',   v('q-product_name'));
+  if(v('q-model'))         p.set('model',           v('q-model'));
   if(v('q-condition')) p.set('condition',      v('q-condition'));
   if(v('q-from'))      p.set('date_from',      v('q-from'));
   if(v('q-to'))        p.set('date_to',        v('q-to'));
