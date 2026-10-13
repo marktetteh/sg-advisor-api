@@ -1,7 +1,7 @@
 /**
  * SG Datalytics — Data Distribution API
  *
- * Authenticated endpoints for paying clients to query market_prices.
+ * Authenticated endpoints for paying clients to query market_prices_clean (QA-approved data).
  * All routes require X-API-Key header.
  *
  * GET /data/prices      — filtered listing-level data
@@ -83,7 +83,7 @@ router.get('/prices', async (req, res) => {
   }
 
   // Build parameterised query
-  const conditions = ['price_ghs > 0', 'is_flagged = FALSE'];
+  const conditions = ['price_ghs > 0'];
   const params     = [];
   let   p          = 1;
 
@@ -97,15 +97,15 @@ router.get('/prices', async (req, res) => {
     params.push(resolvedCategory);
   }
 
-  if (product_group) { conditions.push(`LOWER(product_group) = LOWER($${p++})`); params.push(product_group); }
-  if (brand)         { conditions.push(`LOWER(brand) = LOWER($${p++})`);          params.push(brand); }
-  if (model)         { conditions.push(`LOWER(model) = LOWER($${p++})`);           params.push(model); }
-  if (condition)     { conditions.push(`LOWER(condition) = LOWER($${p++})`);       params.push(condition); }
-  if (location)      { conditions.push(`LOWER(location) LIKE LOWER($${p++})`);     params.push(`%${location}%`); }
-  if (date_from)     { conditions.push(`collected_date >= $${p++}`);               params.push(date_from); }
-  if (date_to)       { conditions.push(`collected_date <= $${p++}`);               params.push(date_to); }
-  if (min_price)     { conditions.push(`price_ghs >= $${p++}`);                    params.push(parseFloat(min_price)); }
-  if (max_price)     { conditions.push(`price_ghs <= $${p++}`);                    params.push(parseFloat(max_price)); }
+  if (product_group) { conditions.push(`LOWER(product_group) = LOWER($${p++})`);              params.push(product_group); }
+  if (brand)         { conditions.push(`LOWER(brand) = LOWER($${p++})`);                       params.push(brand); }
+  if (model)         { conditions.push(`LOWER(specification) LIKE LOWER($${p++})`);            params.push(`%${model}%`); }
+  if (condition)     { conditions.push(`LOWER(condition) = LOWER($${p++})`);                   params.push(condition); }
+  if (location)      { conditions.push(`LOWER(location) LIKE LOWER($${p++})`);                 params.push(`%${location}%`); }
+  if (date_from)     { conditions.push(`collected_date >= $${p++}`);                           params.push(date_from); }
+  if (date_to)       { conditions.push(`collected_date <= $${p++}`);                           params.push(date_to); }
+  if (min_price)     { conditions.push(`price_ghs >= $${p++}`);                                params.push(parseFloat(min_price)); }
+  if (max_price)     { conditions.push(`price_ghs <= $${p++}`);                                params.push(parseFloat(max_price)); }
 
   const where = conditions.join(' AND ');
 
@@ -118,14 +118,14 @@ router.get('/prices', async (req, res) => {
           collected_date,
           product_category,
           product_group,
-          title,
+          product_name,
+          original_title  AS title,
           brand,
-          model,
+          specification   AS model,
           condition,
           price_ghs,
-          location,
-          quality_score
-        FROM market_prices
+          location
+        FROM market_prices_clean
         WHERE ${where}
         ORDER BY collected_date DESC, price_ghs
         LIMIT $${p} OFFSET $${p + 1}
@@ -133,7 +133,7 @@ router.get('/prices', async (req, res) => {
       // Only count when not downloading CSV (saves time on downloads)
       format === 'csv'
         ? Promise.resolve(null)
-        : pool.query(`SELECT COUNT(*) AS total FROM market_prices WHERE ${where}`, params),
+        : pool.query(`SELECT COUNT(*) AS total FROM market_prices_clean WHERE ${where}`, params),
     ]);
     // p was used for LIMIT/OFFSET above; no need to increment further
 
@@ -189,7 +189,7 @@ router.get('/summary', async (req, res) => {
     });
   }
 
-  const conditions = ['price_ghs > 0', 'is_flagged = FALSE', 'product_group IS NOT NULL'];
+  const conditions = ['price_ghs > 0', 'product_group IS NOT NULL'];
   const params     = [];
   let   p          = 1;
 
@@ -217,7 +217,7 @@ router.get('/summary', async (req, res) => {
         ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_ghs)::numeric, 2) AS price_median,
         MIN(collected_date)                                          AS data_from,
         MAX(collected_date)                                          AS data_to
-      FROM market_prices
+      FROM market_prices_clean
       WHERE ${conditions.join(' AND ')}
       GROUP BY product_category, product_group
       ORDER BY product_category, listing_count DESC
@@ -290,7 +290,7 @@ router.get('/options', async (req, res) => {
   const allowed = client.allowed_categories || [];
 
   // Base filter shared by all sub-queries
-  const base       = ['price_ghs > 0', 'is_flagged = FALSE'];
+  const base       = ['price_ghs > 0'];
   const baseParams = [];
   let   p          = 1;
 
@@ -299,7 +299,7 @@ router.get('/options', async (req, res) => {
 
   // ── Product groups (filtered by category only) ──
   const pgResult = await pool.query(
-    `SELECT DISTINCT product_group FROM market_prices
+    `SELECT DISTINCT product_group FROM market_prices_clean
      WHERE ${base.join(' AND ')} AND product_group IS NOT NULL AND product_group != ''
      ORDER BY product_group`,
     baseParams
@@ -309,20 +309,19 @@ router.get('/options', async (req, res) => {
   const brBase = [...base]; const brParams = [...baseParams]; let bp = p;
   if (product_group) { brBase.push(`LOWER(product_group) = LOWER($${bp++})`); brParams.push(product_group); }
   const brResult = await pool.query(
-    `SELECT DISTINCT brand FROM market_prices
+    `SELECT DISTINCT brand FROM market_prices_clean
      WHERE ${brBase.join(' AND ')} AND brand IS NOT NULL AND brand != ''
      ORDER BY brand`,
     brParams
   );
 
-  // ── Models (filtered by category + product_group + brand) ──
+  // ── Specs/models (filtered by category + product_group + brand) ──
   const mdBase = [...brBase]; const mdParams = [...brParams]; let mp = bp;
   if (brand) { mdBase.push(`LOWER(brand) = LOWER($${mp++})`); mdParams.push(brand); }
-  // Use model column first; fall back to extracting common sub-phrases from title
   const mdResult = await pool.query(
-    `SELECT DISTINCT model FROM market_prices
-     WHERE ${mdBase.join(' AND ')} AND model IS NOT NULL AND model != ''
-     ORDER BY model
+    `SELECT DISTINCT specification AS model FROM market_prices_clean
+     WHERE ${mdBase.join(' AND ')} AND specification IS NOT NULL AND specification != ''
+     ORDER BY specification
      LIMIT 200`,
     mdParams
   );
