@@ -13,29 +13,36 @@
  * Flags:
  *   --skip-jiji      skip Jiji scraper
  *   --skip-melcom    skip Melcom scraper
+ *   --skip-tonaton   skip Tonaton scraper
  *   --skip-esoko     skip Esoko commodity collector
  *   --skip-hotels    skip Hotel price collector
  *   --skip-airbnb    skip Airbnb collector
  *   --skip-meqasa    skip Meqasa scraper
  *   --market-only    run Jiji + Melcom only
+ *   --melcom-only    run Melcom only
  *   --esoko-only     run Esoko only
  *   --hotels-only    run Hotel collector only
  *   --airbnb-only    run Airbnb collector only
  *   --meqasa-only    run Meqasa scraper only
+ *   --weekly-only    run Melcom + Hotels + Airbnb (weekly sources)
  */
 require('dotenv').config();
 const { ensureDirs, getDataDir } = require('./csv-utils');
 
-const skipJiji   = process.argv.includes('--skip-jiji');
-const skipMelcom = process.argv.includes('--skip-melcom');
-const skipEsoko  = process.argv.includes('--skip-esoko')  || process.argv.includes('--market-only');
-const skipHotels = process.argv.includes('--skip-hotels') || process.argv.includes('--market-only');
-const skipAirbnb = process.argv.includes('--skip-airbnb') || process.argv.includes('--market-only');
-const skipMeqasa = process.argv.includes('--skip-meqasa') || process.argv.includes('--market-only');
+const weeklyOnly = process.argv.includes('--weekly-only');
+const melcomOnly = process.argv.includes('--melcom-only') || weeklyOnly;
 const esokoOnly  = process.argv.includes('--esoko-only');
-const hotelsOnly = process.argv.includes('--hotels-only');
-const airbnbOnly = process.argv.includes('--airbnb-only');
+const hotelsOnly = process.argv.includes('--hotels-only') || weeklyOnly;
+const airbnbOnly = process.argv.includes('--airbnb-only') || weeklyOnly;
 const meqasaOnly = process.argv.includes('--meqasa-only');
+
+const skipJiji    = process.argv.includes('--skip-jiji')    || melcomOnly || esokoOnly || hotelsOnly || airbnbOnly || meqasaOnly;
+const skipMelcom  = process.argv.includes('--skip-melcom')  || esokoOnly  || hotelsOnly || airbnbOnly || meqasaOnly;
+const skipTonaton = process.argv.includes('--skip-tonaton') || melcomOnly || esokoOnly || hotelsOnly || airbnbOnly || meqasaOnly;
+const skipEsoko   = process.argv.includes('--skip-esoko')   || process.argv.includes('--market-only') || melcomOnly || hotelsOnly || airbnbOnly || meqasaOnly;
+const skipHotels  = process.argv.includes('--skip-hotels')  || process.argv.includes('--market-only') || melcomOnly || esokoOnly || meqasaOnly;
+const skipAirbnb  = process.argv.includes('--skip-airbnb')  || process.argv.includes('--market-only') || melcomOnly || esokoOnly || meqasaOnly;
+const skipMeqasa  = process.argv.includes('--skip-meqasa')  || process.argv.includes('--market-only') || melcomOnly || esokoOnly || hotelsOnly || airbnbOnly;
 
 const log = (msg, sym = '→') => console.log(`  [${new Date().toLocaleTimeString()}] ${sym} ${msg}`);
 
@@ -60,10 +67,25 @@ async function run() {
     try {
       const { run: jijiRun } = require('./jiji');
       results.jiji = await jijiRun();
+      results.jiji.total = results.jiji.total ?? results.jiji.scraped ?? 0;
       log(`Jiji done — ${results.jiji.total} scraped, ${results.jiji.saved} new in master`, '✅');
     } catch (e) {
       log(`Jiji failed: ${e.message}`, '❌');
       results.jiji = { total: 0, saved: 0, error: e.message };
+    }
+  }
+
+  // ── 1b. TONATON (Jiji Group classifieds — JSON API, no browser) ─
+  if (!skipTonaton && !esokoOnly && !hotelsOnly && !airbnbOnly && !meqasaOnly) {
+    console.log('\n  ── Tonaton Ghana (classifieds API) ─────────────────────');
+    try {
+      const { run: tonatonRun } = require('./tonaton');
+      results.tonaton = await tonatonRun();
+      results.tonaton.total = results.tonaton.total ?? results.tonaton.scraped ?? 0;
+      log(`Tonaton done — ${results.tonaton.total} scraped, ${results.tonaton.saved} new in master`, '✅');
+    } catch (e) {
+      log(`Tonaton failed: ${e.message}`, '❌');
+      results.tonaton = { total: 0, saved: 0, error: e.message };
     }
   }
 
@@ -139,6 +161,7 @@ async function run() {
   console.log('  ║   Pipeline Complete                                   ║');
   console.log('  ╠══════════════════════════════════════════════════════╣');
   if (results.jiji)   console.log(`  ║  Jiji    → ${String(results.jiji.total).padEnd(5)} scraped · ${String(results.jiji.saved).padEnd(5)} new          ║`);
+  if (results.tonaton) console.log(`  ║  Tonaton → ${String(results.tonaton.total).padEnd(5)} scraped · ${String(results.tonaton.saved).padEnd(5)} new          ║`);
   if (results.melcom) console.log(`  ║  Melcom  → ${String(results.melcom.total).padEnd(5)} scraped · ${String(results.melcom.saved).padEnd(5)} new          ║`);
   if (results.esoko)  console.log(`  ║  Esoko   → ${String(results.esoko.total).padEnd(5)} prices  · ${String(results.esoko.saved).padEnd(5)} new          ║`);
   if (results.hotels) console.log(`  ║  Hotels  → ${String(results.hotels.total).padEnd(5)} hotels  · ${String(results.hotels.saved).padEnd(5)} new          ║`);
