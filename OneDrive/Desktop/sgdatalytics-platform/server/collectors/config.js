@@ -661,6 +661,10 @@ const JIJI_CATEGORIES = [
   // Note: Office & Education removed — covered by product-level queries in MARKET_PRODUCTS (/electronics, /search)
   // Note: Land For Sale removed — /land-for-sale returns 404; covered by land queries in MARKET_PRODUCTS
   { label: 'Commercial Property Rent',category: 'Real Estate',        jijiPath: '/commercial-property-for-rent',     query: '', tonatonQuery: 'office warehouse shop commercial rent' },
+  // Home & Kitchen — was only in MELCOM_CATEGORIES; added here to restore Jiji daily collection (added 15 Oct 2026)
+  { label: 'Home & Kitchen',          category: 'Home & Kitchen',     jijiPath: '/kitchen-and-dining',               query: '', tonatonQuery: 'cookware pots pans kitchen bedding home decor' },
+  // Security & Safety — was only in MARKET_PRODUCTS (query-mode); added here for category-mode scraping (added 15 Oct 2026)
+  { label: 'Security & Safety',       category: 'Security & Safety',  jijiPath: '/security-and-surveillance',        query: '', tonatonQuery: 'cctv security camera alarm electric fence padlock' },
 ];
 
 module.exports = { SECTORS, INDICATORS, MARKET_PRODUCTS, MELCOM_CATEGORIES, COMMODITIES, JIJI_CATEGORIES };
